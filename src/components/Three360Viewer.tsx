@@ -5,6 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useTexture, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { Loader2 } from "lucide-react";
+import { getAssetPath } from "@/utils/paths";
 
 interface Sphere360Props {
   textureUrl: string;
@@ -49,7 +50,7 @@ export default function Three360Viewer({ panoramaUrl }: Three360ViewerProps) {
     <div className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing bg-jungle">
       <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }}>
         <Suspense fallback={<LoadingSpinner />}>
-          <Sphere360 textureUrl={panoramaUrl} />
+          <Sphere360 textureUrl={getAssetPath(panoramaUrl)} />
         </Suspense>
         <OrbitControls
           enableZoom={false}

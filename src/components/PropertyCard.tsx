@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Property } from "@/constants/properties";
 import { BedDouble, Expand, MapPin } from "lucide-react";
+import { getAssetPath } from "@/utils/paths";
 
 interface PropertyCardProps {
   property: Property;
@@ -19,7 +20,7 @@ export default function PropertyCard({ property, onClick }: PropertyCardProps) {
     >
       <div className="aspect-[4/5] w-full overflow-hidden relative">
         <motion.img
-          src={property.image}
+          src={getAssetPath(property.image)}
           alt={property.name}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
         />
