@@ -1,5 +1,6 @@
 "use client";
 
+// Imagine Luxury Real Estate & Property Management SPA
 import Image from "next/image";
 import { useState, useMemo, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
