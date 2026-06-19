@@ -60,7 +60,7 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Currency Converter State
-  const [currencyMode, setCurrencyMode] = useState<"USD" | "CRC">("USD");
+  const [currencyMode, setCurrencyMode] = useState<"USD" | "CRC" | "EUR" | "JPY">("USD");
 
   // Step-by-Step Form State
   const [currentStep, setCurrentStep] = useState(1);
@@ -573,11 +573,13 @@ export default function Home() {
                   <div className="relative">
                     <select 
                       value={currencyMode}
-                      onChange={(e) => setCurrencyMode(e.target.value as "USD" | "CRC")}
+                      onChange={(e) => setCurrencyMode(e.target.value as "USD" | "CRC" | "EUR" | "JPY")}
                       className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
                     >
                       <option value="USD">{t.catalog.filters.showUSD}</option>
                       <option value="CRC">{t.catalog.filters.showCRC}</option>
+                      <option value="EUR">{t.catalog.filters.showEUR}</option>
+                      <option value="JPY">{t.catalog.filters.showJPY}</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
                   </div>
@@ -1099,12 +1101,12 @@ export default function Home() {
                 
                 <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white flex justify-between items-baseline">
                   <span>
-                    {currencyMode === "CRC" 
-                      ? `₡${(selectedProperty.price * 520).toLocaleString(lang === "es" ? "es-CR" : "en-US")}`
-                      : `$${selectedProperty.price.toLocaleString("en-US")}`
-                    }
+                    {currencyMode === "CRC" && `₡${(selectedProperty.price * 520).toLocaleString(lang === "es" ? "es-CR" : "en-US")}`}
+                    {currencyMode === "EUR" && `€${(selectedProperty.price * 0.92).toLocaleString(lang === "es" ? "es-ES" : "en-US", { maximumFractionDigits: 0 })}`}
+                    {currencyMode === "JPY" && `¥${(selectedProperty.price * 158).toLocaleString(lang === "es" ? "ja-JP" : "en-US", { maximumFractionDigits: 0 })}`}
+                    {currencyMode === "USD" && `$${selectedProperty.price.toLocaleString("en-US")}`}
                   </span>
-                  {currencyMode === "CRC" && (
+                  {currencyMode !== "USD" && (
                     <span className="text-xs text-gray-400 font-normal">(${(selectedProperty.price).toLocaleString("en-US")} USD)</span>
                   )}
                 </div>

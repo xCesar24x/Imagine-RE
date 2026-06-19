@@ -13,7 +13,7 @@ interface PropertyCardProps {
   wishlisted?: boolean;
   onToggleWishlist?: (property: Property) => void;
   lang?: "en" | "es";
-  currencyMode?: "USD" | "CRC";
+  currencyMode?: "USD" | "CRC" | "EUR" | "JPY";
 }
 
 const statusStyles = {
@@ -50,9 +50,16 @@ export default function PropertyCard({
 
   const formattedPrice = useMemo(() => {
     if (currencyMode === "CRC") {
-      // 520 CRC per USD
       const crcValue = property.price * 520;
       return `₡${crcValue.toLocaleString(lang === "es" ? "es-CR" : "en-US")}`;
+    }
+    if (currencyMode === "EUR") {
+      const eurValue = property.price * 0.92;
+      return `€${eurValue.toLocaleString(lang === "es" ? "es-ES" : "en-US", { maximumFractionDigits: 0 })}`;
+    }
+    if (currencyMode === "JPY") {
+      const jpyValue = property.price * 158;
+      return `¥${jpyValue.toLocaleString(lang === "es" ? "ja-JP" : "en-US", { maximumFractionDigits: 0 })}`;
     }
     return `$${property.price.toLocaleString("en-US")}`;
   }, [property.price, currencyMode, lang]);
@@ -118,7 +125,7 @@ export default function PropertyCard({
           
           <div className="text-lg md:text-xl font-sans font-medium text-white mb-3">
             {formattedPrice}
-            {currencyMode === "CRC" && (
+            {currencyMode !== "USD" && (
               <span className="text-[10px] text-gray-400 font-normal block mt-0.5">
                 (Approx. ${(property.price).toLocaleString("en-US")} USD)
               </span>
