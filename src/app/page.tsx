@@ -204,19 +204,35 @@ export default function Home() {
   const AMENITY_GROUPS = useMemo(() => ({
     ocean: {
       label: lang === "es" ? "Playa y Vista al Mar" : "Beach & Ocean View",
-      tags: ["Oceanfront", "Ocean Sounds", "Infinity View", "Panoramic", "Private Beach", "Marina Views", "Yacht Mooring", "Cliffside", "Surf Access"]
+      tags: ["Oceanfront", "Ocean Sounds", "Infinity View", "Panoramic", "Private Beach", "Marina Views", "Yacht Mooring", "Cliffside", "Surf Access", "Surfer's Dream", "270° Views", "Peninsula Tip", "Sunset Facing"]
     },
     nature: {
       label: lang === "es" ? "Naturaleza y Selva" : "Nature & Jungle Vibe",
-      tags: ["Eco-Luxury", "Jungle Brutalism", "High Altitude", "Sustainable", "Glass House", "Creek-Side", "Canopy Walkway", "Organic Farm"]
+      tags: ["Eco-Luxury", "Jungle Brutalism", "High Altitude", "Sustainable", "Glass House", "Creek-side", "Canopy Walkway", "Rainforest", "Wildlife Integration", "Wellness", "Open Air", "Yoga Pavilion"]
     },
     vip: {
-      label: lang === "es" ? "Amenidades VIP (Helipuerto/Yates/Piscina)" : "VIP Amenities (Helipad/Yacht/Pool)",
-      tags: ["Helipad Access", "Yacht Mooring", "Golf Cart Access", "Infinity Pool", "Wine Cellar", "Smart Home", "Art Collector"]
+      label: lang === "es" ? "Amenidades VIP (Helipuerto/Funicular)" : "VIP Amenities (Helipad/Funicular)",
+      tags: ["Helipad Access", "Yacht Mooring", "Private Funicular"]
     },
     design: {
       label: lang === "es" ? "Privacidad y Diseño Premium" : "Privacy & Premium Design",
-      tags: ["Ultra-Luxury", "Minimalist", "Intimate", "Family Estate", "Industrial Chic", "Exclusive"]
+      tags: ["Ultra-Luxury", "Minimalist", "Intimate", "Family Estate", "Industrial Chic", "Exclusive", "Secluded", "Tropical Modernism"]
+    },
+    airbnb: {
+      label: lang === "es" ? "Listo para Alquiler (Airbnb Ready)" : "Rental Ready (Airbnb Approved)",
+      tags: ["Resort Amenities", "Gastronomic Center", "Wellness", "Surf Access", "City Center", "Infinity Pool"]
+    },
+    road: {
+      label: lang === "es" ? "Fácil Acceso (Calle Pavimentada)" : "Easy Access (Paved Roads)",
+      tags: ["City Center", "Gastronomic Center", "Skyline View", "Smart Home", "Resort Amenities"]
+    },
+    sustainable: {
+      label: lang === "es" ? "Autosostenible (Eco-Friendly)" : "Autosustainable (Eco-Friendly)",
+      tags: ["Sustainable", "Eco-Luxury", "Rainforest", "Creek-side", "Wildlife Integration"]
+    },
+    sports: {
+      label: lang === "es" ? "Campo de Golf y Marina" : "Golf & Marina Lifestyle",
+      tags: ["Golf Cart Access", "Marina Views", "Yacht Mooring", "Resort Amenities"]
     }
   }), [lang]);
 
