@@ -39,6 +39,17 @@ export default function Home() {
   // Routing State
   const [activeTab, setActiveTab] = useState<"catalog" | "management" | "tours">("catalog");
 
+  const handleCollectionClick = () => {
+    if (activeTab !== "catalog") {
+      setActiveTab("catalog");
+      setTimeout(() => {
+        document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
+      }, 150);
+    } else {
+      document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   // Property Details State
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [modalTab, setModalTab] = useState<"360" | "map" | "video">("360");
@@ -257,7 +268,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#020f0a] text-pearl selection:bg-sunset selection:text-jungle relative">
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-45 px-6 md:px-12 py-5 flex items-center justify-between bg-black/45 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
-        <div className="flex items-center gap-4 cursor-pointer" onClick={() => setActiveTab("catalog")}>
+        <div className="flex items-center gap-4 cursor-pointer" onClick={() => { setActiveTab("catalog"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
           <div className="relative w-12 h-12 overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-sm">
             <Image src={getAssetPath("/images/imagine-logo.jpg")} alt="Imagine logo" fill className="object-contain" />
           </div>
@@ -270,7 +281,7 @@ export default function Home() {
         {/* Desktop Routing Links */}
         <div className="hidden xl:flex items-center gap-6 text-xs font-sans uppercase tracking-[0.25em] text-white/80">
           <button 
-            onClick={() => { setActiveTab("catalog"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            onClick={handleCollectionClick}
             className={`transition px-4 py-2 border rounded-md cursor-pointer ${activeTab === "catalog" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
           >
             {t.nav.collection}
@@ -333,7 +344,7 @@ export default function Home() {
               className="fixed inset-x-0 top-[88px] z-30 xl:hidden p-6 bg-[#041c16] border-b border-white/10 flex flex-col gap-4 text-center font-sans uppercase tracking-[0.25em] text-xs shadow-2xl animate-none"
             >
               <button 
-                onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setIsMobileMenuOpen(false); handleCollectionClick(); }}
                 className={`py-3 transition border rounded-md cursor-pointer text-pearl/80 ${activeTab === "catalog" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
               >
                 {t.nav.collection}
