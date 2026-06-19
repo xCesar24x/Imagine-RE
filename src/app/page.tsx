@@ -1,41 +1,88 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PROPERTIES, Property } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
-import { X, ChevronRight } from "lucide-react";
+import { X, ChevronRight, Instagram, Facebook, Mail, MessageCircle, Sparkles, Compass } from "lucide-react";
 
 export default function Home() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   // Filtering state
   const [priceFilter, setPriceFilter] = useState("all");
-  const [sqftFilter, setSqftFilter] = useState("all");
+  const [sizeFilter, setSizeFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // Compute unique tags
+  const locations = useMemo(() => {
+    const setLocations = new Set<string>();
+    PROPERTIES.forEach(p => setLocations.add(p.location));
+    return Array.from(setLocations).sort();
+  }, []);
+
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     PROPERTIES.forEach(p => p.vibeTags.forEach(t => tags.add(t)));
     return Array.from(tags).sort();
   }, []);
 
+  const SERVICE_CARDS = [
+    {
+      title: "Tailored Portfolio Sourcing",
+      description: "Exclusive access to off-market residences, private estates and bespoke luxury developments across Costa Rica.",
+      icon: Sparkles,
+    },
+    {
+      title: "Concierge Ownership Transition",
+      description: "White-glove property management, residency facilitation, and lifestyle onboarding for affluent clients.",
+      icon: Compass,
+    },
+    {
+      title: "Lifestyle Matchmaking",
+      description: "We align every property with your preferred wellness, entertainment, and investment narratives.",
+      icon: Mail,
+    },
+  ];
+
+  const CONTACT_CHANNELS = [
+    {
+      label: "Instagram",
+      href: "https://www.instagram.com/imaginere.cr?utm_source=qr&igsh=aWV1anFiaHoxNXdz",
+      icon: Instagram,
+    },
+    {
+      label: "Facebook",
+      href: "https://www.facebook.com/share/1HXeL5UUnj/",
+      icon: Facebook,
+    },
+    {
+      label: "Whatsapp",
+      href: "https://wa.me/message/4EBZCHNEZWC2A1",
+      icon: MessageCircle,
+    },
+    {
+      label: "Email",
+      href: "mailto:Imaginerepm@gmail.com",
+      icon: Mail,
+    },
+  ];
+
   // Filter properties
   const filteredProperties = useMemo(() => {
     return PROPERTIES.filter(p => {
-      // Price
       if (priceFilter === "under-5" && p.price >= 5000000) return false;
       if (priceFilter === "5-10" && (p.price < 5000000 || p.price > 10000000)) return false;
       if (priceFilter === "over-10" && p.price <= 10000000) return false;
 
-      // Sqft
-      if (sqftFilter === "under-5k" && p.sqft >= 5000) return false;
-      if (sqftFilter === "5k-10k" && (p.sqft < 5000 || p.sqft > 10000)) return false;
-      if (sqftFilter === "over-10k" && p.sqft <= 10000) return false;
+      if (sizeFilter === "under-5k" && p.sqft >= 5000) return false;
+      if (sizeFilter === "5k-10k" && (p.sqft < 5000 || p.sqft > 10000)) return false;
+      if (sizeFilter === "over-10k" && p.sqft <= 10000) return false;
 
-      // Tags
+      if (locationFilter !== "all" && p.location !== locationFilter) return false;
+
       if (selectedTags.length > 0) {
         const hasTag = selectedTags.some(tag => p.vibeTags.includes(tag));
         if (!hasTag) return false;
@@ -43,7 +90,7 @@ export default function Home() {
 
       return true;
     });
-  }, [priceFilter, sqftFilter, selectedTags]);
+  }, [priceFilter, sizeFilter, locationFilter, selectedTags]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
@@ -52,59 +99,120 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-jungle text-pearl selection:bg-sunset selection:text-jungle">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-40 px-8 py-6 flex justify-between items-center bg-gradient-to-b from-jungle/90 to-transparent backdrop-blur-sm">
-        <div className="font-serif text-2xl font-bold tracking-wider">
-          Bryan Viquez <span className="text-sunset text-sm font-sans font-normal uppercase tracking-[0.3em] ml-2">| Imagine Property Management & Real Estate</span>
+      <nav className="fixed top-0 w-full z-40 px-8 py-6 flex flex-wrap items-center justify-between gap-4 bg-black/30 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+        <div className="flex items-center gap-4">
+          <div className="relative w-12 h-12 overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-sm">
+            <Image src="/images/imagine-logo.jpg" alt="Imagine logo" fill className="object-contain" />
+          </div>
+          <div>
+            <div className="font-serif text-2xl font-semibold tracking-[0.18em] uppercase">Imagine</div>
+            <div className="text-xs uppercase tracking-[0.4em] text-gray-300/80">Property Management & Real Estate</div>
+          </div>
         </div>
-        <div className="hidden md:flex gap-8 text-sm font-sans uppercase tracking-widest">
-          <a href="#" className="hover:text-sunset transition-colors">Home</a>
-          <a href="#collection" className="hover:text-sunset transition-colors">Collection</a>
-          <a href="#" className="hover:text-sunset transition-colors">About Bryan</a>
-          <a href="#" className="hover:text-sunset transition-colors text-sunset">Concierge</a>
+
+        <div className="hidden xl:flex items-center gap-10 text-sm font-sans uppercase tracking-[0.32em] text-white/80">
+          <a href="#collection" className="transition hover:text-sunset">Collection</a>
+          <a href="#services" className="transition hover:text-sunset">Services</a>
+          <a href="#contact" className="transition hover:text-sunset">Contact</a>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Simulated Video Background */}
+      <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden py-8">
         <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&q=80&w=2000" 
-            alt="Costa Rica Coast"
-            className="w-full h-full object-cover opacity-40 scale-105 animate-[pulse_10s_ease-in-out_infinite]"
+          <Image
+            src="/images/hero-cover.jpg"
+            alt="Imagine luxury property cover"
+            fill
+            className="object-cover opacity-95"
+            priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-jungle via-jungle/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-[#02140f]/20 to-transparent" />
+          <div className="absolute left-1/2 top-20 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#d4af37]/5 blur-3xl" />
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
+        <motion.div
+          initial={{ opacity: 0, y: 42 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="relative z-10 p-12 backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl text-center max-w-3xl mx-4"
+          className="relative z-10 grid gap-8 px-6 py-10 md:px-12 md:py-14 max-w-5xl rounded-[2.5rem] border border-white/10 bg-black/30 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl"
         >
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.8, type: "spring" }}
-            className="w-24 h-24 mx-auto mb-8 rounded-full overflow-hidden border-2 border-sunset"
-          >
-            {/* Using a placeholder for Bryan's photo */}
-            <img 
-              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=256" 
-              alt="Bryan Viquez"
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-            />
-          </motion.div>
-          <h1 className="text-5xl md:text-7xl font-serif mb-4 leading-tight">
-            The Architect of <br/><span className="text-sunset italic">Exclusivity</span>
-          </h1>
-          <p className="text-lg md:text-xl font-sans font-light tracking-wide text-gray-300 max-w-xl mx-auto mb-8">
-            Curating Costa Rica&apos;s most extraordinary properties for the world&apos;s most discerning individuals. Pura Vida elegance meets architectural minimalism.
-          </p>
-          <button className="bg-sunset text-jungle px-8 py-4 uppercase font-sans tracking-widest text-sm font-semibold hover:bg-white transition-colors duration-300">
-            Enter the Collection
-          </button>
+          <div className="mx-auto w-fit rounded-full border border-white/10 bg-white/5 p-1 shadow-inner shadow-black/30">
+            <div className="relative h-28 w-28 overflow-hidden rounded-full border border-sunset/40">
+              <Image
+                src="/images/bryan-headshot.jpg"
+                alt="Bryan Viquez"
+                fill
+                className="object-cover grayscale hover:grayscale-0 transition duration-500"
+                priority
+              />
+            </div>
+          </div>
+
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center gap-3 rounded-full border border-sunset/20 bg-[#e5c777]/10 px-5 py-2 text-xs uppercase tracking-[0.36em] text-sunset/90 shadow-sm shadow-sunset/10">
+              Premium concierge for high-net-worth living
+            </div>
+            <h1 className="mt-8 text-5xl md:text-7xl xl:text-8xl font-serif uppercase tracking-[-0.04em] leading-tight text-pearl">
+              Exclusivity redefined <span className="text-sunset">for Costa Rica</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-3xl text-base md:text-lg leading-relaxed text-gray-300/90">
+              We source exceptional residences, elevate ownership with dedicated concierge care, and make every acquisition feel like a private celebration.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] items-center">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
+                <div className="text-xs uppercase tracking-[0.32em] text-gray-400">Investment</div>
+                <div className="mt-3 text-4xl font-serif text-pearl">15+</div>
+                <div className="mt-2 text-sm text-gray-300">Selected luxury properties live now.</div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
+                <div className="text-xs uppercase tracking-[0.32em] text-gray-400">Concierge</div>
+                <div className="mt-3 text-4xl font-serif text-pearl">24/7</div>
+                <div className="mt-2 text-sm text-gray-300">White-glove access from search to ownership.</div>
+              </div>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
+              <div className="text-xs uppercase tracking-[0.32em] text-gray-400">Signature</div>
+              <div className="mt-3 text-4xl font-serif text-pearl">Bespoke</div>
+              <div className="mt-2 text-sm text-gray-300">Tailored experiences aligned with your lifestyle.</div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <a href="#collection" className="inline-flex items-center justify-center rounded-full bg-sunset px-8 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-jungle shadow-[0_18px_45px_rgba(212,175,55,0.18)] transition hover:bg-white">
+              View Collection
+            </a>
+            <a href="#services" className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-white transition hover:border-sunset hover:text-sunset">
+              Explore Services
+            </a>
+          </div>
         </motion.div>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-24 px-4 md:px-12 max-w-[1600px] mx-auto">
+        <div className="mb-12 flex flex-col items-center text-center gap-4">
+          <div className="text-sm uppercase tracking-[0.36em] text-sunset">Signature Services</div>
+          <h2 className="text-4xl md:text-6xl font-serif">Imagine Services</h2>
+          <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
+            A discreet advisory approach with bespoke property sourcing, dedicated acquisition strategy, and luxury lifestyle management.
+          </p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {SERVICE_CARDS.map(({ title, description, icon: Icon }) => (
+            <div key={title} className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-sunset/10 text-sunset shadow-sm shadow-sunset/10 mb-6">
+                <Icon size={24} />
+              </div>
+              <h3 className="text-2xl font-serif mb-4">{title}</h3>
+              <p className="text-sm leading-7 text-gray-300/90">{description}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* The Property Engine (Catalog) */}
@@ -127,50 +235,62 @@ export default function Home() {
 
         {/* Filter Bar */}
         <div className="mb-16 space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Price Filter */}
-            <div className="flex-1">
-              <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-2">Price Range</label>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+              <div className="text-xs uppercase tracking-[0.34em] text-gray-400 mb-4">Investment Profile</div>
+              <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-2">Price range</label>
               <select 
                 value={priceFilter}
                 onChange={(e) => setPriceFilter(e.target.value)}
-                className="w-full bg-[#033b2a] border border-white/10 text-pearl text-sm font-sans px-4 py-3 appearance-none focus:outline-none focus:border-sunset/50 transition-colors"
+                className="w-full bg-[#041b15] border border-white/10 text-pearl text-sm font-sans px-4 py-3 rounded-2xl appearance-none focus:outline-none focus:border-sunset/50"
               >
-                <option value="all">Any Price</option>
+                <option value="all">All</option>
                 <option value="under-5">Under $5,000,000</option>
                 <option value="5-10">$5,000,000 - $10,000,000</option>
                 <option value="over-10">Over $10,000,000</option>
               </select>
             </div>
-            
-            {/* Sqft Filter */}
-            <div className="flex-1">
-              <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-2">Size (Sqft / m²)</label>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+              <div className="text-xs uppercase tracking-[0.34em] text-gray-400 mb-4">Scale & Presence</div>
+              <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-2">Size range</label>
               <select 
-                value={sqftFilter}
-                onChange={(e) => setSqftFilter(e.target.value)}
-                className="w-full bg-[#033b2a] border border-white/10 text-pearl text-sm font-sans px-4 py-3 appearance-none focus:outline-none focus:border-sunset/50 transition-colors"
+                value={sizeFilter}
+                onChange={(e) => setSizeFilter(e.target.value)}
+                className="w-full bg-[#041b15] border border-white/10 text-pearl text-sm font-sans px-4 py-3 rounded-2xl appearance-none focus:outline-none focus:border-sunset/50"
               >
-                <option value="all">Any Size</option>
-                <option value="under-5k">Under 5,000 sqft (465 m²)</option>
-                <option value="5k-10k">5,000 - 10,000 sqft (465 - 930 m²)</option>
-                <option value="over-10k">Over 10,000 sqft (930 m²)</option>
+                <option value="all">All</option>
+                <option value="under-5k">Under 5,000 sqft</option>
+                <option value="5k-10k">5,000 - 10,000 sqft</option>
+                <option value="over-10k">Over 10,000 sqft</option>
+              </select>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+              <div className="text-xs uppercase tracking-[0.34em] text-gray-400 mb-4">Preferred Location</div>
+              <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-2">Region</label>
+              <select 
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="w-full bg-[#041b15] border border-white/10 text-pearl text-sm font-sans px-4 py-3 rounded-2xl appearance-none focus:outline-none focus:border-sunset/50"
+              >
+                <option value="all">All regions</option>
+                {locations.map(location => (
+                  <option key={location} value={location}>{location}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          {/* Vibe Tags */}
           <div>
-            <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-3">Amenities & Vibe</label>
-            <div className="flex flex-wrap gap-2">
+            <label className="block text-xs font-sans text-gray-400 uppercase tracking-widest mb-3">Curated experiences</label>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {allTags.map(tag => (
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-4 py-2 text-xs font-sans uppercase tracking-widest rounded-full border transition-all duration-300 ${
-                    selectedTags.includes(tag) 
-                      ? "bg-sunset border-sunset text-jungle font-bold" 
-                      : "bg-transparent border-white/20 text-gray-300 hover:border-sunset/50"
+                  className={`w-full rounded-[2rem] border px-5 py-3 text-xs font-sans uppercase tracking-[0.28em] transition duration-300 ${
+                    selectedTags.includes(tag)
+                      ? "bg-sunset border-sunset text-jungle font-semibold shadow-[0_10px_40px_rgba(212,175,55,0.18)]"
+                      : "bg-white/5 border-white/10 text-gray-300 hover:border-sunset/40 hover:text-white"
                   }`}
                 >
                   {tag}
@@ -309,6 +429,34 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <footer id="contact" className="relative mt-16 border-t border-white/10 bg-black/30 py-10 px-6 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="text-xs uppercase tracking-[0.36em] text-sunset mb-3">Contact & access</div>
+            <p className="max-w-lg text-sm text-gray-300/80 leading-relaxed">
+              Connect directly with Imagine through private WhatsApp, curated social channels, or secure email. Every icon is a direct gateway to our exclusive service.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            {CONTACT_CHANNELS.map(({ label, href, icon: Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="group inline-flex h-14 min-w-[160px] items-center gap-3 rounded-3xl border border-white/10 bg-white/5 px-5 text-sm uppercase tracking-[0.28em] text-white transition hover:border-sunset/40 hover:bg-sunset/10"
+              >
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-sunset transition group-hover:bg-sunset/15">
+                  <Icon size={18} />
+                </span>
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
