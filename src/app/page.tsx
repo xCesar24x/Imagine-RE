@@ -2,7 +2,7 @@
 
 // Imagine Luxury Real Estate & Property Management SPA
 import Image from "next/image";
-import { useState, useMemo, type FormEvent } from "react";
+import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PROPERTIES, Property } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
@@ -35,6 +35,30 @@ import { getAssetPath } from "@/utils/paths";
 export default function Home() {
   const [lang, setLang] = useState<"en" | "es">("en");
   const t = TRANSLATIONS[lang];
+
+  // Dynamic Exchange Rates State (with static fallbacks)
+  const [rates, setRates] = useState({
+    CRC: 520,
+    EUR: 0.92,
+    JPY: 158,
+    USD: 1
+  });
+
+  useEffect(() => {
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          setRates({
+            CRC: data.rates.CRC || 520,
+            EUR: data.rates.EUR || 0.92,
+            JPY: data.rates.JPY || 158,
+            USD: 1
+          });
+        }
+      })
+      .catch(err => console.error("Error fetching rates, using defaults:", err));
+  }, []);
 
   // Routing State
   const [activeTab, setActiveTab] = useState<"catalog" | "management" | "tours">("catalog");
@@ -625,6 +649,7 @@ export default function Home() {
                       onToggleWishlist={toggleWishlist}
                       lang={lang}
                       currencyMode={currencyMode}
+                      rates={rates}
                     />
                   </motion.div>
                 ))}
@@ -1101,9 +1126,9 @@ export default function Home() {
                 
                 <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white flex justify-between items-baseline">
                   <span>
-                    {currencyMode === "CRC" && `₡${(selectedProperty.price * 520).toLocaleString(lang === "es" ? "es-CR" : "en-US")}`}
-                    {currencyMode === "EUR" && `€${(selectedProperty.price * 0.92).toLocaleString(lang === "es" ? "es-ES" : "en-US", { maximumFractionDigits: 0 })}`}
-                    {currencyMode === "JPY" && `¥${(selectedProperty.price * 158).toLocaleString(lang === "es" ? "ja-JP" : "en-US", { maximumFractionDigits: 0 })}`}
+                    {currencyMode === "CRC" && `₡${(selectedProperty.price * rates.CRC).toLocaleString(lang === "es" ? "es-CR" : "en-US")}`}
+                    {currencyMode === "EUR" && `€${(selectedProperty.price * rates.EUR).toLocaleString(lang === "es" ? "es-ES" : "en-US", { maximumFractionDigits: 0 })}`}
+                    {currencyMode === "JPY" && `¥${(selectedProperty.price * rates.JPY).toLocaleString(lang === "es" ? "ja-JP" : "en-US", { maximumFractionDigits: 0 })}`}
                     {currencyMode === "USD" && `$${selectedProperty.price.toLocaleString("en-US")}`}
                   </span>
                   {currencyMode !== "USD" && (

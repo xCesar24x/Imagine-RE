@@ -14,6 +14,7 @@ interface PropertyCardProps {
   onToggleWishlist?: (property: Property) => void;
   lang?: "en" | "es";
   currencyMode?: "USD" | "CRC" | "EUR" | "JPY";
+  rates?: { CRC: number; EUR: number; JPY: number; USD: number };
 }
 
 const statusStyles = {
@@ -44,25 +45,27 @@ export default function PropertyCard({
   wishlisted = false, 
   onToggleWishlist,
   lang = "en",
-  currencyMode = "USD"
+  currencyMode = "USD",
+  rates
 }: PropertyCardProps) {
   const t = TRANSLATIONS[lang].card;
 
   const formattedPrice = useMemo(() => {
+    const rate = rates || { CRC: 520, EUR: 0.92, JPY: 158, USD: 1 };
     if (currencyMode === "CRC") {
-      const crcValue = property.price * 520;
+      const crcValue = property.price * rate.CRC;
       return `₡${crcValue.toLocaleString(lang === "es" ? "es-CR" : "en-US")}`;
     }
     if (currencyMode === "EUR") {
-      const eurValue = property.price * 0.92;
+      const eurValue = property.price * rate.EUR;
       return `€${eurValue.toLocaleString(lang === "es" ? "es-ES" : "en-US", { maximumFractionDigits: 0 })}`;
     }
     if (currencyMode === "JPY") {
-      const jpyValue = property.price * 158;
+      const jpyValue = property.price * rate.JPY;
       return `¥${jpyValue.toLocaleString(lang === "es" ? "ja-JP" : "en-US", { maximumFractionDigits: 0 })}`;
     }
     return `$${property.price.toLocaleString("en-US")}`;
-  }, [property.price, currencyMode, lang]);
+  }, [property.price, currencyMode, lang, rates]);
 
   return (
     <motion.div
