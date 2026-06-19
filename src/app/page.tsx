@@ -442,20 +442,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                <button 
-                  onClick={() => document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" })}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-sunset px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-jungle shadow-[0_15px_40px_rgba(212,175,55,0.18)] transition hover:bg-white cursor-pointer font-bold"
-                >
-                  {t.hero.viewCollection}
-                </button>
-                <button 
-                  onClick={() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" })}
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:border-sunset hover:text-sunset cursor-pointer font-bold"
-                >
-                  {t.hero.exploreServices}
-                </button>
-              </div>
+
             </motion.div>
           </section>
 
