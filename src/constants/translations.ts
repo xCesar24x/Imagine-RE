@@ -28,20 +28,20 @@ export const TRANSLATIONS = {
     },
     services: {
       subtitle: "Signature Services",
-      title: "Imagine Services",
-      description: "A discreet advisory approach with bespoke property sourcing, dedicated acquisition strategy, and luxury lifestyle management.",
+      title: "Imagine RE Services",
+      description: "We help you find your dream home, manage your properties, and guide you through the local lifestyle in Costa Rica.",
       cards: [
         {
-          title: "Tailored Portfolio Sourcing",
-          description: "Exclusive access to off-market residences, private estates and bespoke luxury developments across Costa Rica.",
+          title: "Find Your Dream Home",
+          description: "We find the perfect luxury property for you, even those that are not listed on the market.",
         },
         {
-          title: "Concierge Ownership Transition",
-          description: "White-glove property management, residency facilitation, and lifestyle onboarding for affluent clients.",
+          title: "We Take Care of Everything",
+          description: "We manage and maintain your property, help you with legal papers, and make your move stress-free.",
         },
         {
-          title: "Lifestyle Matchmaking",
-          description: "We align every property with your preferred wellness, entertainment, and investment narratives.",
+          title: "Your Ideal Lifestyle",
+          description: "We find the home that matches your hobbies: beach life, surfing, nature, or close to the city.",
         },
       ],
     },
@@ -206,20 +206,20 @@ export const TRANSLATIONS = {
     },
     services: {
       subtitle: "Servicios Exclusivos",
-      title: "Servicios de Imagine",
-      description: "Un enfoque de asesoría discreta con búsqueda de propiedades a medida, estrategia de adquisición dedicada y gestión de estilo de vida de lujo.",
+      title: "Servicios Imagine RE",
+      description: "Te ayudamos a encontrar la casa de tus sueños, administrar tus propiedades y guiarte en tu estilo de vida en Costa Rica.",
       cards: [
         {
-          title: "Búsqueda de Portafolio Personalizada",
-          description: "Acceso exclusivo a residencias fuera del mercado, fincas privadas y desarrollos de lujo a medida en todo Costa Rica.",
+          title: "Búsqueda de Casas a tu Medida",
+          description: "Buscamos y encontramos la propiedad perfecta para ti, incluso aquellas que no están a la venta públicamente.",
         },
         {
-          title: "Transición de Propiedad Concierge",
-          description: "Administración de propiedades premium, facilitación de residencia y familiarización con el estilo de vida para clientes de alto nivel.",
+          title: "Nos Encargamos de Todo",
+          description: "Mantenemos y administramos tu propiedad, te ayudamos con el papeleo legal y hacemos que mudarte sea sin preocupaciones.",
         },
         {
-          title: "Vinculación de Estilo de Vida",
-          description: "Alineamos cada propiedad con sus narrativas preferidas de bienestar, entretenimiento e inversión.",
+          title: "Tu Estilo de Vida Ideal",
+          description: "Encontramos la casa que se adapte a lo que más disfrutas: playa, surf, naturaleza o cercanía a la ciudad.",
         },
       ],
     },

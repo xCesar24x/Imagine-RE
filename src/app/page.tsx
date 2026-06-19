@@ -262,31 +262,36 @@ export default function Home() {
           </div>
           <div>
             <div className="font-serif text-2xl font-semibold tracking-[0.18em] uppercase">Imagine</div>
-            <div className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-gray-300/80">Property Management & Real Estate</div>
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-gray-300/80">Real Estate & Property Management</div>
           </div>
         </div>
 
         {/* Desktop Routing Links */}
-        <div className="hidden xl:flex items-center gap-8 text-xs font-sans uppercase tracking-[0.32em] text-white/80">
+        <div className="hidden xl:flex items-center gap-6 text-xs font-sans uppercase tracking-[0.25em] text-white/80">
           <button 
-            onClick={() => setActiveTab("catalog")}
-            className={`transition cursor-pointer ${activeTab === "catalog" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+            onClick={() => { setActiveTab("catalog"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className={`transition px-4 py-2 border rounded-md cursor-pointer ${activeTab === "catalog" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
           >
             {t.nav.collection}
           </button>
           <button 
-            onClick={() => setActiveTab("management")}
-            className={`transition cursor-pointer ${activeTab === "management" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+            onClick={() => { setActiveTab("management"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className={`transition px-4 py-2 border rounded-md cursor-pointer ${activeTab === "management" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
           >
             {t.nav.management}
           </button>
           <button 
-            onClick={() => setActiveTab("tours")}
-            className={`transition cursor-pointer ${activeTab === "tours" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+            onClick={() => { setActiveTab("tours"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className={`transition px-4 py-2 border rounded-md cursor-pointer ${activeTab === "tours" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
           >
             {t.nav.tours}
           </button>
-          <a href="#contact" className="transition hover:text-sunset">{t.nav.contact}</a>
+          <button 
+            onClick={() => { document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }}
+            className="transition px-4 py-2 border border-transparent rounded-md cursor-pointer hover:text-sunset"
+          >
+            {t.nav.contact}
+          </button>
         </div>
 
         {/* Controls: Language and Hamburger */}
@@ -327,30 +332,29 @@ export default function Home() {
               className="fixed inset-x-0 top-[88px] z-30 xl:hidden p-6 bg-[#041c16] border-b border-white/10 flex flex-col gap-4 text-center font-sans uppercase tracking-[0.25em] text-xs shadow-2xl animate-none"
             >
               <button 
-                onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); }}
-                className={`py-3 transition border-b border-white/5 cursor-pointer text-pearl/80 ${activeTab === "catalog" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+                onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className={`py-3 transition border rounded-md cursor-pointer text-pearl/80 ${activeTab === "catalog" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
               >
                 {t.nav.collection}
               </button>
               <button 
-                onClick={() => { setActiveTab("management"); setIsMobileMenuOpen(false); }}
-                className={`py-3 transition border-b border-white/5 cursor-pointer text-pearl/80 ${activeTab === "management" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+                onClick={() => { setActiveTab("management"); setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className={`py-3 transition border rounded-md cursor-pointer text-pearl/80 ${activeTab === "management" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
               >
                 {t.nav.management}
               </button>
               <button 
-                onClick={() => { setActiveTab("tours"); setIsMobileMenuOpen(false); }}
-                className={`py-3 transition border-b border-white/5 cursor-pointer text-pearl/80 ${activeTab === "tours" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+                onClick={() => { setActiveTab("tours"); setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className={`py-3 transition border rounded-md cursor-pointer text-pearl/80 ${activeTab === "tours" ? "border-sunset text-sunset font-bold shadow-[0_0_15px_rgba(229,199,119,0.15)]" : "border-transparent hover:text-sunset"}`}
               >
                 {t.nav.tours}
               </button>
-              <a 
-                href="#contact" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 hover:text-sunset transition text-pearl/80"
+              <button 
+                onClick={() => { setIsMobileMenuOpen(false); setTimeout(() => { document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }, 150); }}
+                className="py-3 transition border border-transparent rounded-md cursor-pointer text-pearl/80 hover:text-sunset"
               >
                 {t.nav.contact}
-              </a>
+              </button>
             </motion.div>
           </>
         )}
@@ -427,11 +431,14 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                <a href="#collection" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-sunset px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-jungle shadow-[0_15px_40px_rgba(212,175,55,0.18)] transition hover:bg-white cursor-pointer">
-                  {t.hero.viewCollection}
-                </a>
                 <button 
-                  onClick={() => setActiveTab("management")}
+                  onClick={() => document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" })}
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-sunset px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-jungle shadow-[0_15px_40px_rgba(212,175,55,0.18)] transition hover:bg-white cursor-pointer font-bold"
+                >
+                  {t.hero.viewCollection}
+                </button>
+                <button 
+                  onClick={() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" })}
                   className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:border-sunset hover:text-sunset cursor-pointer font-bold"
                 >
                   {t.hero.exploreServices}
