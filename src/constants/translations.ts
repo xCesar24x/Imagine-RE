@@ -47,7 +47,7 @@ export const TRANSLATIONS = {
     },
     catalog: {
       subtitle: "Portfolio",
-      title: "The Reserve",
+      title: "Real Estate",
       description: "A meticulously curated selection of 15 properties across Papagayo, Santa Teresa, Manuel Antonio, Nosara, and Escalante.",
       filters: {
         priceTitle: "Investment Profile",
@@ -225,7 +225,7 @@ export const TRANSLATIONS = {
     },
     catalog: {
       subtitle: "Portafolio",
-      title: "La Reserva",
+      title: "Real Estate",
       description: "Una selección minuciosamente curada de 15 propiedades en Papagayo, Santa Teresa, Manuel Antonio, Nosara y Escalante.",
       filters: {
         priceTitle: "Perfil de Inversión",
