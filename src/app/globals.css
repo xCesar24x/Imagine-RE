@@ -44,7 +44,8 @@ img {
 
 /* Custom scrollbar for a luxury feel */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -54,8 +55,26 @@ img {
 ::-webkit-scrollbar-thumb {
   background: rgba(212, 175, 55, 0.35);
   border-radius: 999px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.65);
 }
+
+/* Custom styles for select menus */
+.custom-select-container {
+  position: relative;
+}
+
+.custom-select-container select {
+  padding-right: 2.5rem;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(4, 28, 22, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
