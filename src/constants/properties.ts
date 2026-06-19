@@ -9,6 +9,10 @@ export interface Property {
   description: string;
   image: string;
   panorama: string;
+  type: "Casa" | "Cabaña" | "Quinta" | "Lote";
+  lifestyle: "Naturaleza" | "Ciudad";
+  status: "Disponible" | "Opcionada" | "Vendida" | "Destacada";
+  approxLocation: string;
 }
 
 export const PROPERTIES: Property[] = [
@@ -23,6 +27,10 @@ export const PROPERTIES: Property[] = [
     description: "A breathtaking architectural masterpiece designed to mimic the wings of a Morpho butterfly. Features seamless indoor-outdoor living with panoramic ocean views.",
     image: "/images/jungle.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Destacada",
+    approxLocation: "Bahía Papagayo, Guanacaste",
   },
   {
     id: "obsidian-canopy",
@@ -35,6 +43,10 @@ export const PROPERTIES: Property[] = [
     description: "Striking black concrete structures hidden within the dense jungle. Designed for ultimate privacy while remaining steps away from world-class surf.",
     image: "/images/ocean.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Playa Carmen, Santa Teresa",
   },
   {
     id: "quepos-zenith",
@@ -47,6 +59,10 @@ export const PROPERTIES: Property[] = [
     description: "Perched on the highest cliff in Manuel Antonio, Zenith offers unparalleled views of the Pacific Ocean and a private path to a secluded beach.",
     image: "/images/minimalist.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Opcionada",
+    approxLocation: "Área de Reserva, Manuel Antonio",
   },
   {
     id: "guanacaste-gold",
@@ -59,6 +75,10 @@ export const PROPERTIES: Property[] = [
     description: "The crown jewel of Papagayo. This estate features its own private white-sand beach, a mega-yacht mooring, and a multi-level cascading infinity pool.",
     image: "/images/jungle.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Península Papagayo, Guanacaste",
   },
   {
     id: "cloud-forest",
@@ -71,6 +91,10 @@ export const PROPERTIES: Property[] = [
     description: "Suspended in the misty canopy, this glass-walled sanctuary blurs the line between the luxurious interior and the ancient, vibrant cloud forest outside.",
     image: "/images/ocean.png",
     panorama: "/panoramas/default.jpg",
+    type: "Cabaña",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Reserva Nubosa, Monteverde",
   },
   {
     id: "escalante-apex",
@@ -83,6 +107,10 @@ export const PROPERTIES: Property[] = [
     description: "The absolute height of urban sophistication. A multi-level penthouse in the heart of San José's culinary district with a private rooftop pool.",
     image: "/images/minimalist.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Ciudad",
+    status: "Disponible",
+    approxLocation: "Barrio Escalante, San José",
   },
   {
     id: "nosara-flow",
@@ -95,6 +123,10 @@ export const PROPERTIES: Property[] = [
     description: "Built for harmony and health. Features a dedicated yoga pavilion, salt-water lap pool, and organic gardens, all within walking distance to Guiones.",
     image: "/images/jungle.png",
     panorama: "/panoramas/default.jpg",
+    type: "Quinta",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Playa Guiones, Nosara",
   },
   {
     id: "casa-jade",
@@ -107,6 +139,10 @@ export const PROPERTIES: Property[] = [
     description: "A masterclass in tropical modernism. Local teak, poured concrete, and lush indoor gardens create a tranquil oasis hidden from the world.",
     image: "/images/ocean.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Vendida",
+    approxLocation: "Malpaís, Santa Teresa",
   },
   {
     id: "papagayo-point",
@@ -119,6 +155,10 @@ export const PROPERTIES: Property[] = [
     description: "Situated on the very tip of a private peninsula. Every room offers a different perspective of the Pacific Ocean and the rugged Guanacaste coastline.",
     image: "/images/minimalist.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Extremo Península, Papagayo",
   },
   {
     id: "manuel-antonio-reserve",
@@ -131,6 +171,10 @@ export const PROPERTIES: Property[] = [
     description: "Bordering the national park, this estate is frequently visited by monkeys and sloths. Includes a private canopy bridge connecting the main house to the guest suites.",
     image: "/images/jungle.png",
     panorama: "/panoramas/default.jpg",
+    type: "Quinta",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Linderos de Parque, Manuel Antonio",
   },
   {
     id: "escalante-vault",
@@ -143,6 +187,10 @@ export const PROPERTIES: Property[] = [
     description: "A converted historical building turned into a sprawling, industrial-chic loft. Designed specifically for displaying large-scale contemporary art.",
     image: "/images/ocean.png",
     panorama: "/panoramas/default.jpg",
+    type: "Lote",
+    lifestyle: "Ciudad",
+    status: "Disponible",
+    approxLocation: "Zona Gastronómica, Escalante",
   },
   {
     id: "nosara-horizon",
@@ -155,6 +203,10 @@ export const PROPERTIES: Property[] = [
     description: "Characterized by its massive cantilevered roof that seems to float against the horizon. The ultimate vantage point for Nosara's legendary sunsets.",
     image: "/images/minimalist.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Opcionada",
+    approxLocation: "Peladas, Nosara",
   },
   {
     id: "santa-teresa-cliff",
@@ -167,6 +219,10 @@ export const PROPERTIES: Property[] = [
     description: "Accessed via a private funicular, this multi-level compound cascades down a sheer cliff face, offering unparalleled privacy and drama.",
     image: "/images/jungle.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Altos de Santa Teresa",
   },
   {
     id: "papagayo-breeze",
@@ -179,6 +235,10 @@ export const PROPERTIES: Property[] = [
     description: "A sweeping, elegant estate designed to capture the cross-breezes. Overlooks the prestigious marina and includes access to world-class resort amenities.",
     image: "/images/ocean.png",
     panorama: "/panoramas/default.jpg",
+    type: "Casa",
+    lifestyle: "Naturaleza",
+    status: "Vendida",
+    approxLocation: "Marina Papagayo, Guanacaste",
   },
   {
     id: "manuel-antonio-hideaway",
@@ -191,5 +251,10 @@ export const PROPERTIES: Property[] = [
     description: "An intimate, beautifully crafted wooden home nestled next to a pristine rainforest creek. The sound of running water provides a constant, soothing soundtrack.",
     image: "/images/minimalist.png",
     panorama: "/panoramas/default.jpg",
+    type: "Cabaña",
+    lifestyle: "Naturaleza",
+    status: "Disponible",
+    approxLocation: "Valle Verde, Manuel Antonio",
   }
 ];
+

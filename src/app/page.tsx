@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PROPERTIES, Property } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
+import AirbnbCalculator from "@/components/AirbnbCalculator";
+import ToursCalendar from "@/components/ToursCalendar";
 import { 
   Heart, 
   Send, 
@@ -20,7 +22,11 @@ import {
   Menu,
   ChevronDown,
   Trash2,
-  Globe
+  Globe,
+  MapPin,
+  Play,
+  ArrowRight,
+  ArrowLeft
 } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
 import { getAssetPath } from "@/utils/paths";
@@ -29,19 +35,34 @@ export default function Home() {
   const [lang, setLang] = useState<"en" | "es">("en");
   const t = TRANSLATIONS[lang];
 
+  // Routing State
+  const [activeTab, setActiveTab] = useState<"catalog" | "management" | "tours">("catalog");
+
+  // Property Details State
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [modalTab, setModalTab] = useState<"360" | "map" | "video">("360");
+
+  // Wishlist State
   const [wishlistedIds, setWishlistedIds] = useState<string[]>([]);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Currency Converter State
+  const [currencyMode, setCurrencyMode] = useState<"USD" | "CRC">("USD");
+
+  // Step-by-Step Form State
+  const [currentStep, setCurrentStep] = useState(1);
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
   const [qualification, setQualification] = useState({
     budget: "",
-    origin: "",
-    horizon: "",
     financing: "",
+    horizon: "",
+    motivation: "",
   });
   const [formError, setFormError] = useState("");
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [leadScore, setLeadScore] = useState<"READY" | "POTENTIAL" | "CURIOUS" | null>(null);
 
   const wishlistCount = wishlistedIds.length;
 
@@ -63,28 +84,83 @@ export default function Home() {
     setQualification(prev => ({ ...prev, [field]: value }));
   };
 
+  // Lead Scoring Logic
+  const calculateLeadScore = () => {
+    const horizon = qualification.horizon.toLowerCase();
+    const financing = qualification.financing.toLowerCase();
+
+    // Green conditions: Immediate purchase + ready funds (Cash or Pre-approved) + 3+ wishlist items
+    const isImmediate = horizon.includes("immediate") || horizon.includes("inmediato") || horizon.includes("1-3") || horizon.includes("3");
+    const isFundsReady = financing.includes("cash") || financing.includes("efectivo") || financing.includes("pre-approved") || financing.includes("pre-aprobado");
+    
+    if (isImmediate && isFundsReady && wishlistCount >= 3) {
+      return "READY"; // Green
+    }
+    
+    // Red conditions: horizon more than 6 months or undefined
+    const isLongTerm = horizon.includes("6+") || horizon.includes("6") || horizon.includes("later") || horizon.includes("tarde");
+    if (isLongTerm) {
+      return "CURIOUS"; // Red
+    }
+
+    return "POTENTIAL"; // Yellow
+  };
+
   const handleQualificationSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (wishlistCount === 0) {
       setFormError(t.wishlist.validationEmptyWishlist);
       return;
     }
-    if (!qualification.budget || !qualification.origin || !qualification.horizon || !qualification.financing) {
+    if (!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation) {
       setFormError(t.wishlist.validationMissingFields);
       return;
     }
     setFormError("");
-    setFormSubmitted(true);
+    const score = calculateLeadScore();
+    setLeadScore(score);
+
+    // Reset flow after showing result
     setTimeout(() => {
-      setFormSubmitted(false);
-      setQualification({ budget: "", origin: "", horizon: "", financing: "" });
-    }, 4000);
+      setLeadScore(null);
+      setWishlistedIds([]);
+      setIsWishlistOpen(false);
+      setCurrentStep(1);
+      setClientName("");
+      setClientEmail("");
+      setClientPhone("");
+      setQualification({ budget: "", financing: "", horizon: "", motivation: "" });
+    }, 6000);
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && (!clientName || !clientEmail || !clientPhone)) {
+      setFormError(lang === "es" ? "Por favor complete sus datos de contacto." : "Please fill out your contact details.");
+      return;
+    }
+    if (currentStep === 2 && (!qualification.budget || !qualification.financing)) {
+      setFormError(lang === "es" ? "Por favor complete su información financiera." : "Please fill out your financial information.");
+      return;
+    }
+    if (currentStep === 3 && !qualification.horizon) {
+      setFormError(lang === "es" ? "Por favor indique su horizonte de compra." : "Please indicate your purchase horizon.");
+      return;
+    }
+    setFormError("");
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const handleBackStep = () => {
+    setFormError("");
+    setCurrentStep(prev => prev - 1);
   };
 
   // Filtering state
   const [priceFilter, setPriceFilter] = useState("all");
   const [sizeFilter, setSizeFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [lifestyleFilter, setLifestyleFilter] = useState("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const locations = useMemo(() => {
@@ -143,16 +219,26 @@ export default function Home() {
   // Filter properties
   const filteredProperties = useMemo(() => {
     return PROPERTIES.filter(p => {
+      // Price Filter
       if (priceFilter === "under-5" && p.price >= 5000000) return false;
       if (priceFilter === "5-10" && (p.price < 5000000 || p.price > 10000000)) return false;
       if (priceFilter === "over-10" && p.price <= 10000000) return false;
 
+      // Size Filter
       if (sizeFilter === "under-5k" && p.sqft >= 5000) return false;
       if (sizeFilter === "5k-10k" && (p.sqft < 5000 || p.sqft > 10000)) return false;
       if (sizeFilter === "over-10k" && p.sqft <= 10000) return false;
 
+      // Location Filter
       if (locationFilter !== "all" && p.location !== locationFilter) return false;
 
+      // Type Filter
+      if (typeFilter !== "all" && p.type !== typeFilter) return false;
+
+      // Lifestyle Filter
+      if (lifestyleFilter !== "all" && p.lifestyle !== lifestyleFilter) return false;
+
+      // Vibe Tags Filter
       if (selectedTags.length > 0) {
         const hasTag = selectedTags.some(tag => p.vibeTags.includes(tag));
         if (!hasTag) return false;
@@ -160,7 +246,7 @@ export default function Home() {
 
       return true;
     });
-  }, [priceFilter, sizeFilter, locationFilter, selectedTags]);
+  }, [priceFilter, sizeFilter, locationFilter, typeFilter, lifestyleFilter, selectedTags]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
@@ -169,8 +255,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#020f0a] text-pearl selection:bg-sunset selection:text-jungle relative">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-40 px-6 md:px-12 py-5 flex items-center justify-between bg-black/45 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
-        <div className="flex items-center gap-4">
+      <nav className="fixed top-0 w-full z-45 px-6 md:px-12 py-5 flex items-center justify-between bg-black/45 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
+        <div className="flex items-center gap-4 cursor-pointer" onClick={() => setActiveTab("catalog")}>
           <div className="relative w-12 h-12 overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-sm">
             <Image src={getAssetPath("/images/imagine-logo.jpg")} alt="Imagine logo" fill className="object-contain" />
           </div>
@@ -180,9 +266,26 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="hidden xl:flex items-center gap-10 text-xs font-sans uppercase tracking-[0.32em] text-white/80">
-          <a href="#collection" className="transition hover:text-sunset">{t.nav.collection}</a>
-          <a href="#services" className="transition hover:text-sunset">{t.nav.services}</a>
+        {/* Desktop Routing Links */}
+        <div className="hidden xl:flex items-center gap-8 text-xs font-sans uppercase tracking-[0.32em] text-white/80">
+          <button 
+            onClick={() => setActiveTab("catalog")}
+            className={`transition cursor-pointer ${activeTab === "catalog" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+          >
+            {t.nav.collection}
+          </button>
+          <button 
+            onClick={() => setActiveTab("management")}
+            className={`transition cursor-pointer ${activeTab === "management" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+          >
+            {t.nav.management}
+          </button>
+          <button 
+            onClick={() => setActiveTab("tours")}
+            className={`transition cursor-pointer ${activeTab === "tours" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+          >
+            {t.nav.tours}
+          </button>
           <a href="#contact" className="transition hover:text-sunset">{t.nav.contact}</a>
         </div>
 
@@ -221,26 +324,30 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-0 top-[88px] z-30 xl:hidden p-6 bg-[#041c16] border-b border-white/10 flex flex-col gap-4 text-center font-sans uppercase tracking-[0.25em] text-xs shadow-2xl"
+              className="fixed inset-x-0 top-[88px] z-30 xl:hidden p-6 bg-[#041c16] border-b border-white/10 flex flex-col gap-4 text-center font-sans uppercase tracking-[0.25em] text-xs shadow-2xl animate-none"
             >
-              <a 
-                href="#collection" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 hover:text-sunset transition border-b border-white/5"
+              <button 
+                onClick={() => { setActiveTab("catalog"); setIsMobileMenuOpen(false); }}
+                className={`py-3 transition border-b border-white/5 cursor-pointer text-pearl/80 ${activeTab === "catalog" ? "text-sunset font-bold" : "hover:text-sunset"}`}
               >
                 {t.nav.collection}
-              </a>
-              <a 
-                href="#services" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 hover:text-sunset transition border-b border-white/5"
+              </button>
+              <button 
+                onClick={() => { setActiveTab("management"); setIsMobileMenuOpen(false); }}
+                className={`py-3 transition border-b border-white/5 cursor-pointer text-pearl/80 ${activeTab === "management" ? "text-sunset font-bold" : "hover:text-sunset"}`}
               >
-                {t.nav.services}
-              </a>
+                {t.nav.management}
+              </button>
+              <button 
+                onClick={() => { setActiveTab("tours"); setIsMobileMenuOpen(false); }}
+                className={`py-3 transition border-b border-white/5 cursor-pointer text-pearl/80 ${activeTab === "tours" ? "text-sunset font-bold" : "hover:text-sunset"}`}
+              >
+                {t.nav.tours}
+              </button>
               <a 
                 href="#contact" 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="py-3 hover:text-sunset transition"
+                className="py-3 hover:text-sunset transition text-pearl/80"
               >
                 {t.nav.contact}
               </a>
@@ -249,235 +356,309 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Hero Section */}
-      <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden py-24 mt-[88px]">
-        <div className="absolute inset-0">
-          <Image
-            src={getAssetPath("/images/hero-cover.jpg")}
-            alt="Imagine luxury property cover"
-            fill
-            className="object-cover opacity-95"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#020f0a] via-[#02140f]/35 to-transparent" />
-          <div className="absolute left-1/2 top-20 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#d4af37]/5 blur-3xl" />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 42 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="relative z-10 grid gap-8 px-6 py-10 md:px-12 md:py-14 max-w-5xl mx-4 rounded-[2.5rem] border border-white/10 bg-black/45 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl"
-        >
-          <div className="mx-auto w-fit rounded-full border border-white/10 bg-white/5 p-1 shadow-inner shadow-black/30">
-            <div className="relative h-28 w-28 overflow-hidden rounded-full border border-sunset/40">
-              <Image
-                src={getAssetPath("/images/bryan-headshot.jpg")}
-                alt="Bryan Viquez"
-                fill
-                className="object-cover grayscale hover:grayscale-0 transition duration-500"
-                priority
-              />
+      {/* Main Views Routing */}
+      {activeTab === "catalog" && (
+        <>
+          {/* Hero Section with Looping Drone Video Background */}
+          <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden py-24 mt-[88px]">
+            <div className="absolute inset-0">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover opacity-60"
+                poster={getAssetPath("/images/hero-cover.jpg")}
+              >
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-mysterious-misty-forest-from-above-4993-large.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#020f0a] via-[#02140f]/50 to-transparent" />
+              <div className="absolute left-1/2 top-20 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#d4af37]/5 blur-3xl" />
             </div>
-          </div>
 
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center gap-3 rounded-full border border-sunset/20 bg-[#e5c777]/10 px-5 py-2 text-[10px] md:text-xs uppercase tracking-[0.36em] text-sunset/90 shadow-sm shadow-sunset/10">
-              {t.hero.badge}
-            </div>
-            <h1 className="mt-8 text-4xl md:text-6xl xl:text-7xl font-serif uppercase tracking-[-0.03em] leading-tight text-pearl">
-              {t.hero.title1} <span className="text-sunset">{t.hero.title2}</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-3xl text-sm md:text-base leading-relaxed text-gray-300/90">
-              {t.hero.description}
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] items-center">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
-                <div className="text-[10px] uppercase tracking-[0.32em] text-gray-400">{t.hero.stats.investment}</div>
-                <div className="mt-3 text-4xl font-serif text-pearl">15+</div>
-                <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.investmentDesc}</div>
+            <motion.div
+              initial={{ opacity: 0, y: 42 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="relative z-10 grid gap-8 px-6 py-10 md:px-12 md:py-14 max-w-5xl mx-4 rounded-[2.5rem] border border-white/10 bg-black/45 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl"
+            >
+              <div className="mx-auto w-fit rounded-full border border-white/10 bg-white/5 p-1 shadow-inner shadow-black/30">
+                <div className="relative h-28 w-28 overflow-hidden rounded-full border border-sunset/40">
+                  <Image
+                    src={getAssetPath("/images/bryan-headshot.jpg")}
+                    alt="Bryan Viquez"
+                    fill
+                    className="object-cover grayscale hover:grayscale-0 transition duration-500"
+                    priority
+                  />
+                </div>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
-                <div className="text-[10px] uppercase tracking-[0.32em] text-gray-400">{t.hero.stats.concierge}</div>
-                <div className="mt-3 text-4xl font-serif text-pearl">24/7</div>
-                <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.conciergeDesc}</div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center gap-3 rounded-full border border-sunset/20 bg-[#e5c777]/10 px-5 py-2 text-[10px] md:text-xs uppercase tracking-[0.36em] text-sunset/90 shadow-sm shadow-sunset/10">
+                  {t.hero.badge}
+                </div>
+                <h1 className="mt-8 text-4xl md:text-6xl xl:text-7xl font-serif uppercase tracking-[-0.03em] leading-tight text-pearl">
+                  {t.hero.title1} <span className="text-sunset">{t.hero.title2}</span>
+                </h1>
+                <p className="mx-auto mt-6 max-w-3xl text-sm md:text-base leading-relaxed text-gray-300/90">
+                  {t.hero.description}
+                </p>
               </div>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20 h-full flex flex-col justify-center">
-              <div className="text-[10px] uppercase tracking-[0.32em] text-gray-400">{t.hero.stats.signature}</div>
-              <div className="mt-3 text-3xl font-serif text-pearl">Bespoke</div>
-              <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.signatureDesc}</div>
-            </div>
-          </div>
 
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <a href="#collection" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-sunset px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-jungle shadow-[0_15px_40px_rgba(212,175,55,0.18)] transition hover:bg-white cursor-pointer">
-              {t.hero.viewCollection}
-            </a>
-            <a href="#services" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:border-sunset hover:text-sunset cursor-pointer">
-              {t.hero.exploreServices}
-            </a>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
-        <div className="mb-16 flex flex-col items-center text-center gap-4">
-          <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.services.subtitle}</div>
-          <h2 className="text-3xl md:text-5xl font-serif">{t.services.title}</h2>
-          <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
-            {t.services.description}
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {SERVICE_CARDS.map(({ title, description, icon: Icon }) => (
-            <div key={title} className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl hover:border-sunset/20 transition-all duration-300">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-sunset/10 text-sunset shadow-sm shadow-sunset/10 mb-6">
-                <Icon size={24} />
+              <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] items-center">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
+                    <div className="text-[10px] uppercase tracking-[0.32em] text-gray-400">{t.hero.stats.investment}</div>
+                    <div className="mt-3 text-4xl font-serif text-pearl">15+</div>
+                    <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.investmentDesc}</div>
+                  </div>
+                  <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20">
+                    <div className="text-[10px] uppercase tracking-[0.32em] text-gray-400">{t.hero.stats.concierge}</div>
+                    <div className="mt-3 text-4xl font-serif text-pearl">24/7</div>
+                    <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.conciergeDesc}</div>
+                  </div>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/20 h-full flex flex-col justify-center">
+                  <div className="text-[10px] uppercase tracking-[0.32em] text-gray-400">{t.hero.stats.signature}</div>
+                  <div className="mt-3 text-3xl font-serif text-pearl">Bespoke</div>
+                  <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.signatureDesc}</div>
+                </div>
               </div>
-              <h3 className="text-xl md:text-2xl font-serif mb-4">{title}</h3>
-              <p className="text-xs md:text-sm leading-relaxed text-gray-300/90">{description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* The Property Engine (Catalog) */}
-      <section id="collection" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
-        >
-          <div>
-            <h2 className="text-xs font-sans text-sunset uppercase tracking-[0.3em] mb-3 font-semibold">{t.catalog.subtitle}</h2>
-            <h3 className="text-3xl md:text-5xl font-serif">{t.catalog.title}</h3>
-          </div>
-          <p className="font-sans text-gray-400 max-w-md text-xs md:text-sm leading-relaxed">
-            {t.catalog.description}
-          </p>
-        </motion.div>
-
-        {/* Filter Bar */}
-        <div className="mb-16 space-y-6">
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Price filter */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-md">
-              <div className="text-[10px] uppercase tracking-[0.34em] text-gray-400 mb-4">{t.catalog.filters.priceTitle}</div>
-              <label className="block text-[10px] font-sans text-gray-400 uppercase tracking-widest mb-2">{t.catalog.filters.priceLabel}</label>
-              <div className="relative">
-                <select 
-                  value={priceFilter}
-                  onChange={(e) => setPriceFilter(e.target.value)}
-                  className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-10"
+              <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                <a href="#collection" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-sunset px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-jungle shadow-[0_15px_40px_rgba(212,175,55,0.18)] transition hover:bg-white cursor-pointer">
+                  {t.hero.viewCollection}
+                </a>
+                <button 
+                  onClick={() => setActiveTab("management")}
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-4 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:border-sunset hover:text-sunset cursor-pointer font-bold"
                 >
-                  <option value="all">{t.catalog.filters.all}</option>
-                  <option value="under-5">{t.catalog.filters.under5}</option>
-                  <option value="5-10">{t.catalog.filters.between5and10}</option>
-                  <option value="over-10">{t.catalog.filters.over10}</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
-              </div>
-            </div>
-
-            {/* Size filter */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-md">
-              <div className="text-[10px] uppercase tracking-[0.34em] text-gray-400 mb-4">{t.catalog.filters.sizeTitle}</div>
-              <label className="block text-[10px] font-sans text-gray-400 uppercase tracking-widest mb-2">{t.catalog.filters.sizeLabel}</label>
-              <div className="relative">
-                <select 
-                  value={sizeFilter}
-                  onChange={(e) => setSizeFilter(e.target.value)}
-                  className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-10"
-                >
-                  <option value="all">{t.catalog.filters.all}</option>
-                  <option value="under-5k">{t.catalog.filters.under5k}</option>
-                  <option value="5k-10k">{t.catalog.filters.between5kand10k}</option>
-                  <option value="over-10k">{t.catalog.filters.over10k}</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
-              </div>
-            </div>
-
-            {/* Location filter */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-md">
-              <div className="text-[10px] uppercase tracking-[0.34em] text-gray-400 mb-4">{t.catalog.filters.locTitle}</div>
-              <label className="block text-[10px] font-sans text-gray-400 uppercase tracking-widest mb-2">{t.catalog.filters.locLabel}</label>
-              <div className="relative">
-                <select 
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                  className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-10"
-                >
-                  <option value="all">{t.catalog.filters.allLocs}</option>
-                  {locations.map(location => (
-                    <option key={location} value={location}>{location}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-sans text-gray-400 uppercase tracking-widest mb-3">{t.catalog.filters.tagsLabel}</label>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {allTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`w-full rounded-[2rem] border px-5 py-3 text-[10px] font-sans uppercase tracking-[0.28em] transition duration-300 cursor-pointer ${
-                    selectedTags.includes(tag)
-                      ? "bg-sunset border-sunset text-jungle font-semibold shadow-[0_10px_40px_rgba(212,175,55,0.18)]"
-                      : "bg-white/5 border-white/10 text-gray-300 hover:border-sunset/40 hover:text-white"
-                  }`}
-                >
-                  {tag}
+                  {t.hero.exploreServices}
                 </button>
+              </div>
+            </motion.div>
+          </section>
+
+          {/* Services Section */}
+          <section id="services" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
+            <div className="mb-16 flex flex-col items-center text-center gap-4">
+              <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.services.subtitle}</div>
+              <h2 className="text-3xl md:text-5xl font-serif">{t.services.title}</h2>
+              <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
+                {t.services.description}
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {SERVICE_CARDS.map(({ title, description, icon: Icon }) => (
+                <div key={title} className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl hover:border-sunset/20 transition-all duration-300">
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-sunset/10 text-sunset shadow-sm shadow-sunset/10 mb-6">
+                    <Icon size={24} />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-serif mb-4">{title}</h3>
+                  <p className="text-xs md:text-sm leading-relaxed text-gray-300/90">{description}</p>
+                </div>
               ))}
             </div>
-          </div>
-        </div>
+          </section>
 
-        {/* Property Grid layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence>
-            {filteredProperties.map((property) => (
-              <motion.div
-                key={property.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PropertyCard
-                  property={property}
-                  onClick={setSelectedProperty}
-                  wishlisted={wishlistedIds.includes(property.id)}
-                  onToggleWishlist={toggleWishlist}
-                  lang={lang}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          
-          {filteredProperties.length === 0 && (
-            <div className="col-span-full py-20 text-center text-gray-400 font-sans text-xs md:text-sm">
-              {t.catalog.empty}
+          {/* The Property Engine (Catalog) */}
+          <section id="collection" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
+            >
+              <div>
+                <h2 className="text-xs font-sans text-sunset uppercase tracking-[0.3em] mb-3 font-semibold">{t.catalog.subtitle}</h2>
+                <h3 className="text-3xl md:text-5xl font-serif">{t.catalog.title}</h3>
+              </div>
+              <p className="font-sans text-gray-400 max-w-md text-xs md:text-sm leading-relaxed">
+                {t.catalog.description}
+              </p>
+            </motion.div>
+
+            {/* Advanced Filters */}
+            <div className="mb-16 space-y-6">
+              <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
+                {/* Price range */}
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.priceTitle}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{t.catalog.filters.priceLabel}</label>
+                  <div className="relative">
+                    <select 
+                      value={priceFilter}
+                      onChange={(e) => setPriceFilter(e.target.value)}
+                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                    >
+                      <option value="all">{t.catalog.filters.all}</option>
+                      <option value="under-5">{t.catalog.filters.under5}</option>
+                      <option value="5-10">{t.catalog.filters.between5and10}</option>
+                      <option value="over-10">{t.catalog.filters.over10}</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                  </div>
+                </div>
+
+                {/* Property Type */}
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.typeLabel}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Filtrar por tipo" : "Filter by type"}</label>
+                  <div className="relative">
+                    <select 
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value)}
+                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                    >
+                      <option value="all">{t.catalog.filters.allTypes}</option>
+                      <option value="Casa">{lang === "es" ? "Casa" : "Home"}</option>
+                      <option value="Cabaña">{lang === "es" ? "Cabaña" : "Cabin"}</option>
+                      <option value="Quinta">{lang === "es" ? "Quinta" : "Estate"}</option>
+                      <option value="Lote">{lang === "es" ? "Lote" : "Lot"}</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                  </div>
+                </div>
+
+                {/* Region */}
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.locTitle}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{t.catalog.filters.locLabel}</label>
+                  <div className="relative">
+                    <select 
+                      value={locationFilter}
+                      onChange={(e) => setLocationFilter(e.target.value)}
+                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                    >
+                      <option value="all">{t.catalog.filters.allLocs}</option>
+                      {locations.map(location => (
+                        <option key={location} value={location}>{location}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                  </div>
+                </div>
+
+                {/* Lifestyle */}
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.lifestyleLabel}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Ambiente" : "Vibe"}</label>
+                  <div className="relative">
+                    <select 
+                      value={lifestyleFilter}
+                      onChange={(e) => setLifestyleFilter(e.target.value)}
+                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                    >
+                      <option value="all">{t.catalog.filters.allLifestyles}</option>
+                      <option value="Naturaleza">{lang === "es" ? "Naturaleza" : "Nature"}</option>
+                      <option value="Ciudad">{lang === "es" ? "Ciudad" : "City"}</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                  </div>
+                </div>
+
+                {/* Currency Mode */}
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.currencyLabel}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Ver precios" : "Show price"}</label>
+                  <div className="relative">
+                    <select 
+                      value={currencyMode}
+                      onChange={(e) => setCurrencyMode(e.target.value as "USD" | "CRC")}
+                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                    >
+                      <option value="USD">{t.catalog.filters.showUSD}</option>
+                      <option value="CRC">{t.catalog.filters.showCRC}</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-sans text-gray-400 uppercase tracking-widest mb-3">{t.catalog.filters.tagsLabel}</label>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {allTags.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`w-full rounded-[2rem] border px-5 py-3 text-[10px] font-sans uppercase tracking-[0.28em] transition duration-300 cursor-pointer ${
+                        selectedTags.includes(tag)
+                          ? "bg-sunset border-sunset text-jungle font-semibold shadow-[0_10px_40px_rgba(212,175,55,0.18)]"
+                          : "bg-white/5 border-white/10 text-gray-300 hover:border-sunset/40 hover:text-white"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </section>
 
-      {/* Floating Wishlist Button */}
+            {/* Property Grid layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <AnimatePresence>
+                {filteredProperties.map((property) => (
+                  <motion.div
+                    key={property.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <PropertyCard
+                      property={property}
+                      onClick={setSelectedProperty}
+                      wishlisted={wishlistedIds.includes(property.id)}
+                      onToggleWishlist={toggleWishlist}
+                      lang={lang}
+                      currencyMode={currencyMode}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              
+              {filteredProperties.length === 0 && (
+                <div className="col-span-full py-20 text-center text-gray-400 font-sans text-xs md:text-sm">
+                  {t.catalog.empty}
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+
+      {activeTab === "management" && (
+        <section className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto mt-[88px] min-h-[70vh]">
+          <div className="mb-16 flex flex-col items-center text-center gap-4">
+            <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.propertyManagement.subtitle}</div>
+            <h2 className="text-3xl md:text-5xl font-serif">{t.propertyManagement.title}</h2>
+            <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
+              {t.propertyManagement.description}
+            </p>
+          </div>
+          <AirbnbCalculator lang={lang} />
+        </section>
+      )}
+
+      {activeTab === "tours" && (
+        <section className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto mt-[88px] min-h-[70vh]">
+          <div className="mb-16 flex flex-col items-center text-center gap-4">
+            <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.discoveryTours.subtitle}</div>
+            <h2 className="text-3xl md:text-5xl font-serif">{t.discoveryTours.title}</h2>
+            <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
+              {t.discoveryTours.description}
+            </p>
+          </div>
+          <ToursCalendar lang={lang} />
+        </section>
+      )}
+
+      {/* Floating Wishlist Toggle Button */}
       <button
         onClick={() => setIsWishlistOpen(true)}
         className="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center gap-2.5 h-14 px-6 rounded-full bg-sunset text-jungle font-sans font-bold uppercase tracking-widest shadow-[0_15px_40px_rgba(212,175,55,0.35)] hover:scale-105 active:scale-95 transition-transform duration-300 group cursor-pointer"
@@ -489,7 +670,7 @@ export default function Home() {
         </span>
       </button>
 
-      {/* Wishlist Drawer Panel */}
+      {/* Step-by-Step Wishlist Drawer Panel */}
       <AnimatePresence>
         {isWishlistOpen && (
           <div className="fixed inset-0 z-50 flex justify-end">
@@ -522,8 +703,9 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Scrollable contents */}
+              {/* Scrollable Contents */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* List of saved properties */}
                 <div>
                   <h4 className="text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-3">
                     {t.wishlist.intelItems} ({wishlistCount})
@@ -550,7 +732,7 @@ export default function Home() {
                           <div className="flex-1 min-w-0">
                             <h5 className="font-serif text-sm text-pearl truncate leading-tight">{property.name}</h5>
                             <p className="text-[10px] text-sunset font-sans truncate mt-0.5">{property.location}</p>
-                            <p className="text-xs text-white font-sans mt-1 font-medium">${property.price.toLocaleString("en-US")}</p>
+                            <p className="text-xs text-white font-sans mt-1 font-medium">${property.price.toLocaleString("en-US")} USD</p>
                           </div>
                           <button
                             onClick={() => removeFromWishlist(property.id)}
@@ -564,70 +746,210 @@ export default function Home() {
                   )}
                 </div>
 
-                {wishlistCount > 0 && (
-                  <div className="border-t border-white/10 pt-6 space-y-6">
-                    <div>
-                      <span className="text-[9px] uppercase tracking-[0.3em] text-sunset font-semibold">{t.wishlist.funnelSubtitle}</span>
-                      <h4 className="font-serif text-lg text-pearl mt-1 leading-snug">{t.wishlist.funnelTitle}</h4>
-                      <p className="text-xs text-gray-300 leading-relaxed mt-2">{t.wishlist.funnelDesc}</p>
+                {/* Multi-step Qualification Form Funnel */}
+                {wishlistCount > 0 && !leadScore && (
+                  <div className="border-t border-white/10 pt-6">
+                    <div className="mb-6 flex justify-between items-center">
+                      <div>
+                        <span className="text-[9px] uppercase tracking-[0.3em] text-sunset font-semibold">
+                          {t.wishlist.steps.step} {currentStep} / 4
+                        </span>
+                        <h4 className="font-serif text-lg text-pearl mt-0.5">
+                          {currentStep === 1 && t.wishlist.steps.step1}
+                          {currentStep === 2 && t.wishlist.steps.step2}
+                          {currentStep === 3 && t.wishlist.steps.step3}
+                          {currentStep === 4 && t.wishlist.steps.step4}
+                        </h4>
+                      </div>
+                      {/* Step Indicator dots */}
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map(s => (
+                          <div 
+                            key={s} 
+                            className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${s === currentStep ? "bg-sunset w-3" : "bg-white/15"}`}
+                          />
+                        ))}
+                      </div>
                     </div>
 
                     <form onSubmit={handleQualificationSubmit} className="space-y-4">
-                      <div>
-                        <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.budgetLabel}</label>
-                        <input
-                          value={qualification.budget}
-                          onChange={(e) => handleQualificationChange("budget", e.target.value)}
-                          placeholder={t.wishlist.budgetPlaceholder}
-                          className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.originLabel}</label>
-                        <input
-                          value={qualification.origin}
-                          onChange={(e) => handleQualificationChange("origin", e.target.value)}
-                          placeholder={t.wishlist.originPlaceholder}
-                          className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.horizonLabel}</label>
-                        <input
-                          value={qualification.horizon}
-                          onChange={(e) => handleQualificationChange("horizon", e.target.value)}
-                          placeholder={t.wishlist.horizonPlaceholder}
-                          className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.financingLabel}</label>
-                        <input
-                          value={qualification.financing}
-                          onChange={(e) => handleQualificationChange("financing", e.target.value)}
-                          placeholder={t.wishlist.financingPlaceholder}
-                          className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
-                        />
-                      </div>
+                      {/* Step 1: Identification */}
+                      {currentStep === 1 && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.nameLabel}</label>
+                            <input
+                              value={clientName}
+                              onChange={(e) => setClientName(e.target.value)}
+                              placeholder="e.g. Alexis Carter"
+                              className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.emailLabel}</label>
+                            <input
+                              type="email"
+                              value={clientEmail}
+                              onChange={(e) => setClientEmail(e.target.value)}
+                              placeholder="alexis@gmail.com"
+                              className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.phoneLabel}</label>
+                            <input
+                              value={clientPhone}
+                              onChange={(e) => setClientPhone(e.target.value)}
+                              placeholder="+1 (555) 019-2834"
+                              className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3.5 text-xs text-pearl outline-none focus:border-sunset"
+                            />
+                          </div>
+                        </div>
+                      )}
 
-                      {formError && <div className="text-xs text-rose-300 font-sans">{formError}</div>}
-                      {formSubmitted && <div className="text-xs text-emerald-300 font-sans">{t.wishlist.successMessage}</div>}
+                      {/* Step 2: Financial Profile */}
+                      {currentStep === 2 && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.budgetLabel}</label>
+                            <div className="relative">
+                              <select 
+                                value={qualification.budget}
+                                onChange={(e) => handleQualificationChange("budget", e.target.value)}
+                                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset cursor-pointer pr-10 animate-none"
+                              >
+                                <option value="">{lang === "es" ? "-- Seleccionar rango --" : "-- Select budget --"}</option>
+                                <option value="Under 5M">{lang === "es" ? "Menos de $5,000,000" : "Under $5,000,000"}</option>
+                                <option value="5M - 10M">$5,000,000 - $10,000,000</option>
+                                <option value="Over 10M">{lang === "es" ? "Más de $10,000,000" : "Over $10,000,000"}</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.financingLabel}</label>
+                            <div className="relative">
+                              <select 
+                                value={qualification.financing}
+                                onChange={(e) => handleQualificationChange("financing", e.target.value)}
+                                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset cursor-pointer pr-10 animate-none"
+                              >
+                                <option value="">{lang === "es" ? "-- Seleccionar estatus --" : "-- Select financing --"}</option>
+                                <option value="Cash">{lang === "es" ? "Efectivo / Fondos Propios" : "Cash / Liquidity"}</option>
+                                <option value="Pre-approved">{lang === "es" ? "Préstamo Pre-aprobado" : "Pre-approved Loan"}</option>
+                                <option value="Needs financing">{lang === "es" ? "Buscando Financiamiento" : "Needs Financing"}</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
-                      <button className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sunset px-5 py-4 text-xs font-semibold uppercase tracking-[0.25em] text-jungle shadow-md hover:bg-white transition-colors duration-250 cursor-pointer mt-2">
-                        <Send size={13} /> {t.wishlist.submitButton}
-                      </button>
+                      {/* Step 3: Purchase Horizon */}
+                      {currentStep === 3 && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.horizonLabel}</label>
+                            <div className="relative">
+                              <select 
+                                value={qualification.horizon}
+                                onChange={(e) => handleQualificationChange("horizon", e.target.value)}
+                                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset cursor-pointer pr-10 animate-none"
+                              >
+                                <option value="">{lang === "es" ? "-- Seleccionar horizonte --" : "-- Select horizon --"}</option>
+                                <option value="Immediate">{lang === "es" ? "Inmediato" : "Immediate / Ready"}</option>
+                                <option value="1-3 months">{lang === "es" ? "1 a 3 meses" : "1 to 3 months"}</option>
+                                <option value="6+ months">{lang === "es" ? "Más de 6 meses" : "6+ months"}</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Step 4: Motivation */}
+                      {currentStep === 4 && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.wishlist.steps.motivationLabel}</label>
+                            <div className="relative">
+                              <select 
+                                value={qualification.motivation}
+                                onChange={(e) => handleQualificationChange("motivation", e.target.value)}
+                                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset cursor-pointer pr-10 animate-none"
+                              >
+                                <option value="">{lang === "es" ? "-- Seleccionar motivación --" : "-- Select motivation --"}</option>
+                                <option value="Relocation">{t.wishlist.steps.motivation1}</option>
+                                <option value="Vacation">{t.wishlist.steps.motivation2}</option>
+                                <option value="Airbnb">{t.wishlist.steps.motivation3}</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {formError && <div className="text-xs text-rose-300 font-sans mt-2">{formError}</div>}
+
+                      {/* Controls Buttons */}
+                      <div className="flex gap-3 pt-4 border-t border-white/5">
+                        {currentStep > 1 && (
+                          <button
+                            type="button"
+                            onClick={handleBackStep}
+                            className="flex-1 py-3.5 rounded-2xl border border-white/10 hover:border-sunset text-xs uppercase tracking-widest text-pearl font-semibold flex items-center justify-center gap-1.5 cursor-pointer font-bold"
+                          >
+                            <ArrowLeft size={13} /> {t.wishlist.steps.back}
+                          </button>
+                        )}
+                        {currentStep < 4 ? (
+                          <button
+                            type="button"
+                            onClick={handleNextStep}
+                            className="flex-1 py-3.5 rounded-2xl bg-white text-jungle hover:bg-sunset text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            {t.wishlist.steps.next} <ArrowRight size={13} />
+                          </button>
+                        ) : (
+                          <button
+                            type="submit"
+                            className="flex-1 py-3.5 rounded-2xl bg-sunset text-jungle hover:bg-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-sunset/10"
+                          >
+                            <Send size={13} /> {t.wishlist.steps.submit}
+                          </button>
+                        )}
+                      </div>
                     </form>
+                  </div>
+                )}
 
-                    <div className="rounded-2xl border border-white/5 bg-white/5 p-4 text-[11px] text-gray-300 space-y-3 shadow-inner">
-                      <div className="uppercase tracking-[0.2em] text-sunset font-semibold mb-1">{t.wishlist.intelligenceTitle}</div>
-                      <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                        <span className="text-gray-400">{t.wishlist.intelAccess}</span>
-                        <span className="text-white font-medium text-right">{t.wishlist.intelAccessVal}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-1.5">
-                        <span className="text-gray-400">{t.wishlist.intelReadiness}</span>
-                        <span className="text-white font-medium text-right">{t.wishlist.intelReadinessVal}</span>
-                      </div>
+                {/* Lead Scoring Output Overlay */}
+                {leadScore && (
+                  <div className="border-t border-white/10 pt-6 text-center space-y-6">
+                    <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner border border-white/10 bg-white/5">
+                      {leadScore === "READY" && "🟢"}
+                      {leadScore === "POTENTIAL" && "🟡"}
+                      {leadScore === "CURIOUS" && "🔴"}
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] uppercase tracking-[0.25em] text-sunset font-semibold">{t.wishlist.steps.scoreLabel}</span>
+                      <h4 className="font-serif text-xl text-pearl mt-1">
+                        {leadScore === "READY" && t.wishlist.steps.scoreReady}
+                        {leadScore === "POTENTIAL" && t.wishlist.steps.scorePotential}
+                        {leadScore === "CURIOUS" && t.wishlist.steps.scoreCurious}
+                      </h4>
+                      <p className="text-xs text-gray-300 leading-relaxed mt-3 max-w-sm mx-auto font-light">
+                        {leadScore === "READY" && t.wishlist.steps.scoreReadyDesc}
+                        {leadScore === "POTENTIAL" && t.wishlist.steps.scorePotentialDesc}
+                        {leadScore === "CURIOUS" && t.wishlist.steps.scoreCuriousDesc}
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-white/5 bg-white/5 text-xs text-gray-400 font-light max-w-sm mx-auto">
+                      {lang === "es" 
+                        ? "¡Calificación completada! Redirigiendo y procesando solicitud..."
+                        : "Qualification complete! Processing submission and logging prioritization score..."}
                     </div>
                   </div>
                 )}
@@ -637,48 +959,126 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Dynamic 360° Detail View Modal (Bilingual & Responsive) */}
+      {/* Dynamic 360° Detail View Modal (Bilingual & Responsive Upgrades) */}
       <AnimatePresence>
         {selectedProperty && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex flex-col lg:flex-row"
+            className="fixed inset-0 z-50 flex flex-col lg:flex-row bg-black/90 backdrop-blur-md"
           >
-            {/* 360 Viewer Area */}
-            <div className="relative w-full h-[55vh] lg:h-full lg:w-2/3 bg-black">
-              <Three360Viewer panoramaUrl={selectedProperty.panorama} />
+            {/* 360/Map/Video Viewer Area */}
+            <div className="relative w-full h-[50vh] lg:h-full lg:w-2/3 bg-black">
+              {modalTab === "360" && <Three360Viewer panoramaUrl={selectedProperty.panorama} />}
               
-              {/* Virtual Badge */}
-              <div className="absolute top-4 left-4 lg:top-8 lg:left-8 z-10">
-                <div className="text-white/50 text-[10px] font-sans tracking-[0.2em] uppercase mb-1">{t.modal.virtualExp}</div>
-                <div className="text-white text-xs font-sans tracking-widest uppercase flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-sunset animate-pulse" /> {t.modal.live360}
+              {modalTab === "map" && (
+                <div className="w-full h-full bg-[#02120e] flex flex-col items-center justify-center p-8 text-center text-pearl relative overflow-hidden">
+                  {/* Subtle Grid backdrop */}
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:30px_30px]" />
+                  <div className="relative z-10 space-y-4 max-w-md">
+                    <div className="mx-auto w-16 h-16 rounded-full border border-sunset/20 bg-sunset/5 flex items-center justify-center text-sunset">
+                      <MapPin size={28} className="animate-bounce" />
+                    </div>
+                    <h4 className="font-serif text-lg text-pearl">{t.modal.mapTitle}</h4>
+                    <p className="text-xs text-sunset font-sans font-semibold tracking-wider bg-sunset/10 py-1.5 px-3 rounded-full inline-block">
+                      {selectedProperty.approxLocation}
+                    </p>
+                    <p className="text-xs text-gray-400 leading-relaxed font-light">
+                      {lang === "es"
+                        ? "Por motivos de seguridad, privacidad y exclusividad de nuestros propietarios, la coordenada exacta se desbloquea tras la calificación telefónica con el concierge."
+                        : "For security, privacy, and exclusivity of our property owners, exact coordinates are unlocked following direct qualification with our concierge team."}
+                    </p>
+                  </div>
+                  {/* Circular radial glow */}
+                  <div className="absolute w-[300px] h-[300px] rounded-full bg-sunset/5 blur-3xl" />
                 </div>
+              )}
+
+              {modalTab === "video" && (
+                <div className="w-full h-full bg-black flex flex-col items-center justify-center relative">
+                  {/* Mock Premium Embedded Drone Video Player */}
+                  <div className="absolute inset-0">
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover opacity-60"
+                      poster={getAssetPath(selectedProperty.image)}
+                    >
+                      <source src="https://assets.mixkit.co/videos/preview/mixkit-forest-stream-running-under-the-trees-4987-large.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                  </div>
+                  
+                  <div className="relative z-10 text-center space-y-4 max-w-md px-6">
+                    <div className="mx-auto w-14 h-14 rounded-full border border-white/20 bg-black/60 flex items-center justify-center text-sunset shadow-lg hover:scale-105 transition cursor-pointer">
+                      <Play size={20} className="fill-sunset ml-1" />
+                    </div>
+                    <h4 className="font-serif text-base text-pearl">{t.modal.videoTitle}</h4>
+                    <span className="text-[10px] uppercase tracking-widest text-gray-400 font-sans block bg-white/5 py-1 px-3 rounded-full border border-white/10 inline-block">
+                      Cinematic 4K Drone Tour (Preview)
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Media Tab Selector buttons */}
+              <div className="absolute top-4 left-4 lg:top-8 lg:left-8 z-10 flex gap-2">
+                <button
+                  onClick={() => setModalTab("360")}
+                  className={`px-3 py-1.5 rounded-full border text-[9px] font-sans tracking-widest uppercase transition cursor-pointer ${
+                    modalTab === "360"
+                      ? "bg-sunset border-sunset text-jungle font-bold"
+                      : "bg-black/60 border-white/15 text-pearl hover:bg-black/80"
+                  }`}
+                >
+                  360° VR
+                </button>
+                <button
+                  onClick={() => setModalTab("map")}
+                  className={`px-3 py-1.5 rounded-full border text-[9px] font-sans tracking-widest uppercase transition cursor-pointer ${
+                    modalTab === "map"
+                      ? "bg-sunset border-sunset text-jungle font-bold"
+                      : "bg-black/60 border-white/15 text-pearl hover:bg-black/80"
+                  }`}
+                >
+                  {lang === "es" ? "Mapa Zona" : "Map Boundary"}
+                </button>
+                <button
+                  onClick={() => setModalTab("video")}
+                  className={`px-3 py-1.5 rounded-full border text-[9px] font-sans tracking-widest uppercase transition cursor-pointer ${
+                    modalTab === "video"
+                      ? "bg-sunset border-sunset text-jungle font-bold"
+                      : "bg-black/60 border-white/15 text-pearl hover:bg-black/80"
+                  }`}
+                >
+                  {lang === "es" ? "Video Drone" : "Drone Video"}
+                </button>
               </div>
 
-              {/* Close Button on Mobile (placed top-right relative to 360 area) */}
+              {/* Close Button on Mobile */}
               <button 
-                onClick={() => setSelectedProperty(null)}
+                onClick={() => { setSelectedProperty(null); setModalTab("360"); }}
                 className="lg:hidden absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white cursor-pointer"
               >
                 <X size={16} />
               </button>
             </div>
 
-            {/* Details Panel: slides in from right/bottom */}
+            {/* Details Panel */}
             <motion.div 
               initial={{ opacity: 0, y: 60, x: 0 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               exit={{ opacity: 0, y: 60 }}
               transition={{ type: "spring", damping: 25, stiffness: 180 }}
-              className="w-full lg:w-1/3 h-[45vh] lg:h-full bg-[#02221a] flex flex-col overflow-y-auto border-t lg:border-t-0 lg:border-l border-white/10 shadow-2xl"
+              className="w-full lg:w-1/3 h-[50vh] lg:h-full bg-[#02221a] flex flex-col overflow-y-auto border-t lg:border-t-0 lg:border-l border-white/10 shadow-2xl"
             >
               <div className="p-6 lg:p-12 flex-1">
                 {/* Close Button on Desktop */}
                 <button 
-                  onClick={() => setSelectedProperty(null)}
+                  onClick={() => { setSelectedProperty(null); setModalTab("360"); }}
                   className="hidden lg:flex mb-12 w-12 h-12 rounded-full border border-white/20 items-center justify-center text-white hover:bg-white hover:text-jungle transition-colors group cursor-pointer"
                 >
                   <X className="group-hover:rotate-90 transition-transform duration-300" size={18} />
@@ -691,8 +1091,16 @@ export default function Home() {
                   {selectedProperty.name}
                 </h2>
                 
-                <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white">
-                  ${selectedProperty.price.toLocaleString("en-US")}
+                <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white flex justify-between items-baseline">
+                  <span>
+                    {currencyMode === "CRC" 
+                      ? `₡${(selectedProperty.price * 520).toLocaleString(lang === "es" ? "es-CR" : "en-US")}`
+                      : `$${selectedProperty.price.toLocaleString("en-US")}`
+                    }
+                  </span>
+                  {currencyMode === "CRC" && (
+                    <span className="text-xs text-gray-400 font-normal">(${(selectedProperty.price).toLocaleString("en-US")} USD)</span>
+                  )}
                 </div>
 
                 <div className="space-y-6 mb-8">
@@ -707,8 +1115,8 @@ export default function Home() {
                     <div>
                       <div className="text-sunset text-[10px] mb-1 font-sans uppercase tracking-wider">{t.modal.interiorSpace}</div>
                       <div className="text-sm lg:text-base font-serif text-pearl">
-                        {selectedProperty.sqft.toLocaleString("en-US")} sqft
-                        <span className="block text-[10px] font-sans text-gray-400">
+                        {selectedProperty.sqft.toLocaleString("en-US")} {t.card.sqft}
+                        <span className="block text-[10px] font-sans text-gray-400 font-normal mt-0.5">
                           ({Math.round(selectedProperty.sqft * 0.092903).toLocaleString("en-US")} m²)
                         </span>
                       </div>
@@ -770,4 +1178,3 @@ export default function Home() {
     </main>
   );
 }
-
