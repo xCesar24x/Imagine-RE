@@ -197,7 +197,28 @@ export default function Home() {
   const [locationFilter, setLocationFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [lifestyleFilter, setLifestyleFilter] = useState("all");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  
+  const [selectedAmenityGroups, setSelectedAmenityGroups] = useState<string[]>([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const AMENITY_GROUPS = useMemo(() => ({
+    ocean: {
+      label: lang === "es" ? "Playa y Vista al Mar" : "Beach & Ocean View",
+      tags: ["Oceanfront", "Ocean Sounds", "Infinity View", "Panoramic", "Private Beach", "Marina Views", "Yacht Mooring", "Cliffside", "Surf Access"]
+    },
+    nature: {
+      label: lang === "es" ? "Naturaleza y Selva" : "Nature & Jungle Vibe",
+      tags: ["Eco-Luxury", "Jungle Brutalism", "High Altitude", "Sustainable", "Glass House", "Creek-Side", "Canopy Walkway", "Organic Farm"]
+    },
+    vip: {
+      label: lang === "es" ? "Amenidades VIP (Helipuerto/Yates/Piscina)" : "VIP Amenities (Helipad/Yacht/Pool)",
+      tags: ["Helipad Access", "Yacht Mooring", "Golf Cart Access", "Infinity Pool", "Wine Cellar", "Smart Home", "Art Collector"]
+    },
+    design: {
+      label: lang === "es" ? "Privacidad y Diseño Premium" : "Privacy & Premium Design",
+      tags: ["Ultra-Luxury", "Minimalist", "Intimate", "Family Estate", "Industrial Chic", "Exclusive"]
+    }
+  }), [lang]);
 
   const locations = useMemo(() => {
     const setLocations = new Set<string>();
@@ -274,18 +295,23 @@ export default function Home() {
       // Lifestyle Filter
       if (lifestyleFilter !== "all" && p.lifestyle !== lifestyleFilter) return false;
 
-      // Vibe Tags Filter
-      if (selectedTags.length > 0) {
-        const hasTag = selectedTags.some(tag => p.vibeTags.includes(tag));
-        if (!hasTag) return false;
+      // Amenity Groups Filter
+      if (selectedAmenityGroups.length > 0) {
+        const matchesAllGroups = selectedAmenityGroups.every(groupKey => {
+          const group = AMENITY_GROUPS[groupKey as keyof typeof AMENITY_GROUPS];
+          return p.vibeTags.some(tag => group.tags.includes(tag));
+        });
+        if (!matchesAllGroups) return false;
       }
 
       return true;
     });
-  }, [priceFilter, sizeFilter, locationFilter, typeFilter, lifestyleFilter, selectedTags]);
+  }, [priceFilter, sizeFilter, locationFilter, typeFilter, lifestyleFilter, selectedAmenityGroups, AMENITY_GROUPS]);
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  const toggleAmenityGroup = (groupKey: string) => {
+    setSelectedAmenityGroups(prev =>
+      prev.includes(groupKey) ? prev.filter(g => g !== groupKey) : [...prev, groupKey]
+    );
   };
 
   return (
@@ -610,23 +636,46 @@ export default function Home() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-sans text-gray-400 uppercase tracking-widest mb-3">{t.catalog.filters.tagsLabel}</label>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {allTags.map(tag => (
-                    <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`w-full rounded-[2rem] border px-5 py-3 text-[10px] font-sans uppercase tracking-[0.28em] transition duration-300 cursor-pointer ${
-                        selectedTags.includes(tag)
-                          ? "bg-sunset border-sunset text-jungle font-semibold shadow-[0_10px_40px_rgba(212,175,55,0.18)]"
-                          : "bg-white/5 border-white/10 text-gray-300 hover:border-sunset/40 hover:text-white"
-                      }`}
+              <div className="pt-4 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedFilters(prev => !prev)}
+                  className="flex items-center gap-2 text-[11px] font-sans uppercase tracking-[0.25em] text-sunset font-semibold hover:text-white transition cursor-pointer"
+                >
+                  <span>{showAdvancedFilters ? "−" : "+"}</span>
+                  <span>{lang === "es" ? "Filtrar por Amenidades y Estilo (Opcional)" : "Filter by Amenities & Style (Optional)"}</span>
+                </button>
+
+                <AnimatePresence>
+                  {showAdvancedFilters && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden mt-6"
                     >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {Object.entries(AMENITY_GROUPS).map(([key, group]) => {
+                          const isSelected = selectedAmenityGroups.includes(key);
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => toggleAmenityGroup(key)}
+                              className={`rounded-[2rem] border px-6 py-4 text-[10px] font-sans uppercase tracking-[0.2em] transition duration-250 cursor-pointer text-center leading-relaxed h-full flex items-center justify-center ${
+                                isSelected
+                                  ? "bg-sunset border-sunset text-jungle font-bold shadow-[0_8px_30px_rgba(212,175,55,0.2)]"
+                                  : "bg-white/5 border-white/10 text-gray-300 hover:border-sunset/40 hover:text-white"
+                              }`}
+                            >
+                              {group.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
