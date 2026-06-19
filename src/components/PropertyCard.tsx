@@ -2,15 +2,17 @@
 
 import { motion } from "framer-motion";
 import { Property } from "@/constants/properties";
-import { BedDouble, Expand, MapPin } from "lucide-react";
+import { BedDouble, Expand, Heart, MapPin } from "lucide-react";
 import { getAssetPath } from "@/utils/paths";
 
 interface PropertyCardProps {
   property: Property;
   onClick: (property: Property) => void;
+  wishlisted?: boolean;
+  onToggleWishlist?: (property: Property) => void;
 }
 
-export default function PropertyCard({ property, onClick }: PropertyCardProps) {
+export default function PropertyCard({ property, onClick, wishlisted = false, onToggleWishlist }: PropertyCardProps) {
   return (
     <motion.div
       className="group relative cursor-pointer overflow-hidden rounded-sm bg-[#064e3b] text-pearl shadow-2xl"
@@ -25,7 +27,18 @@ export default function PropertyCard({ property, onClick }: PropertyCardProps) {
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
+
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleWishlist?.(property);
+          }}
+          className={`absolute top-4 right-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white transition hover:border-sunset hover:bg-sunset/80 ${wishlisted ? "text-sunset" : "text-gray-100"}`}
+        >
+          <Heart size={18} />
+        </button>
+
         {/* Vibe Tags */}
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
           {property.vibeTags.slice(0, 2).map((tag, i) => (

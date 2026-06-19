@@ -1,15 +1,50 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useMemo } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PROPERTIES, Property } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
-import { X, ChevronRight, Instagram, Facebook, Mail, MessageCircle, Sparkles, Compass } from "lucide-react";
+import { Heart, Send, X, ChevronRight, Camera, Share2, Mail, MessageCircle, Sparkles, Compass } from "lucide-react";
 
 export default function Home() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [wishlistedIds, setWishlistedIds] = useState<string[]>([]);
+  const [qualification, setQualification] = useState({
+    budget: "",
+    origin: "",
+    horizon: "",
+    financing: "",
+  });
+  const [formError, setFormError] = useState("");
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  const wishlistCount = wishlistedIds.length;
+
+  const toggleWishlist = (property: Property) => {
+    setWishlistedIds(prev =>
+      prev.includes(property.id) ? prev.filter(id => id !== property.id) : [...prev, property.id]
+    );
+  };
+
+  const handleQualificationChange = (field: keyof typeof qualification, value: string) => {
+    setQualification(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleQualificationSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (wishlistCount === 0) {
+      setFormError("Please add at least one property to your wishlist before submitting.");
+      return;
+    }
+    if (!qualification.budget || !qualification.origin || !qualification.horizon || !qualification.financing) {
+      setFormError("Complete all qualification fields to proceed.");
+      return;
+    }
+    setFormError("");
+    setFormSubmitted(true);
+  };
 
   // Filtering state
   const [priceFilter, setPriceFilter] = useState("all");
@@ -51,12 +86,12 @@ export default function Home() {
     {
       label: "Instagram",
       href: "https://www.instagram.com/imaginere.cr?utm_source=qr&igsh=aWV1anFiaHoxNXdz",
-      icon: Instagram,
+      icon: Camera,
     },
     {
       label: "Facebook",
       href: "https://www.facebook.com/share/1HXeL5UUnj/",
-      icon: Facebook,
+      icon: Share2,
     },
     {
       label: "Whatsapp",
@@ -189,6 +224,17 @@ export default function Home() {
               Explore Services
             </a>
           </div>
+
+          <div className="mt-6 flex flex-col items-center gap-3 rounded-[2rem] border border-sunset/20 bg-[#081f1a]/80 px-6 py-5 text-sm text-gray-100 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+            <div className="inline-flex items-center gap-2 uppercase tracking-[0.3em] text-sunset text-xs font-semibold">Wishlist</div>
+            <div className="flex items-center gap-3 text-3xl font-serif text-pearl">
+              <Heart size={28} className="text-sunset" />
+              {wishlistCount} {wishlistCount === 1 ? "property" : "properties"}
+            </div>
+            <div className="text-center text-sm text-gray-300 max-w-2xl">
+              Save the most compelling residences, then complete the qualification form to turn your shortlist into a priority lead.
+            </div>
+          </div>
         </motion.div>
       </section>
 
@@ -301,8 +347,86 @@ export default function Home() {
         </div>
 
         {/* Results Info */}
-        <div className="mb-8 text-sm font-sans text-gray-400 uppercase tracking-widest border-b border-white/10 pb-4">
-          Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'Property' : 'Properties'}
+        <div className="mb-12 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[2.5rem] border border-white/10 bg-[#041c16]/95 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.25)]">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="text-xs uppercase tracking-[0.36em] text-sunset">Wishlist funnel</div>
+                <h3 className="mt-3 text-3xl font-serif text-pearl">Your shortlist, qualified.</h3>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-3xl bg-sunset/10 px-4 py-3 text-sm uppercase tracking-[0.26em] text-sunset">
+                <Heart size={18} /> {wishlistCount}
+              </div>
+            </div>
+
+            <p className="mb-8 text-sm leading-7 text-gray-300/90">
+              Build a private shortlist, then submit the qualification form so Imagine can prioritize your lead and deliver a bespoke response.
+            </p>
+
+            <form onSubmit={handleQualificationSubmit} className="grid gap-4">
+              <div>
+                <label className="block text-xs uppercase tracking-[0.32em] text-gray-400 mb-2">Estimated budget</label>
+                <input
+                  value={qualification.budget}
+                  onChange={(e) => handleQualificationChange("budget", e.target.value)}
+                  placeholder="e.g. $5M - $10M"
+                  className="w-full rounded-3xl border border-white/10 bg-[#02160f] px-4 py-3 text-sm text-pearl outline-none focus:border-sunset"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.32em] text-gray-400 mb-2">Buyer origin</label>
+                <input
+                  value={qualification.origin}
+                  onChange={(e) => handleQualificationChange("origin", e.target.value)}
+                  placeholder="Local / North America / Europe"
+                  className="w-full rounded-3xl border border-white/10 bg-[#02160f] px-4 py-3 text-sm text-pearl outline-none focus:border-sunset"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.32em] text-gray-400 mb-2">Purchase horizon</label>
+                <input
+                  value={qualification.horizon}
+                  onChange={(e) => handleQualificationChange("horizon", e.target.value)}
+                  placeholder="Immediate / 3-6 months / 6-12 months"
+                  className="w-full rounded-3xl border border-white/10 bg-[#02160f] px-4 py-3 text-sm text-pearl outline-none focus:border-sunset"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.32em] text-gray-400 mb-2">Financing status</label>
+                <input
+                  value={qualification.financing}
+                  onChange={(e) => handleQualificationChange("financing", e.target.value)}
+                  placeholder="Cash / Pre-approved / Needs financing"
+                  className="w-full rounded-3xl border border-white/10 bg-[#02160f] px-4 py-3 text-sm text-pearl outline-none focus:border-sunset"
+                />
+              </div>
+
+              {formError && <div className="text-sm text-rose-300">{formError}</div>}
+              {formSubmitted && <div className="text-sm text-emerald-300">Qualification submitted. Expect priority follow-up from Imagine.</div>}
+
+              <button className="inline-flex items-center justify-center gap-2 rounded-3xl bg-sunset px-6 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-jungle transition hover:bg-white">
+                <Send size={18} /> Submit wishlist
+              </button>
+            </form>
+          </div>
+
+          <div className="rounded-[2.5rem] border border-white/10 bg-[#03140f]/95 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.18)]">
+            <div className="text-xs uppercase tracking-[0.36em] text-sunset mb-4">Lead intelligence</div>
+            <div className="grid gap-4 text-sm text-gray-300">
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="text-xs uppercase tracking-[0.3em] text-gray-400">Wishlist items</div>
+                <div className="mt-3 text-3xl font-serif text-pearl">{wishlistCount}</div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="text-xs uppercase tracking-[0.3em] text-gray-400">Qualified access</div>
+                <div className="mt-3 text-lg text-white">Priority outreach for ready buyers</div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="text-xs uppercase tracking-[0.3em] text-gray-400">Team readiness</div>
+                <div className="mt-3 text-lg text-white">Every submission receives concierge review.</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
@@ -316,7 +440,12 @@ export default function Home() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <PropertyCard property={property} onClick={setSelectedProperty} />
+                  <PropertyCard
+                    property={property}
+                    onClick={setSelectedProperty}
+                    wishlisted={wishlistedIds.includes(property.id)}
+                    onToggleWishlist={toggleWishlist}
+                  />
                 </motion.div>
               </div>
             ))}
