@@ -27,10 +27,12 @@ import {
   MapPin,
   Play,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Shield
 } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
 import { getAssetPath } from "@/utils/paths";
+import AdminDashboard from "@/components/AdminDashboard";
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "es">("en");
@@ -59,6 +61,35 @@ export default function Home() {
       })
       .catch(err => console.error("Error fetching rates, using defaults:", err));
   }, []);
+
+  // Dynamic Properties CRUD state
+  const [properties, setProperties] = useState<Property[]>(PROPERTIES);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  useEffect(() => {
+    const storedProps = localStorage.getItem("imagine_properties");
+    if (storedProps) {
+      setProperties(JSON.parse(storedProps));
+    }
+  }, []);
+
+  const handleAddProperty = (newProp: Property) => {
+    const updated = [newProp, ...properties];
+    setProperties(updated);
+    localStorage.setItem("imagine_properties", JSON.stringify(updated));
+  };
+
+  const handleUpdateProperty = (updatedProp: Property) => {
+    const updated = properties.map(p => p.id === updatedProp.id ? updatedProp : p);
+    setProperties(updated);
+    localStorage.setItem("imagine_properties", JSON.stringify(updated));
+  };
+
+  const handleDeleteProperty = (id: string) => {
+    const updated = properties.filter(p => p.id !== id);
+    setProperties(updated);
+    localStorage.setItem("imagine_properties", JSON.stringify(updated));
+  };
 
   // Routing State
   const [activeTab, setActiveTab] = useState<"catalog" | "management" | "tours">("catalog");
@@ -113,8 +144,8 @@ export default function Home() {
   };
 
   const wishlistedProperties = useMemo(() => {
-    return PROPERTIES.filter(p => wishlistedIds.includes(p.id));
-  }, [wishlistedIds]);
+    return properties.filter(p => wishlistedIds.includes(p.id));
+  }, [wishlistedIds, properties]);
 
   const handleQualificationChange = (field: keyof typeof qualification, value: string) => {
     setQualification(prev => ({ ...prev, [field]: value }));
@@ -156,17 +187,33 @@ export default function Home() {
     const score = calculateLeadScore();
     setLeadScore(score);
 
-    // Reset flow after showing result
-    setTimeout(() => {
-      setLeadScore(null);
-      setWishlistedIds([]);
-      setIsWishlistOpen(false);
-      setCurrentStep(1);
-      setClientName("");
-      setClientEmail("");
-      setClientPhone("");
-      setQualification({ budget: "", financing: "", horizon: "", motivation: "" });
-    }, 6000);
+    // Save lead to local storage for Admin Dashboard CRM
+    const newLead = {
+      id: `lead-${Date.now()}`,
+      name: clientName.trim(),
+      email: clientEmail.trim().toLowerCase(),
+      phone: clientPhone.trim(),
+      budgetRange: qualification.budget,
+      financing: qualification.financing,
+      horizon: qualification.horizon,
+      motivation: qualification.motivation,
+      wishlistPropertyIds: [...wishlistedIds],
+      status: "Lead Nuevo" as const,
+      notes: [`Lead qualified from website wishlist. Priority Score: ${score}`],
+      lastInteractionDate: new Date().toISOString()
+    };
+
+    const storedLeads = localStorage.getItem("imagine_leads");
+    let currentLeads = [];
+    if (storedLeads) {
+      try {
+        currentLeads = JSON.parse(storedLeads);
+      } catch (e) {
+        console.error("Error loading leads from storage:", e);
+      }
+    }
+    currentLeads.push(newLead);
+    localStorage.setItem("imagine_leads", JSON.stringify(currentLeads));
   };
 
   const handleNextStep = () => {
@@ -238,15 +285,15 @@ export default function Home() {
 
   const locations = useMemo(() => {
     const setLocations = new Set<string>();
-    PROPERTIES.forEach(p => setLocations.add(p.location));
+    properties.forEach(p => setLocations.add(p.location));
     return Array.from(setLocations).sort();
-  }, []);
+  }, [properties]);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    PROPERTIES.forEach(p => p.vibeTags.forEach(t => tags.add(t)));
+    properties.forEach(p => p.vibeTags.forEach(t => tags.add(t)));
     return Array.from(tags).sort();
-  }, []);
+  }, [properties]);
 
   const SERVICE_CARDS = useMemo(() => [
     {
@@ -291,7 +338,7 @@ export default function Home() {
 
   // Filter properties
   const filteredProperties = useMemo(() => {
-    return PROPERTIES.filter(p => {
+    return properties.filter(p => {
       // Price Filter
       if (priceFilter === "under-5" && p.price >= 5000000) return false;
       if (priceFilter === "5-10" && (p.price < 5000000 || p.price > 10000000)) return false;
@@ -322,7 +369,7 @@ export default function Home() {
 
       return true;
     });
-  }, [priceFilter, sizeFilter, locationFilter, typeFilter, lifestyleFilter, selectedAmenityGroups, AMENITY_GROUPS]);
+  }, [priceFilter, sizeFilter, locationFilter, typeFilter, lifestyleFilter, selectedAmenityGroups, AMENITY_GROUPS, properties]);
 
   const toggleAmenityGroup = (groupKey: string) => {
     setSelectedAmenityGroups(prev =>
@@ -369,6 +416,12 @@ export default function Home() {
             className="transition px-4 py-2 border border-transparent rounded-md cursor-pointer hover:text-sunset"
           >
             {t.nav.contact}
+          </button>
+          <button 
+            onClick={() => setIsAdminOpen(true)}
+            className="transition px-4 py-2 border border-transparent rounded-md cursor-pointer text-[#d4af37]/85 hover:text-[#d4af37] font-semibold"
+          >
+            {lang === "es" ? "Panel Admin" : "Admin Panel"}
           </button>
         </div>
 
@@ -432,6 +485,12 @@ export default function Home() {
                 className="py-3 transition border border-transparent rounded-md cursor-pointer text-pearl/80 hover:text-sunset"
               >
                 {t.nav.contact}
+              </button>
+              <button 
+                onClick={() => { setIsMobileMenuOpen(false); setIsAdminOpen(true); }}
+                className="py-3 transition border border-transparent rounded-md cursor-pointer text-[#d4af37]/85 hover:text-[#d4af37] font-semibold"
+              >
+                {lang === "es" ? "Panel Admin" : "Admin Panel"}
               </button>
             </motion.div>
           </>
@@ -752,7 +811,7 @@ export default function Home() {
               {t.discoveryTours.description}
             </p>
           </div>
-          <ToursCalendar lang={lang} />
+          <ToursCalendar lang={lang} wishlistProperties={wishlistedProperties} />
         </section>
       )}
 
@@ -847,6 +906,19 @@ export default function Home() {
                 {/* Multi-step Qualification Form Funnel */}
                 {wishlistCount > 0 && !leadScore && (
                   <div className="border-t border-white/10 pt-6">
+                    {/* Locked Status Banner */}
+                    <div className="p-4 rounded-2xl bg-black/25 border border-white/5 text-center text-xs space-y-2 mb-6">
+                      <div className="flex items-center justify-center gap-2 text-[#d4af37] font-semibold uppercase tracking-wider text-[10px]">
+                        <Shield size={14} />
+                        <span>{lang === "es" ? "Estatus: Consulta Bloqueada" : "Status: Advisory Locked"}</span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 font-light leading-relaxed">
+                        {lang === "es"
+                          ? "Para consultar disponibilidad de estas propiedades exclusivas, complete el formulario de perfil de 4 pasos abajo."
+                          : "To consult availability on these exclusive properties, please complete the 4-step profile form below."}
+                      </p>
+                    </div>
+
                     <div className="mb-6 flex justify-between items-center">
                       <div>
                         <span className="text-[9px] uppercase tracking-[0.3em] text-sunset font-semibold">
@@ -1011,9 +1083,18 @@ export default function Home() {
                         ) : (
                           <button
                             type="submit"
-                            className="flex-1 py-3.5 rounded-2xl bg-sunset text-jungle hover:bg-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-sunset/10"
+                            disabled={!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation}
+                            className="flex-1 py-3.5 rounded-2xl bg-sunset text-jungle hover:bg-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-sunset/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-800 disabled:text-gray-500"
                           >
-                            <Send size={13} /> {t.wishlist.steps.submit}
+                            {(!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation) ? (
+                              <>
+                                <Shield size={13} /> {lang === "es" ? "Bloqueado - Complete formulario" : "Locked - Complete form"}
+                              </>
+                            ) : (
+                              <>
+                                <Send size={13} /> {lang === "es" ? "Consultar disponibilidad / Solicitar asesoría" : "Consult Availability / Request Advisory"}
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
@@ -1044,10 +1125,43 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-white/5 bg-white/5 text-xs text-gray-400 font-light max-w-sm mx-auto">
-                      {lang === "es" 
-                        ? "¡Calificación completada! Redirigiendo y procesando solicitud..."
-                        : "Qualification complete! Processing submission and logging prioritization score..."}
+                    {/* Discovery Tour CTA & Reset controls */}
+                    <div className="space-y-3 max-w-sm mx-auto pt-4">
+                      <button
+                        onClick={() => {
+                          setIsWishlistOpen(false);
+                          setActiveTab("tours");
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                          // Reset state
+                          setLeadScore(null);
+                          setWishlistedIds([]);
+                          setCurrentStep(1);
+                          setClientName("");
+                          setClientEmail("");
+                          setClientPhone("");
+                          setQualification({ budget: "", financing: "", horizon: "", motivation: "" });
+                        }}
+                        className="w-full bg-[#d4af37] text-[#02100b] py-3.5 rounded-2xl font-sans uppercase tracking-[0.2em] text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-white transition duration-250 cursor-pointer shadow-lg shadow-sunset/15"
+                      >
+                        <Compass size={14} />
+                        <span>{lang === "es" ? "Programar Discovery Tour" : "Schedule Discovery Tour"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setLeadScore(null);
+                          setWishlistedIds([]);
+                          setIsWishlistOpen(false);
+                          setCurrentStep(1);
+                          setClientName("");
+                          setClientEmail("");
+                          setClientPhone("");
+                          setQualification({ budget: "", financing: "", horizon: "", motivation: "" });
+                        }}
+                        className="w-full border border-white/10 hover:border-white/20 text-pearl/70 hover:text-white py-3 rounded-2xl font-sans uppercase tracking-[0.2em] text-[9px] font-semibold transition cursor-pointer"
+                      >
+                        {lang === "es" ? "Cerrar y Limpiar" : "Close & Clear"}
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1071,25 +1185,133 @@ export default function Home() {
               {modalTab === "360" && <Three360Viewer panoramaUrl={selectedProperty.panorama} />}
               
               {modalTab === "map" && (
-                <div className="w-full h-full bg-[#02120e] flex flex-col items-center justify-center p-8 text-center text-pearl relative overflow-hidden">
+                <div className="w-full h-full bg-[#02120e] flex flex-col justify-center p-6 md:p-10 relative overflow-y-auto">
                   {/* Subtle Grid backdrop */}
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:30px_30px]" />
-                  <div className="relative z-10 space-y-4 max-w-md">
-                    <div className="mx-auto w-16 h-16 rounded-full border border-sunset/20 bg-sunset/5 flex items-center justify-center text-sunset">
-                      <MapPin size={28} className="animate-bounce" />
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:30px_30px]" />
+                  
+                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full items-center">
+                    
+                    {/* LEFT COLUMN: Security-First Macro Map Mockup */}
+                    <div className="relative flex flex-col items-center justify-center p-6 border border-[#d4af37]/20 bg-black/40 rounded-3xl overflow-hidden aspect-square max-w-[360px] mx-auto w-full shadow-lg">
+                      {/* Abstract Concentric rings */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-[90%] h-[90%] rounded-full border border-white/5 flex items-center justify-center">
+                          <div className="w-[75%] h-[75%] rounded-full border border-[#d4af37]/5 flex items-center justify-center">
+                            <div className="w-[50%] h-[50%] rounded-full border border-white/5 flex items-center justify-center" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Topographical grid lines */}
+                      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
+
+                      {/* Map Pins / Pulsing Macro Ring */}
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div className="relative flex items-center justify-center mb-4">
+                          {/* Pulsing glow ring */}
+                          <div className="absolute h-24 w-24 rounded-full bg-sunset/15 border border-sunset/40 animate-ping" />
+                          <div className="absolute h-16 w-16 rounded-full bg-sunset/20 border border-sunset/30" />
+                          <div className="h-8 w-8 rounded-full bg-[#d4af37] text-[#02100b] flex items-center justify-center shadow-lg">
+                            <MapPin size={16} />
+                          </div>
+                        </div>
+                        
+                        <h5 className="font-serif text-base text-pearl uppercase tracking-wider text-center">{selectedProperty.location}</h5>
+                        <p className="text-[10px] text-sunset font-sans font-bold tracking-widest mt-1 uppercase border border-sunset/30 bg-sunset/10 px-3 py-1 rounded-full text-center">
+                          {selectedProperty.approxLocation}
+                        </p>
+                        
+                        {/* Macro radius label */}
+                        <div className="mt-4 text-[10px] text-gray-400 font-sans tracking-wide text-center leading-relaxed bg-[#021c15] border border-white/10 px-4 py-2 rounded-2xl max-w-[240px]">
+                          🛡️ <span className="font-medium text-pearl">{lang === "es" ? "Área de Seguridad" : "Macro Security Radius"}</span>: ~5km²
+                        </div>
+                      </div>
+                      
+                      {/* Security message absolute footer */}
+                      <div className="absolute bottom-2 text-center text-[8px] text-gray-500 uppercase tracking-widest px-4 font-mono">
+                        {lang === "es" ? "Ubicación exacta restringida por privacidad" : "Exact coordinate locked under owner privacy"}
+                      </div>
                     </div>
-                    <h4 className="font-serif text-lg text-pearl">{t.modal.mapTitle}</h4>
-                    <p className="text-xs text-sunset font-sans font-semibold tracking-wider bg-sunset/10 py-1.5 px-3 rounded-full inline-block">
-                      {selectedProperty.approxLocation}
-                    </p>
-                    <p className="text-xs text-gray-400 leading-relaxed font-light">
-                      {lang === "es"
-                        ? "Por motivos de seguridad, privacidad y exclusividad de nuestros propietarios, la coordenada exacta se desbloquea tras la calificación telefónica con el concierge."
-                        : "For security, privacy, and exclusivity of our property owners, exact coordinates are unlocked following direct qualification with our concierge team."}
-                    </p>
+
+                    {/* RIGHT COLUMN: Logistics Metric Card */}
+                    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl shadow-xl space-y-4 font-sans text-pearl">
+                      <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                        <Shield size={16} className="text-[#d4af37]" />
+                        <h4 className="font-serif text-sm uppercase tracking-wider">{lang === "es" ? "Ficha Logística y Acceso" : "Logistics & Access Ledger"}</h4>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Altitude */}
+                        <div className="p-3 rounded-2xl bg-black/20 border border-white/5">
+                          <span className="text-[8px] text-gray-400 uppercase tracking-wider block">{lang === "es" ? "Altitud sobre el mar" : "Altitude (m.s.n.m.)"}</span>
+                          <span className="text-xs md:text-sm font-semibold mt-1 block">
+                            {selectedProperty.elevationM || 100} m.s.n.m.
+                          </span>
+                          <span className="text-[9px] text-gray-400 block mt-0.5">
+                            (~{Math.round((selectedProperty.elevationM || 100) * 3.28084).toLocaleString()} ft)
+                          </span>
+                        </div>
+
+                        {/* Airport */}
+                        <div className="p-3 rounded-2xl bg-black/20 border border-white/5">
+                          <span className="text-[8px] text-gray-400 uppercase tracking-wider block">{lang === "es" ? "Aeropuerto SJO" : "SJO Airport Link"}</span>
+                          <span className="text-xs md:text-sm font-semibold mt-1 block">
+                            {selectedProperty.airportDistKm || 50} km
+                          </span>
+                          <span className="text-[9px] text-[#d4af37] font-medium block mt-0.5">
+                            🚙 ~{selectedProperty.airportTimeMin || 60} min
+                          </span>
+                        </div>
+
+                        {/* Medical Care */}
+                        <div className="p-3 rounded-2xl bg-black/20 border border-white/5">
+                          <span className="text-[8px] text-gray-400 uppercase tracking-wider block">{lang === "es" ? "Acceso Médico Urgent" : "Urgent Medical Access"}</span>
+                          <span className="text-xs md:text-sm font-semibold mt-1 block text-rose-300">
+                            ~{selectedProperty.medicalDistMin || 15} min
+                          </span>
+                          <span className="text-[9px] text-gray-400 block mt-0.5">
+                            {lang === "es" ? "Hospital/Clínica local" : "Local hospital/clinic"}
+                          </span>
+                        </div>
+
+                        {/* Closest City */}
+                        <div className="p-3 rounded-2xl bg-black/20 border border-white/5">
+                          <span className="text-[8px] text-gray-400 uppercase tracking-wider block">{lang === "es" ? "Centro de Ciudad" : "Closest Urban Center"}</span>
+                          <span className="text-xs md:text-sm font-semibold mt-1 block truncate">
+                            {selectedProperty.closestCity || "Nicoya"}
+                          </span>
+                          <span className="text-[9px] text-gray-400 block mt-0.5">
+                            (~{selectedProperty.cityDistKm || 5} km)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Internet & Connectivity Badges */}
+                      <div className="pt-2">
+                        <span className="text-[8px] text-gray-400 uppercase tracking-wider block mb-2">{lang === "es" ? "Infraestructura Digital" : "Digital Infrastructure"}</span>
+                        <div className="flex gap-2">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-sans tracking-wider uppercase font-semibold ${
+                            selectedProperty.hasFiberOptic
+                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                              : "bg-gray-500/5 border-white/5 text-gray-500"
+                          }`}>
+                            🌐 {lang === "es" ? "Fibra" : "Fiber"}: {selectedProperty.hasFiberOptic ? "Yes" : "N/A"}
+                          </span>
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-sans tracking-wider uppercase font-semibold ${
+                            selectedProperty.hasStarlink
+                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                              : "bg-gray-500/5 border-white/5 text-gray-500"
+                          }`}>
+                            🛰️ Starlink: {selectedProperty.hasStarlink ? "Yes" : "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
-                  {/* Circular radial glow */}
-                  <div className="absolute w-[300px] h-[300px] rounded-full bg-sunset/5 blur-3xl" />
+
+                  {/* Circular radial glow background */}
+                  <div className="absolute w-[400px] h-[400px] rounded-full bg-sunset/5 blur-3xl pointer-events-none" />
                 </div>
               )}
 
@@ -1237,7 +1459,17 @@ export default function Home() {
 
               {/* Sticky CTA */}
               <div className="p-6 bg-[#011a14] border-t border-white/10 mt-auto">
-                <button className="w-full bg-sunset text-jungle py-4 font-sans uppercase tracking-[0.2em] text-xs font-bold flex items-center justify-center gap-3 hover:bg-white transition-colors duration-250 cursor-pointer">
+                <button 
+                  onClick={() => {
+                    if (!wishlistedIds.includes(selectedProperty.id)) {
+                      setWishlistedIds(prev => [...prev, selectedProperty.id]);
+                    }
+                    setSelectedProperty(null);
+                    setModalTab("360");
+                    setIsWishlistOpen(true);
+                  }}
+                  className="w-full bg-sunset text-jungle py-4 font-sans uppercase tracking-[0.2em] text-xs font-bold flex items-center justify-center gap-3 hover:bg-white transition-colors duration-250 cursor-pointer"
+                >
                   {t.modal.bookTour} <ChevronRight size={14} />
                 </button>
               </div>
@@ -1247,7 +1479,7 @@ export default function Home() {
       </AnimatePresence>
 
       <footer id="contact" className="relative mt-16 border-t border-white/10 bg-black/35 py-12 px-6 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-8 md:flex-row md:items-center md:justify-between border-b border-white/5 pb-8">
           <div>
             <div className="text-xs uppercase tracking-[0.36em] text-sunset mb-3 font-semibold">{t.footer.subtitle}</div>
             <p className="max-w-lg text-xs md:text-sm text-gray-300/80 leading-relaxed">
@@ -1272,7 +1504,33 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        <div className="mx-auto max-w-[1600px] mt-8 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-500 uppercase tracking-widest gap-4">
+          <div>
+            &copy; {new Date().getFullYear()} Imagine Real Estate & Property Management. All rights reserved.
+          </div>
+          <div>
+            <button 
+              onClick={() => setIsAdminOpen(true)}
+              className="hover:text-sunset font-semibold text-[#d4af37]/75 transition flex items-center gap-1.5 cursor-pointer bg-transparent border-0 outline-none"
+            >
+              <span>⚙️</span>
+              <span>{lang === "es" ? "Acceso Portal Admin" : "Admin Portal Access"}</span>
+            </button>
+          </div>
+        </div>
       </footer>
+
+      {isAdminOpen && (
+        <AdminDashboard
+          properties={properties}
+          onAddProperty={handleAddProperty}
+          onUpdateProperty={handleUpdateProperty}
+          onDeleteProperty={handleDeleteProperty}
+          lang={lang}
+          onClose={() => setIsAdminOpen(false)}
+        />
+      )}
     </main>
   );
 }

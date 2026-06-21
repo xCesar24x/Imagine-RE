@@ -75,6 +75,15 @@ export const TRANSLATIONS = {
         showEUR: "Euros (€)",
         showJPY: "Yen (¥)",
       },
+      types: {
+        Casa: "House",
+        Cabaña: "Cabin",
+        Quinta: "Estate",
+        Lote: "Lot",
+        "Quinta de Descanso": "Rest Quinta",
+        "Terreno de Montaña": "Mountain Land",
+        "Villa Exclusiva": "Exclusive Villa"
+      },
       empty: "No properties match your exact, exclusive criteria. Please adjust your filters.",
     },
     wishlist: {
@@ -254,6 +263,15 @@ export const TRANSLATIONS = {
         showCRC: "Colones (₡)",
         showEUR: "Euros (€)",
         showJPY: "Yenes (¥)",
+      },
+      types: {
+        Casa: "Casa",
+        Cabaña: "Cabaña",
+        Quinta: "Quinta",
+        Lote: "Lote",
+        "Quinta de Descanso": "Quinta de Descanso",
+        "Terreno de Montaña": "Terreno de Montaña",
+        "Villa Exclusiva": "Villa Exclusiva"
       },
       empty: "Ninguna propiedad coincide con sus criterios exactos y exclusivos. Por favor ajuste sus filtros.",
     },
