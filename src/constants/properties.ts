@@ -28,6 +28,30 @@ export interface Property {
   nameEs?: string;
   descriptionEs?: string;
   refCode?: string;
+  fincaRegistryNum?: string;
+  catasterMapNum?: string;
+}
+
+export interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  budgetRange: string;
+  financing: string;
+  horizon: string;
+  motivation: string;
+  wishlistPropertyIds: string[];
+  status: "Lead Nuevo" | "En Contacto" | "Discovery Tour Programado" | "Propuesta/Negociación" | "Cierre Exitoso / Perdido";
+  tourDates?: string;
+  tourPeople?: number;
+  tourLodging?: boolean;
+  tourLodgingPref?: string;
+  notes: string[];
+  lastInteractionDate: string; // ISO String
+  gdprConsent?: boolean;
+  tourAgent?: string;
+  tourVisitedProperties?: string[];
 }
 
 export const PROVINCE_REGIONS: Record<string, string[]> = {

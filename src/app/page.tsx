@@ -33,6 +33,7 @@ import {
 import { TRANSLATIONS } from "@/constants/translations";
 import { getAssetPath } from "@/utils/paths";
 import AdminDashboard from "@/components/AdminDashboard";
+import { formatCognitivePrice } from "@/utils/price";
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "es">("en");
@@ -1024,7 +1025,7 @@ export default function Home() {
                               {lang === "es" && property.nameEs ? property.nameEs : property.name}
                             </h5>
                             <p className="text-[10px] text-sunset font-sans truncate mt-0.5">{property.location}</p>
-                            <p className="text-xs text-white font-sans mt-1 font-medium">${property.price.toLocaleString("en-US")} USD</p>
+                            <p className="text-xs text-white font-sans mt-1 font-medium">{formatCognitivePrice(property.price, currencyMode, lang, rates)}</p>
                           </div>
                           <button
                             onClick={() => removeFromWishlist(property.id)}
@@ -1622,13 +1623,12 @@ export default function Home() {
                 
                 <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white flex justify-between items-baseline">
                   <span>
-                    {currencyMode === "CRC" && `₡${(selectedProperty.price * rates.CRC).toLocaleString(lang === "es" ? "es-CR" : "en-US")}`}
-                    {currencyMode === "EUR" && `€${(selectedProperty.price * rates.EUR).toLocaleString(lang === "es" ? "es-ES" : "en-US", { maximumFractionDigits: 0 })}`}
-                    {currencyMode === "JPY" && `¥${(selectedProperty.price * rates.JPY).toLocaleString(lang === "es" ? "ja-JP" : "en-US", { maximumFractionDigits: 0 })}`}
-                    {currencyMode === "USD" && `$${selectedProperty.price.toLocaleString("en-US")}`}
+                    {formatCognitivePrice(selectedProperty.price, currencyMode, lang, rates)}
                   </span>
                   {currencyMode !== "USD" && (
-                    <span className="text-xs text-gray-400 font-normal">(${(selectedProperty.price).toLocaleString("en-US")} USD)</span>
+                    <span className="text-xs text-gray-400 font-normal">
+                      (Approx. {formatCognitivePrice(selectedProperty.price, "USD", lang, rates)})
+                    </span>
                   )}
                 </div>
 
