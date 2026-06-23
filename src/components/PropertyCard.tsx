@@ -139,8 +139,7 @@ export default function PropertyCard({
             <div className="flex items-center gap-1.5">
               <Expand size={13} className="text-sunset" />
               <span>
-                {property.sqft.toLocaleString("en-US")} {t.sqft}
-                <span className="text-[10px] text-gray-400 ml-1">({Math.round(property.sqft * 0.092903).toLocaleString("en-US")} m²)</span>
+                {property.sqft.toLocaleString("en-US")} ft² / {Math.round(property.sqft * 0.092903).toLocaleString("en-US")} m²
               </span>
             </div>
             <div className="flex items-center gap-1.5">

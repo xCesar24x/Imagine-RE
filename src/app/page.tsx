@@ -417,12 +417,6 @@ export default function Home() {
           >
             {t.nav.contact}
           </button>
-          <button 
-            onClick={() => setIsAdminOpen(true)}
-            className="transition px-4 py-2 border border-transparent rounded-md cursor-pointer text-[#d4af37]/85 hover:text-[#d4af37] font-semibold"
-          >
-            {lang === "es" ? "Panel Admin" : "Admin Panel"}
-          </button>
         </div>
 
         {/* Controls: Language and Hamburger */}
@@ -485,12 +479,6 @@ export default function Home() {
                 className="py-3 transition border border-transparent rounded-md cursor-pointer text-pearl/80 hover:text-sunset"
               >
                 {t.nav.contact}
-              </button>
-              <button 
-                onClick={() => { setIsMobileMenuOpen(false); setIsAdminOpen(true); }}
-                className="py-3 transition border border-transparent rounded-md cursor-pointer text-[#d4af37]/85 hover:text-[#d4af37] font-semibold"
-              >
-                {lang === "es" ? "Panel Admin" : "Admin Panel"}
               </button>
             </motion.div>
           </>
@@ -649,6 +637,9 @@ export default function Home() {
                       <option value="Cabaña">{lang === "es" ? "Cabaña" : "Cabin"}</option>
                       <option value="Quinta">{lang === "es" ? "Quinta" : "Estate"}</option>
                       <option value="Lote">{lang === "es" ? "Lote" : "Lot"}</option>
+                      <option value="Quinta de Descanso">{lang === "es" ? "Quinta de Descanso" : "Rest Quinta"}</option>
+                      <option value="Terreno de Montaña">{lang === "es" ? "Terreno de Montaña" : "Mountain Land"}</option>
+                      <option value="Villa Exclusiva">{lang === "es" ? "Villa Exclusiva" : "Exclusive Villa"}</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
                   </div>
