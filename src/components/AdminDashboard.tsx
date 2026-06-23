@@ -6,7 +6,7 @@ import {
   Download, Send, MessageCircle, AlertTriangle, FileText, 
   Sparkles, Calendar, DollarSign, Users, Shield, Copy, RefreshCw, BarChart2
 } from "lucide-react";
-import { Property } from "@/constants/properties";
+import { Property, PROVINCE_REGIONS } from "@/constants/properties";
 
 interface AdminDashboardProps {
   properties: Property[];
@@ -60,6 +60,7 @@ export default function AdminDashboard({
     nameEs: "",
     type: "Casa" as Property["type"],
     segment: "Luxury" as Property["segment"],
+    province: "San José" as Property["province"],
     lifestyle: "Naturaleza" as Property["lifestyle"],
     status: "Disponible" as Property["status"],
     approxLocation: "",
@@ -73,6 +74,15 @@ export default function AdminDashboard({
     hasStarlink: false,
     image: "/images/jungle.png"
   });
+
+  // Helper selectors for geography CRUD
+  const activeProvinceRegions = useMemo(() => {
+    return PROVINCE_REGIONS[crudForm.province] || [];
+  }, [crudForm.province]);
+
+  const isCustomLocation = useMemo(() => {
+    return crudForm.location !== "" && !activeProvinceRegions.includes(crudForm.location);
+  }, [crudForm.location, activeProvinceRegions]);
 
   // --- CRM State ---
   const [leads, setLeeds] = useState<Lead[]>([]);
@@ -202,6 +212,7 @@ export default function AdminDashboard({
       panorama: "/panoramas/default.jpg",
       type: crudForm.type,
       segment: crudForm.segment,
+      province: crudForm.province,
       lifestyle: crudForm.lifestyle,
       status: crudForm.status,
       approxLocation: crudForm.approxLocation,
@@ -227,7 +238,7 @@ export default function AdminDashboard({
     setEditingPropertyId(null);
     setCrudForm({
       name: "", location: "", price: 0, sqft: 0, suites: 0, vibeTags: "",
-      description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", lifestyle: "Naturaleza",
+      description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", province: "San José", lifestyle: "Naturaleza",
       status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
       airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
       hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png"
@@ -248,6 +259,7 @@ export default function AdminDashboard({
       nameEs: p.name,
       type: p.type,
       segment: p.segment,
+      province: p.province || "San José",
       lifestyle: p.lifestyle,
       status: p.status,
       approxLocation: p.approxLocation,
@@ -701,16 +713,53 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Province (CR)</label>
+                      <select 
+                        value={crudForm.province}
+                        onChange={e => setCrudForm({ ...crudForm, province: e.target.value as any })}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      >
+                        <option value="San José">San José</option>
+                        <option value="Alajuela">Alajuela</option>
+                        <option value="Cartago">Cartago</option>
+                        <option value="Heredia">Heredia</option>
+                        <option value="Guanacaste">Guanacaste</option>
+                        <option value="Puntarenas">Puntarenas</option>
+                        <option value="Limón">Limón</option>
+                      </select>
+                    </div>
                     <div>
                       <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">General Region / Location</label>
-                      <input 
-                        value={crudForm.location} 
-                        onChange={e => setCrudForm({ ...crudForm, location: e.target.value })} 
-                        required 
-                        placeholder="e.g. Nosara"
-                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
-                      />
+                      <select 
+                        value={isCustomLocation ? "custom" : crudForm.location}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val === "custom") {
+                            setCrudForm(prev => ({ ...prev, location: "" }));
+                          } else {
+                            setCrudForm(prev => ({ ...prev, location: val }));
+                          }
+                        }}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] mb-2"
+                      >
+                        <option value="">Seleccionar Región / Cantón</option>
+                        {activeProvinceRegions.map(reg => (
+                          <option key={reg} value={reg}>{reg}</option>
+                        ))}
+                        <option value="custom">Otro (Ingresar manualmente)...</option>
+                      </select>
+                      
+                      {(isCustomLocation || crudForm.location === "" || !activeProvinceRegions.includes(crudForm.location)) && (
+                        <input 
+                          value={crudForm.location} 
+                          onChange={e => setCrudForm({ ...crudForm, location: e.target.value })} 
+                          required 
+                          placeholder="e.g. Nosara"
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+                        />
+                      )}
                     </div>
                     <div>
                       <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Approx. Coordinates Location (Security-First)</label>
@@ -847,7 +896,7 @@ export default function AdminDashboard({
                           setEditingPropertyId(null);
                           setCrudForm({
                             name: "", location: "", price: 0, sqft: 0, suites: 0, vibeTags: "",
-                            description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", lifestyle: "Naturaleza",
+                            description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", province: "San José", lifestyle: "Naturaleza",
                             status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
                             airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
                             hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png"

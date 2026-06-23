@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PROPERTIES, Property } from "@/constants/properties";
+import { PROPERTIES, Property, PROVINCE_REGIONS } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
 import AirbnbCalculator from "@/components/AirbnbCalculator";
@@ -106,9 +106,16 @@ export default function Home() {
     }
   };
 
-  // Property Details State
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-  const [modalTab, setModalTab] = useState<"360" | "map" | "video">("360");
+  const [modalTab, setModalTab] = useState<"gallery" | "360" | "map" | "video">("gallery");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (selectedProperty) {
+      setCurrentImageIndex(0);
+      setModalTab("gallery");
+    }
+  }, [selectedProperty]);
 
   // Wishlist State
   const [wishlistedIds, setWishlistedIds] = useState<string[]>([]);
@@ -174,6 +181,20 @@ export default function Home() {
   const wishlistedProperties = useMemo(() => {
     return properties.filter(p => wishlistedIds.includes(p.id));
   }, [wishlistedIds, properties]);
+
+  const galleryImages = useMemo(() => {
+    if (selectedProperty?.gallery && selectedProperty.gallery.length > 0) {
+      return selectedProperty.gallery;
+    }
+    // Fallback images to guarantee a high-res gallery on every property
+    return selectedProperty 
+      ? [
+          selectedProperty.image,
+          "/images/ocean.png",
+          "/images/minimalist.png"
+        ]
+      : [];
+  }, [selectedProperty]);
 
   const handleQualificationChange = (field: keyof typeof qualification, value: string) => {
     setQualification(prev => ({ ...prev, [field]: value }));
@@ -269,6 +290,7 @@ export default function Home() {
   // Filtering state
   const [priceFilter, setPriceFilter] = useState("all");
   const [sizeFilter, setSizeFilter] = useState("all");
+  const [provinceFilter, setProvinceFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [lifestyleFilter, setLifestyleFilter] = useState("all");
@@ -311,11 +333,19 @@ export default function Home() {
     }
   }), [lang]);
 
-  const locations = useMemo(() => {
-    const setLocations = new Set<string>();
-    properties.forEach(p => setLocations.add(p.location));
-    return Array.from(setLocations).sort();
-  }, [properties]);
+  const availableRegions = useMemo(() => {
+    const baseRegions = provinceFilter !== "all"
+      ? (PROVINCE_REGIONS[provinceFilter] || [])
+      : Object.values(PROVINCE_REGIONS).flat();
+
+    // Also include any custom location created in admin dashboard that matches the selected province
+    const activeLocations = properties
+      .filter(p => provinceFilter === "all" || p.province === provinceFilter)
+      .map(p => p.location);
+
+    const merged = new Set([...baseRegions, ...activeLocations]);
+    return Array.from(merged).sort();
+  }, [provinceFilter, properties]);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -384,6 +414,9 @@ export default function Home() {
       // Location Filter
       if (locationFilter !== "all" && p.location !== locationFilter) return false;
 
+      // Province Filter
+      if (provinceFilter !== "all" && p.province !== provinceFilter) return false;
+
       // Type Filter
       if (typeFilter !== "all" && p.type !== typeFilter) return false;
 
@@ -401,7 +434,7 @@ export default function Home() {
 
       return true;
     });
-  }, [priceFilter, sizeFilter, locationFilter, typeFilter, lifestyleFilter, selectedAmenityGroups, AMENITY_GROUPS, properties]);
+  }, [priceFilter, sizeFilter, provinceFilter, locationFilter, typeFilter, lifestyleFilter, selectedAmenityGroups, AMENITY_GROUPS, properties]);
 
   const toggleAmenityGroup = (groupKey: string) => {
     setSelectedAmenityGroups(prev =>
@@ -630,6 +663,7 @@ export default function Home() {
                     setActiveSegment(seg.id as any);
                     setPriceFilter("all");
                     setSizeFilter("all");
+                    setProvinceFilter("all");
                     setLocationFilter("all");
                     setTypeFilter("all");
                     setLifestyleFilter("all");
@@ -670,7 +704,7 @@ export default function Home() {
 
             {/* Advanced Filters */}
             <div className="mb-16 space-y-6 max-w-[1600px] mx-auto">
-              <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
+              <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-6">
                 {/* Price range */}
                 <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
                   <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.priceTitle}</div>
@@ -723,6 +757,32 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* Province */}
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.provinceTitle}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{t.catalog.filters.provinceLabel}</label>
+                  <div className="relative">
+                    <select 
+                      value={provinceFilter}
+                      onChange={(e) => {
+                        setProvinceFilter(e.target.value);
+                        setLocationFilter("all");
+                      }}
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
+                    >
+                      <option value="all">{t.catalog.filters.allProvinces}</option>
+                      <option value="San José">San José</option>
+                      <option value="Alajuela">Alajuela</option>
+                      <option value="Cartago">Cartago</option>
+                      <option value="Heredia">Heredia</option>
+                      <option value="Guanacaste">Guanacaste</option>
+                      <option value="Puntarenas">Puntarenas</option>
+                      <option value="Limón">Limón</option>
+                    </select>
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
+                  </div>
+                </div>
+
                 {/* Region */}
                 <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
                   <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.locTitle}</div>
@@ -734,7 +794,7 @@ export default function Home() {
                       className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                       <option value="all">{t.catalog.filters.allLocs}</option>
-                      {locations.map(location => (
+                      {availableRegions.map(location => (
                         <option key={location} value={location}>{location}</option>
                       ))}
                     </select>
@@ -1252,6 +1312,64 @@ export default function Home() {
           >
             {/* 360/Map/Video Viewer Area */}
             <div className="relative w-full h-[50vh] lg:h-full lg:w-2/3 bg-black">
+              {modalTab === "gallery" && (
+                <div className="w-full h-full relative bg-black flex items-center justify-center">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentImageIndex}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 w-full h-full"
+                    >
+                      <Image
+                        src={getAssetPath(galleryImages[currentImageIndex])}
+                        alt={`${selectedProperty.name} Gallery ${currentImageIndex + 1}`}
+                        fill
+                        priority
+                        className="object-cover"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                  
+                  {/* Prev/Next Controls */}
+                  {galleryImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex(prev => (prev - 1 + galleryImages.length) % galleryImages.length);
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-jungle transition cursor-pointer z-10"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex(prev => (prev + 1) % galleryImages.length);
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-jungle transition cursor-pointer z-10"
+                      >
+                        <ArrowRight size={16} />
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Gallery Index Dots Indicator */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/50 px-4 py-2 rounded-full border border-white/10">
+                    {galleryImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentImageIndex(idx)}
+                        className={`h-1.5 w-1.5 rounded-full transition-all ${idx === currentImageIndex ? "bg-sunset w-3" : "bg-white/30"}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {modalTab === "360" && <Three360Viewer panoramaUrl={selectedProperty.panorama} />}
               
               {modalTab === "map" && (
@@ -1416,6 +1534,16 @@ export default function Home() {
               
               {/* Media Tab Selector buttons */}
               <div className="absolute top-4 left-4 lg:top-8 lg:left-8 z-10 flex gap-2">
+                <button
+                  onClick={() => setModalTab("gallery")}
+                  className={`px-3 py-1.5 rounded-full border text-[9px] font-sans tracking-widest uppercase transition cursor-pointer ${
+                    modalTab === "gallery"
+                      ? "bg-sunset border-sunset text-jungle font-bold"
+                      : "bg-black/60 border-white/15 text-pearl hover:bg-black/80"
+                  }`}
+                >
+                  {lang === "es" ? "Galería" : "Gallery"}
+                </button>
                 <button
                   onClick={() => setModalTab("360")}
                   className={`px-3 py-1.5 rounded-full border text-[9px] font-sans tracking-widest uppercase transition cursor-pointer ${

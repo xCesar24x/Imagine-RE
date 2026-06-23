@@ -11,6 +11,7 @@ export interface Property {
   panorama: string;
   type: "Casa" | "Cabaña" | "Quinta" | "Lote" | "Quinta de Descanso" | "Terreno de Montaña" | "Villa Exclusiva" | "Edificio" | "Bodega";
   segment: "Luxury" | "Standard" | "Commercial";
+  province: "San José" | "Alajuela" | "Cartago" | "Heredia" | "Guanacaste" | "Puntarenas" | "Limón";
   lifestyle: "Naturaleza" | "Ciudad";
   status: "Disponible" | "Opcionada" | "Vendida" | "Destacada";
   approxLocation: string;
@@ -23,7 +24,18 @@ export interface Property {
   medicalDistMin: number;
   hasFiberOptic: boolean;
   hasStarlink: boolean;
+  gallery?: string[];
 }
+
+export const PROVINCE_REGIONS: Record<string, string[]> = {
+  "San José": ["Barrio Escalante", "Escazú", "Santa Ana", "San José Centro", "Curridabat", "Pérez Zeledón"],
+  "Alajuela": ["Atenas", "Alajuela Centro", "San Carlos", "Grecia", "Orotina"],
+  "Cartago": ["Cartago Centro", "Tres Ríos", "Turrialba", "Paraíso"],
+  "Heredia": ["Heredia Centro", "Belén", "Santo Domingo", "San Isidro"],
+  "Guanacaste": ["Papagayo Peninsula", "Nosara", "Tamarindo", "Liberia", "Flamingo", "Playas del Coco"],
+  "Puntarenas": ["Santa Teresa", "Manuel Antonio", "Monteverde", "Jacó", "Quepos", "Uvita", "Dominical"],
+  "Limón": ["Puerto Viejo", "Limón Centro", "Cahuita", "Tortuguero"]
+};
 
 export const PROPERTIES: Property[] = [
   {
@@ -39,6 +51,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Villa Exclusiva",
     segment: "Luxury",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Destacada",
     approxLocation: "Bahía Papagayo, Guanacaste",
@@ -64,6 +77,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Playa Carmen, Santa Teresa",
@@ -89,6 +103,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Villa Exclusiva",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Opcionada",
     approxLocation: "Área de Reserva, Manuel Antonio",
@@ -114,6 +129,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Villa Exclusiva",
     segment: "Luxury",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Península Papagayo, Guanacaste",
@@ -139,6 +155,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Cabaña",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Reserva Nubosa, Monteverde",
@@ -154,7 +171,7 @@ export const PROPERTIES: Property[] = [
   {
     id: "escalante-apex",
     name: "Escalante Apex Penthouse",
-    location: "Escalante (Urban Luxury)",
+    location: "Barrio Escalante",
     price: 3200000,
     sqft: 4500,
     suites: 3,
@@ -164,6 +181,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Luxury",
+    province: "San José",
     lifestyle: "Ciudad",
     status: "Disponible",
     approxLocation: "Barrio Escalante, San José",
@@ -189,6 +207,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Quinta de Descanso",
     segment: "Luxury",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Playa Guiones, Nosara",
@@ -214,6 +233,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Vendida",
     approxLocation: "Malpaís, Santa Teresa",
@@ -239,6 +259,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Villa Exclusiva",
     segment: "Luxury",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Extremo Península, Papagayo",
@@ -264,6 +285,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Quinta",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Linderos de Parque, Manuel Antonio",
@@ -279,7 +301,7 @@ export const PROPERTIES: Property[] = [
   {
     id: "escalante-vault",
     name: "The Vault",
-    location: "Escalante (Urban Luxury)",
+    location: "Barrio Escalante",
     price: 2800000,
     sqft: 3800,
     suites: 2,
@@ -289,6 +311,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Terreno de Montaña",
     segment: "Luxury",
+    province: "San José",
     lifestyle: "Ciudad",
     status: "Disponible",
     approxLocation: "Zona Gastronómica, Escalante",
@@ -314,6 +337,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Luxury",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Opcionada",
     approxLocation: "Peladas, Nosara",
@@ -339,6 +363,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Altos de Santa Teresa",
@@ -364,6 +389,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Luxury",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Vendida",
     approxLocation: "Marina Papagayo, Guanacaste",
@@ -389,6 +415,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Cabaña",
     segment: "Luxury",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Valle Verde, Manuel Antonio",
@@ -414,6 +441,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Cabaña",
     segment: "Standard",
+    province: "Puntarenas",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Santa Elena, Monteverde",
@@ -439,6 +467,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Lote",
     segment: "Standard",
+    province: "Guanacaste",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Playa Guiones, Nosara",
@@ -454,7 +483,7 @@ export const PROPERTIES: Property[] = [
   {
     id: "escalante-loft",
     name: "Urban Nest Loft",
-    location: "Escalante (Urban Luxury)",
+    location: "Barrio Escalante",
     price: 380000,
     sqft: 1800,
     suites: 2,
@@ -464,6 +493,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Casa",
     segment: "Standard",
+    province: "San José",
     lifestyle: "Ciudad",
     status: "Disponible",
     approxLocation: "Barrio Escalante, San José",
@@ -489,6 +519,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Quinta de Descanso",
     segment: "Standard",
+    province: "Alajuela",
     lifestyle: "Naturaleza",
     status: "Disponible",
     approxLocation: "Altos de Atenas, Alajuela",
@@ -504,7 +535,7 @@ export const PROPERTIES: Property[] = [
   {
     id: "heredia-bodega",
     name: "Heredia Industrial Hub",
-    location: "Heredia",
+    location: "Heredia Centro",
     price: 320000,
     sqft: 5000,
     suites: 0,
@@ -514,6 +545,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Bodega",
     segment: "Commercial",
+    province: "Heredia",
     lifestyle: "Ciudad",
     status: "Disponible",
     approxLocation: "Zona Industrial, Heredia",
@@ -529,7 +561,7 @@ export const PROPERTIES: Property[] = [
   {
     id: "sanjose-edificio",
     name: "Sabana Corporate Plaza",
-    location: "Sabana, San José",
+    location: "San José Centro",
     price: 850000,
     sqft: 12000,
     suites: 0,
@@ -539,6 +571,7 @@ export const PROPERTIES: Property[] = [
     panorama: "/panoramas/default.jpg",
     type: "Edificio",
     segment: "Commercial",
+    province: "San José",
     lifestyle: "Ciudad",
     status: "Disponible",
     approxLocation: "Sabana Norte, San José",
