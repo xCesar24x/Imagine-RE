@@ -847,7 +847,7 @@ export default function AdminDashboard({
                           setEditingPropertyId(null);
                           setCrudForm({
                             name: "", location: "", price: 0, sqft: 0, suites: 0, vibeTags: "",
-                            description: "", descriptionEs: "", nameEs: "", type: "Casa", lifestyle: "Naturaleza",
+                            description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", lifestyle: "Naturaleza",
                             status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
                             airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
                             hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png"
