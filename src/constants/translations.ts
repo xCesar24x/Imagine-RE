@@ -8,7 +8,7 @@ export const TRANSLATIONS = {
       tours: "Discovery Tours",
     },
     hero: {
-      badge: "Bryan Viquez M. Your real estate ally.",
+      badge: "Bryan Viquez - Your real estate ally.",
       intro: "Hello, I am Bryan. At Imagine RE & PM, I do not believe in complicated processes. My goal is to make things easy for you with honesty and real market knowledge, whether you are looking for a mountain lot, a business location, or a home for your family. Let us walk this path together with total peace of mind.",
       title1: "Exclusivity redefined",
       title2: "for Costa Rica",
@@ -217,7 +217,7 @@ export const TRANSLATIONS = {
       tours: "Tours VIP",
     },
     hero: {
-      badge: "Bryan Viquez M. Tu aliado inmobiliario.",
+      badge: "Bryan Viquez - Tu aliado inmobiliario.",
       intro: "Hola, soy Bryan. En Imagine RE & PM no creo en los procesos complicados. Mi meta es facilitarte las cosas con honestidad y conocimiento real del mercado, ya sea que estés buscando un lote de montaña, la ubicación para tu negocio o la casa para tu familia. Caminemos juntos el proceso con total tranquilidad.",
       title1: "Exclusividad redefinida",
       title2: "para Costa Rica",
