@@ -29,7 +29,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Shield,
-  Home,
+  Home as HomeIcon,
   Building2
 } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
@@ -707,7 +707,7 @@ export default function Home() {
                   id: "Standard", 
                   label: lang === "es" ? "Residencial & Lotes" : "Residential & Land", 
                   desc: lang === "es" ? "Casas familiares, quintas de descanso y lotes listos para construir" : "Family homes, rest estates and lots ready to build",
-                  icon: Home,
+                  icon: HomeIcon,
                   activeColor: "border-cyan-400 text-cyan-400 bg-cyan-400/5 shadow-[0_0_25px_rgba(34,211,238,0.12)] scale-[1.02]",
                   hoverColor: "border-white/10 hover:border-cyan-400/50 hover:bg-white/5 hover:text-cyan-400 text-pearl/80 hover:scale-[1.01]"
                 },
