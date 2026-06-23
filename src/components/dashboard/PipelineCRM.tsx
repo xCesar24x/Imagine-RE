@@ -21,6 +21,26 @@ export default function PipelineCRM({
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [newNote, setNewNote] = useState("");
 
+  const getLeadPriorityScore = (l: Lead) => {
+    const horizon = (l.horizon || "").toLowerCase();
+    const financing = (l.financing || "").toLowerCase();
+    const wishlistCount = (l.wishlistPropertyIds || []).length;
+
+    const isImmediate = horizon.includes("immediate") || horizon.includes("inmediato") || horizon.includes("1-3") || horizon.includes("3");
+    const isFundsReady = financing.includes("cash") || financing.includes("efectivo") || financing.includes("pre-approved") || financing.includes("pre-aprobado");
+    
+    if (isImmediate && isFundsReady && wishlistCount >= 3) {
+      return "READY";
+    }
+    
+    const isLongTerm = horizon.includes("6+") || horizon.includes("6") || horizon.includes("later") || horizon.includes("tarde");
+    if (isLongTerm) {
+      return "CURIOUS";
+    }
+
+    return "POTENTIAL";
+  };
+
   const saveLeads = (updated: Lead[]) => {
     onUpdateLeads(updated);
     if (selectedLead) {
@@ -210,6 +230,44 @@ export default function PipelineCRM({
                       
                       <h5 className="font-serif text-xs text-pearl font-semibold truncate">{l.name}</h5>
                       <p className="text-[10px] text-gray-400 mt-1 truncate">{l.email}</p>
+
+                      {/* Lead Score Indicator */}
+                      {(() => {
+                        const score = getLeadPriorityScore(l);
+                        return (
+                          <div className="mt-2 flex items-center gap-1.5">
+                            <span className={`inline-flex h-2 w-2 rounded-full ${
+                              score === "READY" ? "bg-emerald-500" : score === "POTENTIAL" ? "bg-amber-500" : "bg-rose-500"
+                            }`} />
+                            <span className="text-[8px] font-sans tracking-wider uppercase text-gray-400 font-semibold">
+                              {score === "READY" 
+                                ? (lang === "es" ? "Decidido" : "Ready") 
+                                : score === "POTENTIAL" 
+                                  ? (lang === "es" ? "Potencial" : "Potential") 
+                                  : (lang === "es" ? "Curioso" : "Curious")}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Service Requested Badge */}
+                      {l.requestedService && (
+                        <div className="mt-1.5 flex items-center gap-1">
+                          <span className={`px-2 py-0.5 text-[8px] font-sans tracking-wide uppercase rounded border font-semibold ${
+                            l.requestedService === "guided_tour" 
+                              ? "bg-purple-500/10 border-purple-500/30 text-purple-300"
+                              : l.requestedService === "visit"
+                                ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                                : "bg-blue-500/10 border-blue-500/30 text-blue-300"
+                          }`}>
+                            {l.requestedService === "guided_tour" 
+                              ? (lang === "es" ? "🚐 Tour Guiado" : "🚐 Guided Tour") 
+                              : l.requestedService === "visit" 
+                                ? (lang === "es" ? "🔑 Visita" : "🔑 Visit") 
+                                : (lang === "es" ? "📄 Info" : "📄 Info")}
+                          </span>
+                        </div>
+                      )}
                       
                       {/* Reactivate Lead WhatsApp shortcut */}
                       {hasWarning && (
@@ -323,6 +381,50 @@ export default function PipelineCRM({
                   <span className={`font-semibold ${isLeadInactive(selectedLead.lastInteractionDate) ? "text-rose-400" : "text-emerald-400"}`}>
                     {new Date(selectedLead.lastInteractionDate).toLocaleDateString()}
                   </span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block mb-1">{lang === "es" ? "Prioridad de Prospecto" : "Lead Priority"}</span>
+                  {(() => {
+                    const score = getLeadPriorityScore(selectedLead);
+                    return (
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-sans tracking-widest uppercase font-bold ${
+                        score === "READY" 
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
+                          : score === "POTENTIAL" 
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-400" 
+                            : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                      }`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${
+                          score === "READY" ? "bg-emerald-400" : score === "POTENTIAL" ? "bg-amber-400" : "bg-rose-400"
+                        }`} />
+                        {score === "READY" 
+                          ? (lang === "es" ? "Decidido (Verde)" : "Ready (Green)") 
+                          : score === "POTENTIAL" 
+                            ? (lang === "es" ? "Potencial (Amarillo)" : "Potential (Yellow)") 
+                            : (lang === "es" ? "Curioso (Rojo)" : "Curious (Red)")}
+                      </span>
+                    );
+                  })()}
+                </div>
+                <div>
+                  <span className="text-gray-400 block mb-1">{lang === "es" ? "Servicio Solicitado" : "Requested Service"}</span>
+                  {selectedLead.requestedService ? (
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-sans tracking-widest uppercase font-bold ${
+                      selectedLead.requestedService === "guided_tour" 
+                        ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
+                        : selectedLead.requestedService === "visit"
+                          ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                          : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                    }`}>
+                      {selectedLead.requestedService === "guided_tour" 
+                        ? (lang === "es" ? "🚐 Tour Guiado + Transp." : "🚐 Guided Tour + Shuttle") 
+                        : selectedLead.requestedService === "visit" 
+                          ? (lang === "es" ? "🔑 Visita Propiedad" : "🔑 Property Visit") 
+                          : (lang === "es" ? "📄 Info Propiedad" : "📄 Property Info")}
+                    </span>
+                  ) : (
+                    <span className="text-pearl/60 italic text-xs">{lang === "es" ? "No especificado" : "Not specified"}</span>
+                  )}
                 </div>
               </div>
 

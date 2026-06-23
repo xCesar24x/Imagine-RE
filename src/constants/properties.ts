@@ -52,6 +52,7 @@ export interface Lead {
   gdprConsent?: boolean;
   tourAgent?: string;
   tourVisitedProperties?: string[];
+  requestedService?: string;
 }
 
 export const PROVINCE_REGIONS: Record<string, string[]> = {

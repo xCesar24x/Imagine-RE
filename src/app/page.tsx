@@ -163,6 +163,7 @@ export default function Home() {
     financing: "",
     horizon: "",
     motivation: "",
+    requestedService: "",
   });
   const [formError, setFormError] = useState("");
   const [leadScore, setLeadScore] = useState<"READY" | "POTENTIAL" | "CURIOUS" | null>(null);
@@ -229,7 +230,7 @@ export default function Home() {
       setFormError(t.wishlist.validationEmptyWishlist);
       return;
     }
-    if (!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation) {
+    if (!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService) {
       setFormError(t.wishlist.validationMissingFields);
       return;
     }
@@ -247,6 +248,7 @@ export default function Home() {
       financing: qualification.financing,
       horizon: qualification.horizon,
       motivation: qualification.motivation,
+      requestedService: qualification.requestedService,
       wishlistPropertyIds: [...wishlistedIds],
       status: "Lead Nuevo" as const,
       notes: [`Lead qualified from website wishlist. Priority Score: ${score}`],
@@ -1174,7 +1176,7 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Step 4: Motivation */}
+                      {/* Step 4: Motivation & Service Requested */}
                       {currentStep === 4 && (
                         <div className="space-y-4">
                           <div>
@@ -1189,6 +1191,23 @@ export default function Home() {
                                 <option value="Relocation">{t.wishlist.steps.motivation1}</option>
                                 <option value="Vacation">{t.wishlist.steps.motivation2}</option>
                                 <option value="Airbnb">{t.wishlist.steps.motivation3}</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{(t.wishlist.steps as any).serviceLabel}</label>
+                            <div className="relative">
+                              <select 
+                                value={qualification.requestedService}
+                                onChange={(e) => handleQualificationChange("requestedService", e.target.value)}
+                                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset cursor-pointer pr-10 animate-none"
+                              >
+                                <option value="">{lang === "es" ? "-- Seleccionar opción --" : "-- Select option --"}</option>
+                                <option value="information">{(t.wishlist.steps as any).serviceOption1}</option>
+                                <option value="visit">{(t.wishlist.steps as any).serviceOption2}</option>
+                                <option value="guided_tour">{(t.wishlist.steps as any).serviceOption3}</option>
                               </select>
                               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
                             </div>
@@ -1220,10 +1239,10 @@ export default function Home() {
                         ) : (
                           <button
                             type="submit"
-                            disabled={!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation}
+                            disabled={!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService}
                             className="flex-1 py-3.5 rounded-2xl bg-sunset text-jungle hover:bg-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-sunset/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-800 disabled:text-gray-500"
                           >
-                            {(!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation) ? (
+                            {(!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService) ? (
                               <>
                                 <Shield size={13} /> {lang === "es" ? "Bloqueado - Complete formulario" : "Locked - Complete form"}
                               </>
@@ -1239,26 +1258,22 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Lead Scoring Output Overlay */}
+                {/* Lead Scoring Output Overlay (Friendly Client Confirmation) */}
                 {leadScore && (
                   <div className="border-t border-white/10 pt-6 text-center space-y-6">
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner border border-white/10 bg-white/5">
-                      {leadScore === "READY" && "🟢"}
-                      {leadScore === "POTENTIAL" && "🟡"}
-                      {leadScore === "CURIOUS" && "🔴"}
+                    <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-inner border border-sunset/20 bg-sunset/5 text-sunset">
+                      <Sparkles className="text-sunset animate-pulse" size={32} />
                     </div>
 
                     <div>
-                      <span className="text-[10px] uppercase tracking-[0.25em] text-sunset font-semibold">{t.wishlist.steps.scoreLabel}</span>
+                      <span className="text-[10px] uppercase tracking-[0.25em] text-sunset font-semibold">{lang === "es" ? "Servicio de Concierge" : "Concierge Service"}</span>
                       <h4 className="font-serif text-xl text-pearl mt-1">
-                        {leadScore === "READY" && t.wishlist.steps.scoreReady}
-                        {leadScore === "POTENTIAL" && t.wishlist.steps.scorePotential}
-                        {leadScore === "CURIOUS" && t.wishlist.steps.scoreCurious}
+                        {(t.wishlist as any).successTitle || (lang === "es" ? "Solicitud VIP Recibida" : "VIP Request Received")}
                       </h4>
                       <p className="text-xs text-gray-300 leading-relaxed mt-3 max-w-sm mx-auto font-light">
-                        {leadScore === "READY" && t.wishlist.steps.scoreReadyDesc}
-                        {leadScore === "POTENTIAL" && t.wishlist.steps.scorePotentialDesc}
-                        {leadScore === "CURIOUS" && t.wishlist.steps.scoreCuriousDesc}
+                        {(t.wishlist as any).successDesc || (lang === "es"
+                          ? "Gracias por compartir su interés. Nuestro equipo de concierge privado ha recibido su portafolio exclusivo. Estamos revisando sus preferencias y nos comunicaremos con usted en las próximas 24 horas para coordinar visitas privadas o brindarle información logística detallada."
+                          : "Thank you for sharing your interest. Our private concierge team has received your exclusive wishlist portfolio. We are reviewing your preferences and will reach out within 24 hours to coordinate private viewings or provide custom logistics information.")}
                       </p>
                     </div>
 
@@ -1276,7 +1291,7 @@ export default function Home() {
                           setClientName("");
                           setClientEmail("");
                           setClientPhone("");
-                          setQualification({ budget: "", financing: "", horizon: "", motivation: "" });
+                          setQualification({ budget: "", financing: "", horizon: "", motivation: "", requestedService: "" });
                         }}
                         className="w-full bg-[#d4af37] text-[#02100b] py-3.5 rounded-2xl font-sans uppercase tracking-[0.2em] text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-white transition duration-250 cursor-pointer shadow-lg shadow-sunset/15"
                       >
@@ -1293,7 +1308,7 @@ export default function Home() {
                           setClientName("");
                           setClientEmail("");
                           setClientPhone("");
-                          setQualification({ budget: "", financing: "", horizon: "", motivation: "" });
+                          setQualification({ budget: "", financing: "", horizon: "", motivation: "", requestedService: "" });
                         }}
                         className="w-full border border-white/10 hover:border-white/20 text-pearl/70 hover:text-white py-3 rounded-2xl font-sans uppercase tracking-[0.2em] text-[9px] font-semibold transition cursor-pointer"
                       >
