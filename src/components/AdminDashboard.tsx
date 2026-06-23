@@ -360,6 +360,25 @@ export default function AdminDashboard({
   const [selectedContractProp, setSelectedContractProp] = useState<string>("");
   const [contractType, setContractType] = useState<"pm" | "exclusive" | "commission">("pm");
   const [generatedContractHtml, setGeneratedContractHtml] = useState<string>("");
+  const [contractLang, setContractLang] = useState<"en" | "es">(lang || "es");
+  const [contractCommission, setContractCommission] = useState<number>(15);
+  const [contractTerm, setContractTerm] = useState<number>(12);
+  const [contractRepName, setContractRepName] = useState<string>("Bryan Viquez");
+  const [contractRepId, setContractRepId] = useState<string>("3-101-778899");
+  const [contractCustomClauses, setContractCustomClauses] = useState<string>("");
+
+  useEffect(() => {
+    if (contractType === "pm") {
+      setContractCommission(15);
+      setContractTerm(12);
+    } else if (contractType === "exclusive") {
+      setContractCommission(6);
+      setContractTerm(12);
+    } else if (contractType === "commission") {
+      setContractCommission(3);
+      setContractTerm(6);
+    }
+  }, [contractType]);
 
   // --- Financial State ---
   const [selectedReportProp, setSelectedReportProp] = useState<string>("");
@@ -649,86 +668,221 @@ export default function AdminDashboard({
     if (!lead || !prop) return;
 
     let content = "";
-    const dateStr = new Date().toLocaleDateString(lang === "es" ? "es-CR" : "en-US", { year: "numeric", month: "long", day: "numeric" });
+    const dateStr = new Date().toLocaleDateString(
+      contractLang === "es" ? "es-CR" : "en-US",
+      { year: "numeric", month: "long", day: "numeric" }
+    );
 
     if (contractType === "pm") {
-      content = `
-        <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
-          <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">CONTRATO DE ADMINISTRACIÓN DE PROPIEDADES</h1>
-            <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
-          </div>
-          
-          <p>En la ciudad de San José, Costa Rica, al día <strong>${dateStr}</strong>, se celebra el presente contrato entre:</p>
-          <p>Por una parte, <strong>IMAGINE S.A.</strong> (en adelante el "Administrador"), y por la otra, el Sr./Sra. <strong>${lead.name}</strong>, titular del correo electrónico <strong>${lead.email}</strong> y teléfono <strong>${lead.phone}</strong> (en adelante el "Propietario").</p>
-          
-          <h3 style="color: #02140f; margin-top: 30px;">CLÁUSULA PRIMERA: OBJETO DEL CONTRATO</h3>
-          <p>El Propietario entrega en administración exclusiva al Administrador la propiedad denominada <strong>"${prop.name}"</strong>, ubicada en <strong>${prop.location} (${prop.approxLocation})</strong>, para su gestión hotelera, mercadeo digital y mantenimiento integral.</p>
-          
-          <h3 style="color: #02140f; margin-top: 30px;">CLÁUSULA SEGUNDA: COMISIÓN Y RENDIMIENTOS</h3>
-          <p>El Administrador percibirá una comisión de gestión correspondiente al <strong>15% (quince por ciento)</strong> sobre los ingresos brutos generados por concepto de alquiler de la propiedad en plataformas autorizadas (Airbnb, Booking y canal directo).</p>
-          
-          <h3 style="color: #02140f; margin-top: 30px;">CLÁUSULA TERCERA: SERVICIOS CONCIERGE INCLUIDOS</h3>
-          <p>El contrato incluye limpieza premium de entrada/salida, jardinería básica, mantenimiento de piscina, y atención concierge 24/7 para huéspedes VIP.</p>
-          
-          <div style="margin-top: 80px; display: flex; justify-content: space-between;">
-            <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px;">
-              <p><strong>IMAGINE S.A.</strong><br/>Administrador Representante</p>
+      if (contractLang === "es") {
+        content = `
+          <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">CONTRATO DE ADMINISTRACIÓN DE PROPIEDADES</h1>
+              <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
             </div>
-            <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px;">
-              <p><strong>${lead.name}</strong><br/>Propietario / Cliente</p>
+            
+            <p>En la ciudad de San José, Costa Rica, al día <strong>${dateStr}</strong>, se celebra el presente contrato de administración de propiedad (en adelante el "Contrato") entre:</p>
+            <p>Por una parte, <strong>IMAGINE S.A.</strong>, cédula jurídica número <strong>${contractRepId}</strong>, representada en este acto por el Sr. <strong>${contractRepName}</strong> en su calidad de apoderado generalísimo (en adelante el "Administrador"), y por la otra, el Sr./Sra. <strong>${lead.name}</strong>, titular del correo electrónico <strong>${lead.email}</strong> y teléfono <strong>${lead.phone}</strong> (en adelante el "Propietario").</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA PRIMERA: OBJETO DEL CONTRATO</h3>
+            <p>El Propietario entrega en administración exclusiva al Administrador la propiedad denominada <strong>"${prop.nameEs || prop.name}"</strong>, ubicada en <strong>${prop.location} (${prop.approxLocation})</strong>, para su gestión hotelera, comercialización en canales digitales (Airbnb, Booking.com y canal directo), limpieza, check-in/check-out y mantenimiento integral.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA SEGUNDA: COMISIÓN DE GESTIÓN Y BALANCE</h3>
+            <p>El Administrador percibirá una comisión de gestión correspondiente al <strong>${contractCommission}% (por ciento)</strong> sobre los ingresos brutos generados por concepto de alquiler de la propiedad durante la vigencia del Contrato. Los balances financieros serán entregados mensualmente.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA TERCERA: PLAZO DE VIGENCIA</h3>
+            <p>El plazo de vigencia del presente contrato será de <strong>${contractTerm} meses</strong> a partir de la firma de este documento, prorrogable de forma automática por períodos iguales salvo manifestación en contrario por alguna de las partes con 30 días de anticipación.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA CUARTA: SERVICIOS CONCIERGE VIP INCLUIDOS</h3>
+            <p>El Administrador coordinará servicios de limpieza premium de entrada/salida, mantenimiento de piscina, jardinería básica y atención concierge 24/7 para huéspedes VIP.</p>
+            
+            ${contractCustomClauses.trim() ? `
+              <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA QUINTA: CLÁUSULAS ADICIONALES PACTADAS</h3>
+              <p style="white-space: pre-wrap; font-style: italic;">${contractCustomClauses}</p>
+            ` : ""}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>IMAGINE S.A.</strong><br/>Administrador / Representante</p>
+              </div>
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>${lead.name}</strong><br/>Propietario / Cliente</p>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        content = `
+          <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">PROPERTY MANAGEMENT CONTRACT</h1>
+              <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
+            </div>
+            
+            <p>In San José, Costa Rica, on <strong>${dateStr}</strong>, this property management agreement (hereinafter the "Agreement") is entered into by and between:</p>
+            <p>On one part, <strong>IMAGINE S.A.</strong>, Corporate ID number <strong>${contractRepId}</strong>, represented by Mr. <strong>${contractRepName}</strong> in his capacity as legal representative (hereinafter the "Manager"), and on the other part, Mr./Mrs. <strong>${lead.name}</strong>, with email <strong>${lead.email}</strong> and phone <strong>${lead.phone}</strong> (hereinafter the "Owner").</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE ONE: PURPOSE OF THE CONTRACT</h3>
+            <p>The Owner delivers to the Manager under exclusive administration the property named <strong>"${prop.name}"</strong>, located in <strong>${prop.location} (${prop.approxLocation})</strong>, for rental management, digital marketing on booking channels (Airbnb, Booking.com and direct channel), turnover cleaning, check-in/check-out services and general maintenance.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE TWO: MANAGEMENT FEE & REVENUE BALANCE</h3>
+            <p>The Manager shall receive a management commission corresponding to <strong>${contractCommission}% (percent)</strong> of the gross rental income generated by the property during the term of the Agreement. Financial statements will be delivered on a monthly basis.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE THREE: CONTRACT TERM</h3>
+            <p>The duration of this agreement shall be <strong>${contractTerm} months</strong> from the signing date, automatically renewable for equal periods unless written notice is given by either party 30 days in advance.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE FOUR: VIP CONCIERGE SERVICES INCLUDED</h3>
+            <p>The Manager will coordinate premium turnover cleaning, pool maintenance, basic landscaping, and 24/7 concierge support for VIP guests.</p>
+            
+            ${contractCustomClauses.trim() ? `
+              <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE FIVE: ADDITIONAL AGREED COVENANTS</h3>
+              <p style="white-space: pre-wrap; font-style: italic;">${contractCustomClauses}</p>
+            ` : ""}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>IMAGINE S.A.</strong><br/>Manager Representative</p>
+              </div>
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>${lead.name}</strong><br/>Owner / Client</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     } else if (contractType === "exclusive") {
-      content = `
-        <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
-          <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">CONTRATO DE EXCLUSIVIDAD DE CORRETAJE INMOBILIARIO</h1>
-            <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
-          </div>
-          
-          <p>En Costa Rica, al día <strong>${dateStr}</strong>, se suscribe el presente acuerdo entre <strong>IMAGINE S.A.</strong> y el propietario <strong>${lead.name}</strong> para la promoción y venta en exclusiva de la propiedad:</p>
-          <p><strong>Nombre:</strong> ${prop.name}<br/><strong>Ubicación:</strong> ${prop.location}<br/><strong>Valor de Salida (USD):</strong> $${prop.price.toLocaleString("en-US")} USD</p>
-          
-          <h3 style="color: #02140f; margin-top: 30px;">CLÁUSULA PRIMERA: EXCLUSIVIDAD</h3>
-          <p>El Propietario concede a IMAGINE S.A. el derecho exclusivo para publicitar, mostrar y negociar la venta de la propiedad por un período de doce (12) meses naturales a partir de la firma de este documento.</p>
-          
-          <h3 style="color: #02140f; margin-top: 30px;">CLÁUSULA SEGUNDA: HONORARIOS DE CORRETAJE</h3>
-          <p>En caso de concretarse la venta de la propiedad, los honorarios correspondientes al Corredor serán del <strong>6% (seis por ciento) + IVA</strong> sobre el precio final de venta pactado.</p>
-          
-          <div style="margin-top: 80px; display: flex; justify-content: space-between;">
-            <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px;">
-              <p>IMAGINE S.A.</p>
+      if (contractLang === "es") {
+        content = `
+          <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">CONTRATO DE EXCLUSIVIDAD DE CORRETAJE INMOBILIARIO</h1>
+              <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
             </div>
-            <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px;">
-              <p>${lead.name}</p>
+            
+            <p>En Costa Rica, al día <strong>${dateStr}</strong>, se suscribe el presente acuerdo entre <strong>IMAGINE S.A.</strong>, cédula jurídica número <strong>${contractRepId}</strong>, representada por <strong>${contractRepName}</strong> (en adelante el "Corredor"), y el propietario <strong>${lead.name}</strong> (en adelante el "Propietario"), para la promoción y venta en exclusiva de la siguiente propiedad:</p>
+            <p style="background: #f7f9f8; padding: 15px; border-left: 3px solid #d4af37; font-size: 12px;">
+              <strong>Nombre de la Propiedad:</strong> ${prop.nameEs || prop.name}<br/>
+              <strong>Ubicación Geográfica:</strong> ${prop.location} (${prop.approxLocation})<br/>
+              <strong>Precio Mínimo de Publicación (USD):</strong> $${prop.price.toLocaleString("en-US")} USD
+            </p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA PRIMERA: DERECHO DE EXCLUSIVIDAD</h3>
+            <p>El Propietario concede al Corredor el derecho exclusivo para publicitar, promover, mostrar y negociar la venta de la propiedad descrita por un período obligatorio de <strong>${contractTerm} meses</strong> naturales a partir de la firma de este acuerdo.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA SEGUNDA: HONORARIOS DE CORRETAJE</h3>
+            <p>En caso de concretarse la venta de la propiedad con cualquier cliente, los honorarios correspondientes al Corredor serán del <strong>${contractCommission}% (por ciento) + IVA</strong> sobre el precio final de venta pactado, pagaderos en el acto de la firma de la escritura de traspaso.</p>
+            
+            ${contractCustomClauses.trim() ? `
+              <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA TERCERA: CLÁUSULAS ADICIONALES PACTADAS</h3>
+              <p style="white-space: pre-wrap; font-style: italic;">${contractCustomClauses}</p>
+            ` : ""}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>IMAGINE S.A.</strong><br/>Corredor Autorizado</p>
+              </div>
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>${lead.name}</strong><br/>Propietario / Cliente</p>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        content = `
+          <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">EXCLUSIVE REAL ESTATE BROKERAGE AGREEMENT</h1>
+              <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
+            </div>
+            
+            <p>In Costa Rica, on <strong>${dateStr}</strong>, this exclusive agreement is signed between <strong>IMAGINE S.A.</strong>, Corporate ID number <strong>${contractRepId}</strong>, represented by <strong>${contractRepName}</strong> (hereinafter the "Broker"), and the property owner <strong>${lead.name}</strong> (hereinafter the "Owner"), for the exclusive marketing and sale of the following property:</p>
+            <p style="background: #f7f9f8; padding: 15px; border-left: 3px solid #d4af37; font-size: 12px;">
+              <strong>Property Name:</strong> ${prop.name}<br/>
+              <strong>Location:</strong> ${prop.location} (${prop.approxLocation})<br/>
+              <strong>Minimum Listing Price (USD):</strong> $${prop.price.toLocaleString("en-US")} USD
+            </p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE ONE: EXCLUSIVITY RIGHT</h3>
+            <p>The Owner grants the Broker the exclusive right to market, advertise, display and negotiate the sale of the described property for an obligatory term of <strong>${contractTerm} months</strong> from the signing of this agreement.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE TWO: BROKERAGE FEES</h3>
+            <p>In the event of a successful sale of the property to any buyer, the fees corresponding to the Broker shall be <strong>${contractCommission}% (percent) + VAT</strong> of the final agreed sale price, payable upon the execution of the deed of transfer.</p>
+            
+            ${contractCustomClauses.trim() ? `
+              <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE THREE: ADDITIONAL AGREED COVENANTS</h3>
+              <p style="white-space: pre-wrap; font-style: italic;">${contractCustomClauses}</p>
+            ` : ""}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>IMAGINE S.A.</strong><br/>Authorized Broker</p>
+              </div>
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>${lead.name}</strong><br/>Owner / Client</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     } else {
-      content = `
-        <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
-          <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">ACUERDO DE PAGO DE COMISIÓN DE RE</h1>
-            <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
-          </div>
-          
-          <p>Este documento formaliza el acuerdo de comisión para la promoción de <strong>${prop.name}</strong> al día <strong>${dateStr}</strong>.</p>
-          <p>Se acuerda que el comisionista recibirá el <strong>3% (tres por ciento)</strong> del valor de publicación / intermediación de venta en el mercado inmobiliario.</p>
-          
-          <div style="margin-top: 80px; display: flex; justify-content: space-between;">
-            <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px;">
-              <p>IMAGINE S.A.</p>
+      if (contractLang === "es") {
+        content = `
+          <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">ACUERDO DE PAGO DE COMISIÓN DE REAL ESTATE</h1>
+              <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
             </div>
-            <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px;">
-              <p>Firma del Propietario</p>
+            
+            <p>Este documento formaliza el acuerdo de pago de comisión por intermediación inmobiliaria celebrado al día <strong>${dateStr}</strong> entre <strong>IMAGINE S.A.</strong> (cédula jurídica <strong>${contractRepId}</strong>, rep. por <strong>${contractRepName}</strong>) y el Propietario/Cliente <strong>${lead.name}</strong>, para la promoción de la propiedad <strong>"${prop.nameEs || prop.name}"</strong>.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA PRIMERA: INTERMEDIACIÓN Y COMISIÓN</h3>
+            <p>Se acuerda formalmente que el comisionista recibirá el pago de una comisión correspondiente al <strong>${contractCommission}% (por ciento)</strong> del valor de venta final de la propiedad. Este acuerdo tiene una validez de <strong>${contractTerm} meses</strong>.</p>
+            
+            ${contractCustomClauses.trim() ? `
+              <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLÁUSULA SEGUNDA: CONDICIONES ESPECIALES PACTADAS</h3>
+              <p style="white-space: pre-wrap; font-style: italic;">${contractCustomClauses}</p>
+            ` : ""}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>IMAGINE S.A.</strong><br/>Representante</p>
+              </div>
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>${lead.name}</strong><br/>Propietario / Cliente</p>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        content = `
+          <div style="font-family: 'Playfair Display', serif; padding: 40px; color: #02140f; background: #fff; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="color: #02140f; font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">REAL ESTATE COMMISSION AGREEMENT</h1>
+              <p style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 3px;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT</p>
+            </div>
+            
+            <p>This document formalizes the real estate commission payment agreement executed on <strong>${dateStr}</strong> by and between <strong>IMAGINE S.A.</strong> (Corporate ID <strong>${contractRepId}</strong>, represented by <strong>${contractRepName}</strong>) and the Owner/Client <strong>${lead.name}</strong>, for the promotion of the property <strong>"${prop.name}"</strong>.</p>
+            
+            <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE ONE: INTERMEDIATION & FEES</h3>
+            <p>It is formally agreed that the agent/broker shall receive a commission equivalent to <strong>${contractCommission}% (percent)</strong> of the final sale price of the property. This agreement shall remain valid for a term of <strong>${contractTerm} months</strong>.</p>
+            
+            ${contractCustomClauses.trim() ? `
+              <h3 style="color: #02140f; margin-top: 30px; font-size: 14px; font-weight: bold; border-b: 1px solid #eee; padding-bottom: 5px;">CLAUSE TWO: ADDITIONAL SPECIAL COVENANTS</h3>
+              <p style="white-space: pre-wrap; font-style: italic;">${contractCustomClauses}</p>
+            ` : ""}
+
+            <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>IMAGINE S.A.</strong><br/>Representative</p>
+              </div>
+              <div style="width: 45%; border-top: 1px solid #000; text-align: center; padding-top: 10px; font-size: 11px;">
+                <p><strong>${lead.name}</strong><br/>Owner / Client</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     }
 
     setGeneratedContractHtml(content);
@@ -1711,86 +1865,195 @@ export default function AdminDashboard({
           {activeTab === "contracts" && (
             <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
               {/* Form parameters */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5 flex flex-col justify-between">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 flex flex-col justify-between">
                 <div className="space-y-4">
-                  <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3">Legal Contract Automator</h3>
+                  <h3 className="font-serif text-lg text-pearl mb-4 border-b border-white/10 pb-3">
+                    {lang === "es" ? "Automatizador de Contratos Legales" : "Legal Contract Automator"}
+                  </h3>
                   
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Select Client / Lead</label>
-                    <div className="relative">
-                      <select
-                        value={selectedContractLead}
-                        onChange={e => setSelectedContractLead(e.target.value)}
-                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl appearance-none pr-10 focus:outline-none focus:border-[#d4af37] cursor-pointer"
-                      >
-                        <option value="">-- Choose lead --</option>
-                        {leads.map(l => (
-                          <option key={l.id} value={l.id}>{l.name}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]" size={14} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Seleccionar Cliente / Lead" : "Select Client / Lead"}
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedContractLead}
+                          onChange={e => setSelectedContractLead(e.target.value)}
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl appearance-none pr-10 focus:outline-none focus:border-[#d4af37] cursor-pointer"
+                        >
+                          <option value="">{lang === "es" ? "-- Elegir lead --" : "-- Choose lead --"}</option>
+                          {leads.map(l => (
+                            <option key={l.id} value={l.id}>{l.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]" size={14} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Seleccionar Propiedad" : "Select Property"}
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedContractProp}
+                          onChange={e => setSelectedContractProp(e.target.value)}
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl appearance-none pr-10 focus:outline-none focus:border-[#d4af37] cursor-pointer"
+                        >
+                          <option value="">{lang === "es" ? "-- Elegir propiedad --" : "-- Choose property --"}</option>
+                          {properties.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]" size={14} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Tipo de Contrato" : "Contract Template Type"}
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={contractType}
+                          onChange={e => setContractType(e.target.value as any)}
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl appearance-none pr-10 focus:outline-none focus:border-[#d4af37] cursor-pointer"
+                        >
+                          <option value="pm">{lang === "es" ? "Administración de Propiedad (PM)" : "Property Management (PM)"}</option>
+                          <option value="exclusive">{lang === "es" ? "Exclusividad de Corretaje" : "Exclusive Brokerage"}</option>
+                          <option value="commission">{lang === "es" ? "Acuerdo de Comisión de Venta" : "Commission Agreement"}</option>
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]" size={14} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Idioma del Documento" : "Document Language"}
+                      </label>
+                      <div className="flex border border-white/10 p-0.5 rounded-xl bg-white/5 h-[37px] items-center">
+                        <button
+                          type="button"
+                          onClick={() => setContractLang("en")}
+                          className={`flex-1 py-1 text-[10px] font-sans uppercase tracking-wider font-semibold rounded-lg transition h-full ${
+                            contractLang === "en" ? "bg-[#d4af37] text-[#02140f] font-bold" : "text-gray-400 hover:text-pearl"
+                          }`}
+                        >
+                          English
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setContractLang("es")}
+                          className={`flex-1 py-1 text-[10px] font-sans uppercase tracking-wider font-semibold rounded-lg transition h-full ${
+                            contractLang === "es" ? "bg-[#d4af37] text-[#02140f] font-bold" : "text-gray-400 hover:text-pearl"
+                          }`}
+                        >
+                          Español
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Comisión de Negociación (%)" : "Negotiated Commission (%)"}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={contractCommission}
+                        onChange={e => setContractCommission(Number(e.target.value))}
+                        className="w-full bg-[#01140f] border border-white/10 text-[#d4af37] font-semibold text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Plazo de Vigencia (Meses)" : "Validity Term (Months)"}
+                      </label>
+                      <input
+                        type="number"
+                        value={contractTerm}
+                        onChange={e => setContractTerm(Number(e.target.value))}
+                        className="w-full bg-[#01140f] border border-white/10 text-[#d4af37] font-semibold text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Representante Legal" : "Legal Representative"}
+                      </label>
+                      <input
+                        type="text"
+                        value={contractRepName}
+                        onChange={e => setContractRepName(e.target.value)}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                        {lang === "es" ? "Cédula Jurídica / ID" : "Corporate ID / Passport"}
+                      </label>
+                      <input
+                        type="text"
+                        value={contractRepId}
+                        onChange={e => setContractRepId(e.target.value)}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans"
+                      />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Select Property</label>
-                    <div className="relative">
-                      <select
-                        value={selectedContractProp}
-                        onChange={e => setSelectedContractProp(e.target.value)}
-                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl appearance-none pr-10 focus:outline-none focus:border-[#d4af37] cursor-pointer"
-                      >
-                        <option value="">-- Choose property --</option>
-                        {properties.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]" size={14} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Contract Template Type</label>
-                    <div className="relative">
-                      <select
-                        value={contractType}
-                        onChange={e => setContractType(e.target.value as any)}
-                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl appearance-none pr-10 focus:outline-none focus:border-[#d4af37] cursor-pointer"
-                      >
-                        <option value="pm">Property Management Contract (PM)</option>
-                        <option value="exclusive">Exclusividad de Corretaje</option>
-                        <option value="commission">Comisión Venta Acuerdo</option>
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d4af37]" size={14} />
-                    </div>
+                    <label className="block text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">
+                      {lang === "es" ? "Cláusulas Especiales Adicionales" : "Special Additional Clauses"}
+                    </label>
+                    <textarea
+                      value={contractCustomClauses}
+                      onChange={e => setContractCustomClauses(e.target.value)}
+                      placeholder={
+                        lang === "es"
+                          ? "Cláusulas especiales negociadas que se insertarán al final del contrato..."
+                          : "Special negotiated clauses to insert at the end of the contract..."
+                      }
+                      rows={3}
+                      className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans resize-none"
+                    />
                   </div>
                 </div>
 
                 <button
                   onClick={generateLegalContract}
                   disabled={!selectedContractLead || !selectedContractProp}
-                  className="w-full bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center disabled:opacity-50 disabled:pointer-events-none"
+                  className="w-full bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center disabled:opacity-50 disabled:pointer-events-none mt-2 transition"
                 >
-                  Generate Contract
+                  {lang === "es" ? "Generar Contrato Legal" : "Generate Legal Contract"}
                 </button>
               </div>
 
               {/* Preview and Export */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
-                <div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between h-full">
+                <div className="flex-1 flex flex-col min-h-0">
                   <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center justify-between">
-                    <span>PDF Print Template Preview</span>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">Branded Legal Documents</span>
+                    <span>{lang === "es" ? "Vista Previa de Impresión PDF" : "PDF Print Template Preview"}</span>
+                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">{lang === "es" ? "Documentos Corporativos" : "Branded Legal Documents"}</span>
                   </h3>
                   
                   {generatedContractHtml ? (
                     <div 
-                      className="border border-white/10 rounded-xl overflow-hidden max-h-[400px] overflow-y-auto"
+                      className="border border-white/10 rounded-xl overflow-hidden overflow-y-auto bg-white flex-1 min-h-[300px]"
                       dangerouslySetInnerHTML={{ __html: generatedContractHtml }}
                     />
                   ) : (
-                    <div className="py-24 text-center text-xs text-gray-400 font-light italic">
-                      Fill parameters and click generate to review contract draft...
+                    <div className="py-24 text-center text-xs text-gray-400 font-light italic flex-1 flex items-center justify-center">
+                      {lang === "es" 
+                        ? "Complete los parámetros de la izquierda y genere el contrato para visualizar el borrador..."
+                        : "Fill the parameters on the left and generate the contract to review the draft..."
+                      }
                     </div>
                   )}
                 </div>
@@ -1798,10 +2061,10 @@ export default function AdminDashboard({
                 {generatedContractHtml && (
                   <button
                     onClick={handlePrintContract}
-                    className="w-full border border-[#d4af37] text-[#d4af37] hover:bg-[#d4af37] hover:text-jungle text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center mt-6 flex items-center justify-center gap-2"
+                    className="w-full border border-[#d4af37] text-[#d4af37] hover:bg-[#d4af37] hover:text-jungle text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center mt-6 flex items-center justify-center gap-2 transition"
                   >
                     <Download size={14} />
-                    Download Official contract PDF
+                    {lang === "es" ? "Descargar Contrato PDF Oficial" : "Download Official Contract PDF"}
                   </button>
                 )}
               </div>
