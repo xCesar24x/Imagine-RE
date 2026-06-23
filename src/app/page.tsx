@@ -268,6 +268,35 @@ export default function Home() {
     localStorage.setItem("imagine_leads", JSON.stringify(currentLeads));
   };
 
+  // Build personalized WhatsApp message based on service type
+  const buildWhatsAppMessage = () => {
+    const WHATSAPP_NUMBER = "50688888888"; // Replace with Bryan's real number
+    const wishlistNames = wishlistedIds
+      .map(id => PROPERTIES.find(p => p.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+
+    let message = "";
+    const service = qualification.requestedService;
+
+    if (service === "information") {
+      message = lang === "es"
+        ? `Hola Bryan, soy ${clientName}. Estoy interesado/a en recibir información detallada sobre la(s) siguiente(s) propiedad(es) de mi wishlist: ${wishlistNames}. Mi contacto es: ${clientEmail} / ${clientPhone}. Quedo atento/a a su respuesta. ¡Muchas gracias!`
+        : `Hi Bryan, I'm ${clientName}. I'm interested in receiving detailed information about the following propert${wishlistNames.includes(",") ? "ies" : "y"} from my wishlist: ${wishlistNames}. You can reach me at: ${clientEmail} / ${clientPhone}. Looking forward to hearing from you!`;
+    } else if (service === "visit") {
+      message = lang === "es"
+        ? `Hola Bryan, soy ${clientName}. Me gustaría coordinar una visita presencial a la(s) siguiente(s) propiedad(es): ${wishlistNames}. Mi disponibilidad es flexible y pueden contactarme en: ${clientEmail} / ${clientPhone}. ¡Gracias de antemano!`
+        : `Hi Bryan, I'm ${clientName}. I'd like to coordinate a property visit to: ${wishlistNames}. I'm flexible on timing and you can reach me at: ${clientEmail} / ${clientPhone}. Thank you!`;
+    } else if (service === "guided_tour") {
+      message = lang === "es"
+        ? `Hola Bryan, soy ${clientName}. Me interesa el tour guiado con transporte incluido para visitar: ${wishlistNames}. Por favor indíqueme fechas disponibles y cualquier detalle del recorrido. Mi contacto: ${clientEmail} / ${clientPhone}. ¡Con mucho gusto!`
+        : `Hi Bryan, I'm ${clientName}. I'm interested in the guided tour with transportation included to visit: ${wishlistNames}. Please let me know available dates and any tour details. Contact me at: ${clientEmail} / ${clientPhone}. Thank you!`;
+    }
+
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, "_blank");
+  };
+
   const handleNextStep = () => {
     if (currentStep === 1 && (!clientName || !clientEmail || !clientPhone)) {
       setFormError(lang === "es" ? "Por favor complete sus datos de contacto." : "Please fill out your contact details.");
@@ -1283,26 +1312,35 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Discovery Tour CTA & Reset controls */}
+                    {/* WhatsApp CTA + Reset controls */}
                     <div className="space-y-3 max-w-sm mx-auto pt-4">
+
+                      {/* Service label recap */}
+                      <div className="text-center mb-2">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-sans tracking-widest uppercase font-bold ${
+                          qualification.requestedService === "guided_tour"
+                            ? "bg-purple-500/10 border-purple-500/30 text-purple-300"
+                            : qualification.requestedService === "visit"
+                              ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                              : "bg-blue-500/10 border-blue-500/30 text-blue-300"
+                        }`}>
+                          {qualification.requestedService === "guided_tour"
+                            ? (lang === "es" ? "🚐 Tour Guiado + Transporte" : "🚐 Guided Tour + Transport")
+                            : qualification.requestedService === "visit"
+                              ? (lang === "es" ? "🔑 Visita a la Propiedad" : "🔑 Property Visit")
+                              : (lang === "es" ? "📄 Información de Propiedad" : "📄 Property Information")}
+                        </span>
+                      </div>
+
+                      {/* WhatsApp button */}
                       <button
-                        onClick={() => {
-                          setIsWishlistOpen(false);
-                          setActiveTab("tours");
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                          // Reset state
-                          setLeadScore(null);
-                          setWishlistedIds([]);
-                          setCurrentStep(1);
-                          setClientName("");
-                          setClientEmail("");
-                          setClientPhone("");
-                          setQualification({ budget: "", financing: "", horizon: "", motivation: "", requestedService: "" });
-                        }}
-                        className="w-full bg-[#d4af37] text-[#02100b] py-3.5 rounded-2xl font-sans uppercase tracking-[0.2em] text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-white transition duration-250 cursor-pointer shadow-lg shadow-sunset/15"
+                        onClick={buildWhatsAppMessage}
+                        className="w-full bg-[#25D366] text-white py-3.5 rounded-2xl font-sans uppercase tracking-[0.2em] text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-[#1ebe5d] transition duration-250 cursor-pointer shadow-lg shadow-green-500/20"
                       >
-                        <Compass size={14} />
-                        <span>{lang === "es" ? "Programar Discovery Tour" : "Schedule Discovery Tour"}</span>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        <span>{lang === "es" ? "Continuar por WhatsApp" : "Continue on WhatsApp"}</span>
                       </button>
 
                       <button
