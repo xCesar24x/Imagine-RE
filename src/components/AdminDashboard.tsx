@@ -47,7 +47,6 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState<"inventory" | "crm" | "social" | "contracts" | "reports">("inventory");
 
   // --- CRUD State ---
-  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [crudForm, setCrudForm] = useState({
     name: "",
     location: "",
@@ -59,6 +58,7 @@ export default function AdminDashboard({
     descriptionEs: "",
     nameEs: "",
     type: "Casa" as Property["type"],
+    segment: "Luxury" as Property["segment"],
     lifestyle: "Naturaleza" as Property["lifestyle"],
     status: "Disponible" as Property["status"],
     approxLocation: "",
@@ -200,6 +200,7 @@ export default function AdminDashboard({
       image: crudForm.image,
       panorama: "/panoramas/default.jpg",
       type: crudForm.type,
+      segment: crudForm.segment,
       lifestyle: crudForm.lifestyle,
       status: crudForm.status,
       approxLocation: crudForm.approxLocation,
@@ -225,7 +226,7 @@ export default function AdminDashboard({
     setEditingPropertyId(null);
     setCrudForm({
       name: "", location: "", price: 0, sqft: 0, suites: 0, vibeTags: "",
-      description: "", descriptionEs: "", nameEs: "", type: "Casa", lifestyle: "Naturaleza",
+      description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", lifestyle: "Naturaleza",
       status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
       airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
       hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png"
@@ -245,6 +246,7 @@ export default function AdminDashboard({
       descriptionEs: p.description, // Simple mapping for mockup
       nameEs: p.name,
       type: p.type,
+      segment: p.segment,
       lifestyle: p.lifestyle,
       status: p.status,
       approxLocation: p.approxLocation,
@@ -641,7 +643,7 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-4">
                     <div>
                       <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Type</label>
                       <select 
@@ -656,6 +658,20 @@ export default function AdminDashboard({
                         <option value="Quinta de Descanso">Quinta de Descanso</option>
                         <option value="Terreno de Montaña">Terreno de Montaña</option>
                         <option value="Villa Exclusiva">Villa Exclusiva</option>
+                        <option value="Edificio">Edificio Comercial</option>
+                        <option value="Bodega">Bodega / Local</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Segment</label>
+                      <select 
+                        value={crudForm.segment}
+                        onChange={e => setCrudForm({ ...crudForm, segment: e.target.value as any })}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      >
+                        <option value="Luxury">Signature Luxury</option>
+                        <option value="Standard">Standard Residential</option>
+                        <option value="Commercial">Commercial & Investment</option>
                       </select>
                     </div>
                     <div>

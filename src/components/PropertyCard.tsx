@@ -67,9 +67,39 @@ export default function PropertyCard({
     return `$${property.price.toLocaleString("en-US")}`;
   }, [property.price, currencyMode, lang, rates]);
 
+  const segmentStyles = useMemo(() => {
+    switch (property.segment) {
+      case "Standard":
+        return {
+          bg: "bg-[#08221b] border-white/10 hover:border-cyan-500/50",
+          textAccent: "text-cyan-400",
+          iconAccent: "text-cyan-400",
+          wishlistHover: "hover:border-cyan-400 hover:bg-cyan-400/20",
+          heartFill: "text-cyan-400 fill-cyan-400"
+        };
+      case "Commercial":
+        return {
+          bg: "bg-[#0b1329] border-white/10 hover:border-blue-500/50",
+          textAccent: "text-blue-400",
+          iconAccent: "text-blue-400",
+          wishlistHover: "hover:border-blue-400 hover:bg-blue-400/20",
+          heartFill: "text-blue-400 fill-blue-400"
+        };
+      case "Luxury":
+      default:
+        return {
+          bg: "bg-[#041c16] border-white/5 hover:border-sunset/50",
+          textAccent: "text-sunset",
+          iconAccent: "text-sunset",
+          wishlistHover: "hover:border-sunset hover:bg-sunset/20",
+          heartFill: "text-sunset fill-sunset"
+        };
+    }
+  }, [property.segment]);
+
   return (
     <motion.div
-      className="group relative cursor-pointer overflow-hidden rounded-sm bg-[#041c16] text-pearl shadow-2xl border border-white/5"
+      className={`group relative cursor-pointer overflow-hidden rounded-sm text-pearl shadow-2xl border transition duration-300 ${segmentStyles.bg}`}
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
       onClick={() => onClick(property)}
@@ -89,9 +119,9 @@ export default function PropertyCard({
             event.stopPropagation();
             onToggleWishlist?.(property);
           }}
-          className={`absolute top-4 right-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white transition hover:scale-105 active:scale-95 hover:border-sunset hover:bg-sunset/20 ${wishlisted ? "text-sunset" : "text-gray-200"}`}
+          className={`absolute top-4 right-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white transition hover:scale-105 active:scale-95 ${segmentStyles.wishlistHover} ${wishlisted ? segmentStyles.textAccent : "text-gray-200"}`}
         >
-          <Heart size={16} className={wishlisted ? "fill-sunset text-sunset" : ""} />
+          <Heart size={16} className={wishlisted ? segmentStyles.heartFill : ""} />
         </button>
 
         {/* Status Badge */}
@@ -103,7 +133,7 @@ export default function PropertyCard({
           </span>
         </div>
 
-        {/* Vibe Tags - moved down slightly to avoid overlapping top badges */}
+        {/* Vibe Tags */}
         <div className="absolute top-16 left-4 flex flex-wrap gap-2 max-w-[70%] z-10">
           {property.vibeTags.slice(0, 1).map((tag, i) => (
             <span
@@ -117,7 +147,7 @@ export default function PropertyCard({
 
         {/* Content Area */}
         <div className="absolute bottom-0 w-full p-5 lg:translate-y-6 lg:group-hover:translate-y-0 transition-transform duration-500">
-          <div className="flex items-center gap-1.5 text-sunset text-[10px] mb-2 uppercase tracking-widest font-sans font-semibold">
+          <div className={`flex items-center gap-1.5 text-[10px] mb-2 uppercase tracking-widest font-sans font-semibold ${segmentStyles.textAccent}`}>
             <MapPin size={11} />
             <span>{property.location}</span>
           </div>
@@ -137,15 +167,17 @@ export default function PropertyCard({
           
           <div className="flex items-center gap-5 text-xs font-sans text-gray-300 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-500 delay-75 border-t border-white/15 pt-3">
             <div className="flex items-center gap-1.5">
-              <Expand size={13} className="text-sunset" />
+              <Expand size={13} className={segmentStyles.iconAccent} />
               <span>
                 {property.sqft.toLocaleString("en-US")} ft² / {Math.round(property.sqft * 0.092903).toLocaleString("en-US")} m²
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <BedDouble size={13} className="text-sunset" />
-              <span>{property.suites} {t.suites}</span>
-            </div>
+            {property.suites > 0 && (
+              <div className="flex items-center gap-1.5">
+                <BedDouble size={13} className={segmentStyles.iconAccent} />
+                <span>{property.suites} {t.suites}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

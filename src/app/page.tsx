@@ -93,6 +93,7 @@ export default function Home() {
 
   // Routing State
   const [activeTab, setActiveTab] = useState<"catalog" | "management" | "tours">("catalog");
+  const [activeSegment, setActiveSegment] = useState<"Luxury" | "Standard" | "Commercial">("Luxury");
 
   const handleCollectionClick = () => {
     if (activeTab !== "catalog") {
@@ -116,6 +117,33 @@ export default function Home() {
 
   // Currency Converter State
   const [currencyMode, setCurrencyMode] = useState<"USD" | "CRC" | "EUR" | "JPY">("USD");
+
+  const catalogTheme = useMemo(() => {
+    switch (activeSegment) {
+      case "Standard":
+        return {
+          bg: "bg-[#031c16]",
+          textAccent: "text-cyan-400",
+          borderAccent: "border-cyan-500/20",
+          selectBg: "bg-[#04241d]"
+        };
+      case "Commercial":
+        return {
+          bg: "bg-[#090f1e]",
+          textAccent: "text-blue-400",
+          borderAccent: "border-blue-500/20",
+          selectBg: "bg-[#0c152b]"
+        };
+      case "Luxury":
+      default:
+        return {
+          bg: "bg-[#020f0a]",
+          textAccent: "text-sunset",
+          borderAccent: "border-white/10",
+          selectBg: "bg-[#041b15]"
+        };
+    }
+  }, [activeSegment]);
 
   // Step-by-Step Form State
   const [currentStep, setCurrentStep] = useState(1);
@@ -339,6 +367,9 @@ export default function Home() {
   // Filter properties
   const filteredProperties = useMemo(() => {
     return properties.filter(p => {
+      // Segment Filter
+      if (p.segment !== activeSegment) return false;
+
       // Price Filter
       if (priceFilter === "under-500k" && p.price >= 500000) return false;
       if (priceFilter === "500k-1.5m" && (p.price < 500000 || p.price > 1500000)) return false;
@@ -584,35 +615,71 @@ export default function Home() {
           </section>
 
           {/* The Property Engine (Catalog) */}
-          <section id="collection" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
+          <section id="collection" className={`py-24 px-6 md:px-12 transition-colors duration-500 scroll-mt-24 ${catalogTheme.bg}`}>
+            
+            {/* Segment Selector Tabs */}
+            <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-16 border-b border-white/5 pb-8 max-w-[1600px] mx-auto">
+              {[
+                { id: "Luxury", label: lang === "es" ? "Colección Signature (Lujo)" : "Signature Collection (Luxury)", activeColor: "text-sunset border-sunset bg-white/5", hoverColor: "text-gray-400 border-transparent hover:text-sunset" },
+                { id: "Standard", label: lang === "es" ? "Residencial & Lotes" : "Residential & Land", activeColor: "text-cyan-400 border-cyan-400 bg-white/5", hoverColor: "text-gray-400 border-transparent hover:text-cyan-400" },
+                { id: "Commercial", label: lang === "es" ? "Comercial & Inversiones" : "Commercial & Investments", activeColor: "text-blue-400 border-blue-400 bg-white/5", hoverColor: "text-gray-400 border-transparent hover:text-blue-400" }
+              ].map(seg => (
+                <button
+                  key={seg.id}
+                  onClick={() => {
+                    setActiveSegment(seg.id as any);
+                    setPriceFilter("all");
+                    setSizeFilter("all");
+                    setLocationFilter("all");
+                    setTypeFilter("all");
+                    setLifestyleFilter("all");
+                  }}
+                  className={`w-full md:w-auto px-8 py-4 text-xs font-sans uppercase tracking-[0.2em] font-bold border-b-2 transition duration-300 cursor-pointer text-center ${
+                    activeSegment === seg.id ? seg.activeColor : seg.hoverColor
+                  }`}
+                >
+                  {seg.label}
+                </button>
+              ))}
+            </div>
+
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6"
+              className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 max-w-[1600px] mx-auto"
             >
               <div>
-                <h2 className="text-xs font-sans text-sunset uppercase tracking-[0.3em] mb-3 font-semibold">{t.catalog.subtitle}</h2>
-                <h3 className="text-3xl md:text-5xl font-serif">{t.catalog.title}</h3>
+                <h2 className={`text-xs font-sans uppercase tracking-[0.3em] mb-3 font-semibold ${catalogTheme.textAccent}`}>
+                  {lang === "es" ? "Portafolio Segmentado" : "Segmented Portfolio"}
+                </h2>
+                <h3 className="text-3xl md:text-5xl font-serif">
+                  {lang === "es" 
+                    ? (activeSegment === "Luxury" ? "Propiedades de Lujo" : activeSegment === "Standard" ? "Inmobiliaria Residencial" : "Bienes Raíces Comerciales")
+                    : (activeSegment === "Luxury" ? "Luxury Real Estate" : activeSegment === "Standard" ? "Residential Realty" : "Commercial Estates")
+                  }
+                </h3>
               </div>
               <p className="font-sans text-gray-400 max-w-md text-xs md:text-sm leading-relaxed">
-                {t.catalog.description}
+                {lang === "es"
+                  ? "Explore nuestro inventario curado y filtrado específicamente para responder a su perfil de inversión y estilo de vida."
+                  : "Explore our curated inventory tailored to match your specific investment profile and lifestyle requirements."}
               </p>
             </motion.div>
 
             {/* Advanced Filters */}
-            <div className="mb-16 space-y-6">
+            <div className="mb-16 space-y-6 max-w-[1600px] mx-auto">
               <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
                 {/* Price range */}
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.priceTitle}</div>
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.priceTitle}</div>
                   <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{t.catalog.filters.priceLabel}</label>
                   <div className="relative">
                     <select 
                       value={priceFilter}
                       onChange={(e) => setPriceFilter(e.target.value)}
-                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                        <option value="all">{t.catalog.filters.all}</option>
                        <option value="under-500k">{t.catalog.filters.under500k}</option>
@@ -620,86 +687,95 @@ export default function Home() {
                        <option value="1.5m-5m">{t.catalog.filters.between15mand5m}</option>
                        <option value="over-5m">{t.catalog.filters.over5m}</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
                 </div>
 
                 {/* Property Type */}
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.typeLabel}</div>
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.typeLabel}</div>
                   <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Filtrar por tipo" : "Filter by type"}</label>
                   <div className="relative">
                     <select 
                       value={typeFilter}
                       onChange={(e) => setTypeFilter(e.target.value)}
-                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                       <option value="all">{t.catalog.filters.allTypes}</option>
-                      <option value="Casa">{lang === "es" ? "Casa" : "Home"}</option>
-                      <option value="Cabaña">{lang === "es" ? "Cabaña" : "Cabin"}</option>
-                      <option value="Quinta">{lang === "es" ? "Quinta" : "Estate"}</option>
-                      <option value="Lote">{lang === "es" ? "Lote" : "Lot"}</option>
-                      <option value="Quinta de Descanso">{lang === "es" ? "Quinta de Descanso" : "Rest Quinta"}</option>
-                      <option value="Terreno de Montaña">{lang === "es" ? "Terreno de Montaña" : "Mountain Land"}</option>
-                      <option value="Villa Exclusiva">{lang === "es" ? "Villa Exclusiva" : "Exclusive Villa"}</option>
+                      {activeSegment !== "Commercial" ? (
+                        <>
+                          <option value="Casa">{lang === "es" ? "Casa" : "Home"}</option>
+                          <option value="Cabaña">{lang === "es" ? "Cabaña" : "Cabin"}</option>
+                          <option value="Quinta">{lang === "es" ? "Quinta" : "Estate"}</option>
+                          <option value="Lote">{lang === "es" ? "Lote" : "Lot"}</option>
+                          <option value="Quinta de Descanso">{lang === "es" ? "Quinta de Descanso" : "Rest Quinta"}</option>
+                          <option value="Terreno de Montaña">{lang === "es" ? "Terreno de Montaña" : "Mountain Land"}</option>
+                          <option value="Villa Exclusiva">{lang === "es" ? "Villa Exclusiva" : "Exclusive Villa"}</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="Edificio">{lang === "es" ? "Edificio Comercial" : "Commercial Building"}</option>
+                          <option value="Bodega">{lang === "es" ? "Bodega / Local" : "Warehouse"}</option>
+                        </>
+                      )}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
                 </div>
 
                 {/* Region */}
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.locTitle}</div>
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.locTitle}</div>
                   <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{t.catalog.filters.locLabel}</label>
                   <div className="relative">
                     <select 
                       value={locationFilter}
                       onChange={(e) => setLocationFilter(e.target.value)}
-                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                       <option value="all">{t.catalog.filters.allLocs}</option>
                       {locations.map(location => (
                         <option key={location} value={location}>{location}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
                 </div>
 
                 {/* Lifestyle */}
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.lifestyleLabel}</div>
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.lifestyleLabel}</div>
                   <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Ambiente" : "Vibe"}</label>
                   <div className="relative">
                     <select 
                       value={lifestyleFilter}
                       onChange={(e) => setLifestyleFilter(e.target.value)}
-                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                       <option value="all">{t.catalog.filters.allLifestyles}</option>
                       <option value="Naturaleza">{lang === "es" ? "Naturaleza" : "Nature"}</option>
                       <option value="Ciudad">{lang === "es" ? "Ciudad" : "City"}</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
                 </div>
 
                 {/* Currency Mode */}
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-sunset mb-2 font-semibold">{t.catalog.filters.currencyLabel}</div>
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.currencyLabel}</div>
                   <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Ver precios" : "Show price"}</label>
                   <div className="relative">
                     <select 
                       value={currencyMode}
                       onChange={(e) => setCurrencyMode(e.target.value as "USD" | "CRC" | "EUR" | "JPY")}
-                      className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                       <option value="USD">{t.catalog.filters.showUSD}</option>
                       <option value="CRC">{t.catalog.filters.showCRC}</option>
                       <option value="EUR">{t.catalog.filters.showEUR}</option>
                       <option value="JPY">{t.catalog.filters.showJPY}</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
                 </div>
               </div>

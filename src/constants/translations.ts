@@ -83,7 +83,14 @@ export const TRANSLATIONS = {
         Lote: "Lot",
         "Quinta de Descanso": "Rest Quinta",
         "Terreno de Montaña": "Mountain Land",
-        "Villa Exclusiva": "Exclusive Villa"
+        "Villa Exclusiva": "Exclusive Villa",
+        Edificio: "Commercial Building",
+        Bodega: "Warehouse"
+      },
+      segments: {
+        Luxury: "Signature Collection",
+        Standard: "Residential & Land",
+        Commercial: "Commercial & Investments"
       },
       empty: "No properties match your exact, exclusive criteria. Please adjust your filters.",
     },
@@ -273,7 +280,14 @@ export const TRANSLATIONS = {
         Lote: "Lote",
         "Quinta de Descanso": "Quinta de Descanso",
         "Terreno de Montaña": "Terreno de Montaña",
-        "Villa Exclusiva": "Villa Exclusiva"
+        "Villa Exclusiva": "Villa Exclusiva",
+        Edificio: "Edificio Comercial",
+        Bodega: "Bodega / Local"
+      },
+      segments: {
+        Luxury: "Colección Signature",
+        Standard: "Residencial & Lotes",
+        Commercial: "Comercial & Inversiones"
       },
       empty: "Ninguna propiedad coincide con sus criterios exactos y exclusivos. Por favor ajuste sus filtros.",
     },
