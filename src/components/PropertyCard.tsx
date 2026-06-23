@@ -131,6 +131,11 @@ export default function PropertyCard({
           >
             {statusTranslations[lang][property.status]}
           </span>
+          {property.refCode && (
+            <span className="px-2.5 py-1 text-[9px] font-sans tracking-widest uppercase bg-black/65 backdrop-blur-md border border-[#d4af37]/45 rounded-full text-[#d4af37] font-semibold shadow-md">
+              {property.refCode}
+            </span>
+          )}
         </div>
 
         {/* Vibe Tags */}

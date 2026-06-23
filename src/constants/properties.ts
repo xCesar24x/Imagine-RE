@@ -27,6 +27,7 @@ export interface Property {
   gallery?: string[];
   nameEs?: string;
   descriptionEs?: string;
+  refCode?: string;
 }
 
 export const PROVINCE_REGIONS: Record<string, string[]> = {
@@ -39,7 +40,7 @@ export const PROVINCE_REGIONS: Record<string, string[]> = {
   "Limón": ["Puerto Viejo", "Limón Centro", "Cahuita", "Tortuguero"]
 };
 
-export const PROPERTIES: Property[] = [
+const SEEDED_PROPERTIES: Property[] = [
   {
     id: "villa-morpho",
     name: "Villa Morpho",
@@ -587,3 +588,8 @@ export const PROPERTIES: Property[] = [
     hasStarlink: true,
   }
 ];
+
+export const PROPERTIES: Property[] = SEEDED_PROPERTIES.map((p, idx) => ({
+  ...p,
+  refCode: `REF-${String(idx + 1).padStart(2, "0")}`
+}));

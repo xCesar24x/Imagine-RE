@@ -36,6 +36,14 @@ interface Lead {
   lastInteractionDate: string; // ISO String
 }
 
+interface Collaborator {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  role: string;
+}
+
 export default function AdminDashboard({
   properties,
   onAddProperty,
@@ -44,7 +52,7 @@ export default function AdminDashboard({
   lang,
   onClose
 }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"inventory" | "crm" | "social" | "contracts" | "reports">("inventory");
+  const [activeTab, setActiveTab] = useState<"inventory" | "crm" | "social" | "contracts" | "reports" | "settings">("inventory");
 
   // --- CRUD State ---
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
@@ -87,6 +95,230 @@ export default function AdminDashboard({
   // Bilingual tab state and upload logs state
   const [formLangTab, setFormLangTab] = useState<"en" | "es">("en");
   const [uploadLogs, setUploadLogs] = useState<string[]>([]);
+
+  // --- Consecutive Ref Code Memo ---
+  const nextRefCode = useMemo(() => {
+    let maxNum = 0;
+    properties.forEach(p => {
+      if (p.refCode) {
+        const match = p.refCode.match(/REF-(\d+)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > maxNum) maxNum = num;
+        }
+      }
+    });
+    const nextNum = maxNum + 1;
+    return `REF-${nextNum < 10 ? '0' + nextNum : nextNum}`;
+  }, [properties]);
+
+  // --- Restricted Access & Collaborators States ---
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [currentUser, setCurrentUser] = useState<Collaborator | null>(null);
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [colForm, setColForm] = useState({
+    name: "",
+    username: "",
+    password: "",
+    role: "Colaborador"
+  });
+  const [editingColId, setEditingColId] = useState<string | null>(null);
+  const [colError, setColError] = useState("");
+  
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [pwError, setPwError] = useState("");
+  const [pwSuccess, setPwSuccess] = useState("");
+
+  // Seed / Load Collaborators & Session check
+  useEffect(() => {
+    const storedCols = localStorage.getItem("imagine_collaborators");
+    let colsList: Collaborator[] = [];
+    if (storedCols) {
+      try {
+        colsList = JSON.parse(storedCols);
+      } catch (e) {
+        console.error("Error loading collaborators:", e);
+      }
+    }
+    if (!colsList || colsList.length === 0) {
+      colsList = [
+        { id: "col-1", name: "Bryan Viquez", username: "admin", password: "admin", role: "Administrador" }
+      ];
+      localStorage.setItem("imagine_collaborators", JSON.stringify(colsList));
+    }
+    setCollaborators(colsList);
+
+    const activeSessionUser = sessionStorage.getItem("imagine_admin_username");
+    if (activeSessionUser) {
+      const match = colsList.find(c => c.username === activeSessionUser);
+      if (match) {
+        setCurrentUser(match);
+        setIsAuthorized(true);
+      }
+    }
+  }, []);
+
+  const handleLoginSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+
+    const storedCols = localStorage.getItem("imagine_collaborators");
+    let colsList: Collaborator[] = [];
+    if (storedCols) {
+      try { colsList = JSON.parse(storedCols); } catch (err) {}
+    }
+    if (!colsList || colsList.length === 0) {
+      colsList = [
+        { id: "col-1", name: "Bryan Viquez", username: "admin", password: "admin", role: "Administrador" }
+      ];
+    }
+
+    const match = colsList.find(c => c.username === loginUsername && c.password === loginPassword);
+    if (match) {
+      setCurrentUser(match);
+      setIsAuthorized(true);
+      sessionStorage.setItem("imagine_admin_username", match.username);
+    } else {
+      setLoginError(lang === "es" ? "Usuario o contraseña incorrectos." : "Invalid username or password.");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthorized(false);
+    setCurrentUser(null);
+    sessionStorage.removeItem("imagine_admin_username");
+  };
+
+  const handleSaveCollaborator = (e: FormEvent) => {
+    e.preventDefault();
+    setColError("");
+
+    if (!colForm.name || !colForm.username || !colForm.password) {
+      setColError(lang === "es" ? "Todos los campos son obligatorios." : "All fields are required.");
+      return;
+    }
+
+    const duplicate = collaborators.find(c => c.username === colForm.username && c.id !== editingColId);
+    if (duplicate) {
+      setColError(lang === "es" ? "El nombre de usuario ya está registrado." : "Username already exists.");
+      return;
+    }
+
+    let updatedList: Collaborator[] = [];
+    if (editingColId) {
+      updatedList = collaborators.map(c => {
+        if (c.id === editingColId) {
+          return {
+            ...c,
+            name: colForm.name,
+            username: colForm.username,
+            password: colForm.password,
+            role: colForm.role
+          };
+        }
+        return c;
+      });
+      if (currentUser && currentUser.id === editingColId) {
+        const self = updatedList.find(c => c.id === editingColId);
+        if (self) {
+          setCurrentUser(self);
+          sessionStorage.setItem("imagine_admin_username", self.username);
+        }
+      }
+    } else {
+      const newCol: Collaborator = {
+        id: `col-${Date.now()}`,
+        name: colForm.name,
+        username: colForm.username,
+        password: colForm.password,
+        role: colForm.role
+      };
+      updatedList = [...collaborators, newCol];
+    }
+
+    setCollaborators(updatedList);
+    localStorage.setItem("imagine_collaborators", JSON.stringify(updatedList));
+
+    setColForm({ name: "", username: "", password: "", role: "Colaborador" });
+    setEditingColId(null);
+  };
+
+  const handleEditCollaboratorClick = (c: Collaborator) => {
+    setEditingColId(c.id);
+    setColForm({
+      name: c.name,
+      username: c.username,
+      password: c.password,
+      role: c.role
+    });
+  };
+
+  const handleDeleteCollaborator = (id: string) => {
+    setColError("");
+
+    if (currentUser && currentUser.id === id) {
+      setColError(lang === "es" ? "No puedes eliminar tu propio usuario activo." : "You cannot delete your own active user account.");
+      return;
+    }
+
+    const colToDelete = collaborators.find(c => c.id === id);
+    if (colToDelete?.role === "Administrador") {
+      const admins = collaborators.filter(c => c.role === "Administrador");
+      if (admins.length <= 1) {
+        setColError(lang === "es" ? "Debe haber al menos un Administrador en el sistema." : "There must be at least one Administrator left in the system.");
+        return;
+      }
+    }
+
+    const updatedList = collaborators.filter(c => c.id !== id);
+    setCollaborators(updatedList);
+    localStorage.setItem("imagine_collaborators", JSON.stringify(updatedList));
+  };
+
+  const handleChangePassword = (e: FormEvent) => {
+    e.preventDefault();
+    setPwError("");
+    setPwSuccess("");
+
+    if (!currentUser) return;
+
+    if (passwordForm.oldPassword !== currentUser.password) {
+      setPwError(lang === "es" ? "La contraseña actual es incorrecta." : "Current password is incorrect.");
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 4) {
+      setPwError(lang === "es" ? "La nueva contraseña debe tener al menos 4 caracteres." : "New password must be at least 4 characters.");
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPwError(lang === "es" ? "Las contraseñas nuevas no coinciden." : "New passwords do not match.");
+      return;
+    }
+
+    const updatedList = collaborators.map(c => {
+      if (c.id === currentUser.id) {
+        return { ...c, password: passwordForm.newPassword };
+      }
+      return c;
+    });
+
+    setCollaborators(updatedList);
+    localStorage.setItem("imagine_collaborators", JSON.stringify(updatedList));
+
+    setCurrentUser({ ...currentUser, password: passwordForm.newPassword });
+    setPwSuccess(lang === "es" ? "Contraseña cambiada exitosamente." : "Password changed successfully.");
+    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  };
 
   const handleSimulatedUpload = (fileName: string) => {
     setUploadLogs([`[System] Iniciando carga de archivo: ${fileName}...`]);
@@ -250,7 +482,12 @@ export default function AdminDashboard({
       cityDistKm: Number(crudForm.cityDistKm),
       medicalDistMin: Number(crudForm.medicalDistMin),
       hasFiberOptic: crudForm.hasFiberOptic,
-      hasStarlink: crudForm.hasStarlink
+      hasStarlink: crudForm.hasStarlink,
+      nameEs: crudForm.nameEs,
+      descriptionEs: crudForm.descriptionEs,
+      refCode: editingPropertyId
+        ? (properties.find(p => p.id === editingPropertyId)?.refCode || nextRefCode)
+        : nextRefCode
     };
 
     if (editingPropertyId) {
@@ -282,8 +519,8 @@ export default function AdminDashboard({
       suites: p.suites,
       vibeTags: p.vibeTags.join(", "),
       description: p.description,
-      descriptionEs: p.description, // Simple mapping for mockup
-      nameEs: p.name,
+      descriptionEs: p.descriptionEs || p.description,
+      nameEs: p.nameEs || p.name,
       type: p.type,
       segment: p.segment,
       province: p.province || "San José",
@@ -561,6 +798,80 @@ export default function AdminDashboard({
     window.open(url, "_blank");
   };
 
+  if (!isAuthorized) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="bg-[#02140f] border border-[#d4af37]/30 rounded-2xl w-full max-w-md p-8 shadow-2xl overflow-hidden relative font-sans text-pearl">
+          {/* Decorative Glow */}
+          <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-[#d4af37]/5 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-[#d4af37]/5 blur-3xl pointer-events-none" />
+
+          {/* Logo / Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-14 h-14 rounded-full border border-white/10 bg-white/5 flex items-center justify-center mb-4 text-[#d4af37]">
+              <Shield size={24} />
+            </div>
+            <h2 className="font-serif text-2xl text-pearl uppercase tracking-wider">{lang === "es" ? "Acceso Restringido" : "Restricted Access"}</h2>
+            <p className="text-[10px] text-[#d4af37] uppercase tracking-widest mt-1 font-semibold">Imagine Admin Portal</p>
+          </div>
+
+          {/* Error Message */}
+          {loginError && (
+            <div className="bg-rose-950/40 border border-rose-500/30 text-rose-300 px-4 py-3 rounded-xl text-xs mb-6 font-sans text-center">
+              {loginError}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleLoginSubmit} className="space-y-5">
+            <div>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Usuario" : "Username"}</label>
+              <input
+                type="text"
+                required
+                value={loginUsername}
+                onChange={e => setLoginUsername(e.target.value)}
+                className="w-full bg-[#01140f] border border-white/15 text-pearl text-xs px-3.5 py-3 rounded-xl outline-none focus:border-[#d4af37] transition font-sans"
+                placeholder={lang === "es" ? "ej. admin" : "e.g. admin"}
+              />
+            </div>
+            <div>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Contraseña" : "Password"}</label>
+              <input
+                type="password"
+                required
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+                className="w-full bg-[#01140f] border border-white/15 text-pearl text-xs px-3.5 py-3 rounded-xl outline-none focus:border-[#d4af37] transition font-sans"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 border border-white/15 text-white hover:bg-white hover:text-jungle text-xs py-3 rounded-xl uppercase tracking-widest font-semibold cursor-pointer text-center transition"
+              >
+                {lang === "es" ? "Cerrar" : "Close"}
+              </button>
+              <button
+                type="submit"
+                className="flex-1 bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center transition"
+              >
+                {lang === "es" ? "Entrar" : "Login"}
+              </button>
+            </div>
+          </form>
+
+          <div className="text-center mt-6 text-[9px] text-gray-500 tracking-wider">
+            Imagine Real Estate & Property Management &copy; 2026
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-[#02140f] border border-[#d4af37]/30 rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
@@ -573,12 +884,28 @@ export default function AdminDashboard({
               <p className="text-[10px] text-gray-400 uppercase tracking-widest">CMS / Mini-CRM / Legal Tech / Content Factory</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2.5 rounded-full border border-white/15 text-white hover:bg-white hover:text-jungle transition cursor-pointer"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-4">
+            {currentUser && (
+              <div className="hidden sm:flex flex-col text-right">
+                <span className="text-[10px] text-white font-sans font-medium">{currentUser.name}</span>
+                <span className="text-[8px] text-[#d4af37] font-mono uppercase tracking-widest">{currentUser.role}</span>
+              </div>
+            )}
+            {currentUser && (
+              <button 
+                onClick={handleLogout}
+                className="px-3 py-1.5 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-[9px] uppercase tracking-wider font-semibold font-sans transition cursor-pointer"
+              >
+                {lang === "es" ? "Salir" : "Logout"}
+              </button>
+            )}
+            <button 
+              onClick={onClose}
+              className="p-2.5 rounded-full border border-white/15 text-white hover:bg-white hover:text-jungle transition cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Dynamic Alerts Banner */}
@@ -597,6 +924,7 @@ export default function AdminDashboard({
             { id: "social", label: "Social Media Hub", icon: Sparkles },
             { id: "contracts", label: "Legal Contract Tech", icon: FileText },
             { id: "reports", label: "PM Financial Reports", icon: BarChart2 },
+            { id: "settings", label: lang === "es" ? "Configuración" : "Settings", icon: Shield },
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -628,6 +956,19 @@ export default function AdminDashboard({
                   {editingPropertyId ? (lang === "es" ? "Editar Propiedad" : "Edit Property") : (lang === "es" ? "Agregar Nueva Propiedad" : "Add New Property")}
                 </h3>
                 <form onSubmit={handleCrudSubmit} className="space-y-4">
+                  {/* Reference code display */}
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                      {lang === "es" ? "Código de Referencia (Auto-asignado)" : "Reference Code (Auto-assigned)"}
+                    </label>
+                    <input 
+                      type="text"
+                      disabled
+                      value={editingPropertyId ? (properties.find(p => p.id === editingPropertyId)?.refCode || "") : nextRefCode} 
+                      className="w-full bg-[#01140f]/60 border border-white/5 text-[#d4af37] font-semibold text-xs px-3.5 py-2.5 rounded-xl outline-none cursor-not-allowed font-mono" 
+                    />
+                  </div>
+
                   {/* Language Tab Switcher */}
                   <div className="flex border-b border-white/10 mb-4 bg-white/5 p-1 rounded-xl">
                     <button
@@ -1015,6 +1356,11 @@ export default function AdminDashboard({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
+                          {p.refCode && (
+                            <span className="px-2 py-0.5 rounded-md text-[8px] uppercase font-mono border border-[#d4af37]/30 bg-[#d4af37]/5 font-semibold text-[#d4af37]">
+                              {p.refCode}
+                            </span>
+                          )}
                           <h4 className="font-serif text-sm text-pearl truncate font-semibold">{p.name}</h4>
                           <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37]">{p.type}</span>
                         </div>
@@ -1632,6 +1978,220 @@ export default function AdminDashboard({
                     </button>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: Settings & Collaborators */}
+          {activeTab === "settings" && (
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+              {/* Col 1: Change Password Form */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md flex flex-col justify-between h-fit">
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
+                    <Shield size={18} className="text-[#d4af37]" />
+                    {lang === "es" ? "Mi Perfil & Contraseña" : "My Profile & Password"}
+                  </h3>
+                  
+                  {pwError && (
+                    <div className="bg-rose-950/40 border border-rose-500/30 text-rose-300 px-4 py-2 rounded-xl text-xs font-sans text-center">
+                      {pwError}
+                    </div>
+                  )}
+                  {pwSuccess && (
+                    <div className="bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 px-4 py-2 rounded-xl text-xs font-sans text-center">
+                      {pwSuccess}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Nombre" : "Name"}</label>
+                    <input 
+                      type="text" 
+                      disabled 
+                      value={currentUser?.name || ""}
+                      className="w-full bg-[#01140f]/60 border border-white/5 text-gray-400 text-xs px-3.5 py-2.5 rounded-xl cursor-not-allowed outline-none font-sans" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Usuario" : "Username"}</label>
+                    <input 
+                      type="text" 
+                      disabled 
+                      value={currentUser?.username || ""}
+                      className="w-full bg-[#01140f]/60 border border-white/5 text-gray-400 text-xs px-3.5 py-2.5 rounded-xl cursor-not-allowed outline-none font-sans" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Contraseña Actual" : "Current Password"}</label>
+                    <input 
+                      type="password" 
+                      required
+                      value={passwordForm.oldPassword}
+                      onChange={e => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                      className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Nueva Contraseña" : "New Password"}</label>
+                    <input 
+                      type="password" 
+                      required
+                      value={passwordForm.newPassword}
+                      onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                      className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Confirmar Nueva Contraseña" : "Confirm New Password"}</label>
+                    <input 
+                      type="password" 
+                      required
+                      value={passwordForm.confirmPassword}
+                      onChange={e => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                      className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center transition duration-200"
+                  >
+                    {lang === "es" ? "Actualizar Contraseña" : "Update Password"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Col 2: Collaborators List & Creation Form */}
+              <div className="space-y-6">
+                {/* Form to create/edit collaborator */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
+                  <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
+                    <Plus size={18} className="text-[#d4af37]" />
+                    {editingColId ? (lang === "es" ? "Editar Colaborador" : "Edit Collaborator") : (lang === "es" ? "Agregar Colaborador" : "Add Collaborator")}
+                  </h3>
+
+                  {colError && (
+                    <div className="bg-rose-950/40 border border-rose-500/30 text-rose-300 px-4 py-2 rounded-xl text-xs font-sans text-center mb-4">
+                      {colError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSaveCollaborator} className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Nombre Completo" : "Full Name"}</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={colForm.name}
+                          onChange={e => setColForm({ ...colForm, name: e.target.value })}
+                          placeholder="e.g. Maria Delgado"
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Usuario de Ingreso" : "Login Username"}</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={colForm.username}
+                          onChange={e => setColForm({ ...colForm, username: e.target.value.toLowerCase().replace(/\s+/g, "") })}
+                          placeholder="e.g. mariad"
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Contraseña" : "Password"}</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={colForm.password}
+                          onChange={e => setColForm({ ...colForm, password: e.target.value })}
+                          placeholder="e.g. maria123"
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">{lang === "es" ? "Rol de Acceso" : "Access Role"}</label>
+                        <select 
+                          value={colForm.role}
+                          onChange={e => setColForm({ ...colForm, role: e.target.value })}
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                        >
+                          <option value="Colaborador">{lang === "es" ? "Colaborador" : "Collaborator"}</option>
+                          <option value="Administrador">{lang === "es" ? "Administrador" : "Administrator"}</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      {editingColId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingColId(null);
+                            setColForm({ name: "", username: "", password: "", role: "Colaborador" });
+                            setColError("");
+                          }}
+                          className="flex-1 border border-white/10 hover:border-rose-400 text-pearl text-xs py-3 rounded-xl uppercase tracking-widest font-semibold cursor-pointer text-center transition"
+                        >
+                          {lang === "es" ? "Cancelar" : "Cancel"}
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="flex-1 bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center transition"
+                      >
+                        {editingColId ? (lang === "es" ? "Guardar Cambios" : "Save Changes") : (lang === "es" ? "Crear Colaborador" : "Create Collaborator")}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Collaborators List */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
+                  <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3">
+                    {lang === "es" ? "Colaboradores Activos" : "Active Collaborators"} ({collaborators.length})
+                  </h3>
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                    {collaborators.map(c => (
+                      <div key={c.id} className="flex gap-4 p-4 border border-white/5 bg-[#011a14] rounded-xl items-center justify-between">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-serif text-xs text-pearl font-semibold">{c.name}</span>
+                            <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37]">{c.role}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-400 mt-1 font-mono">{lang === "es" ? "Usuario:" : "User:"} <span className="text-white">{c.username}</span> | {lang === "es" ? "Contraseña:" : "Password:"} <span className="text-white font-sans">{c.password}</span></p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleEditCollaboratorClick(c)}
+                            className="p-2 rounded-lg border border-white/10 hover:border-[#d4af37] text-gray-400 hover:text-[#d4af37] transition cursor-pointer"
+                            title="Edit"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteCollaborator(c.id)}
+                            disabled={currentUser?.id === c.id}
+                            className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+                            title="Delete"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}

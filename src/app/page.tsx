@@ -1604,10 +1604,15 @@ export default function Home() {
                   <X className="group-hover:rotate-90 transition-transform duration-300" size={18} />
                 </button>
 
-                <div className="text-sunset text-[10px] md:text-xs font-sans uppercase tracking-[0.3em] mb-3">
-                  {selectedProperty.location}
+                <div className="flex items-center justify-between mb-3 text-sunset text-[10px] md:text-xs font-sans uppercase tracking-[0.3em]">
+                  <span>{selectedProperty.location}</span>
+                  {selectedProperty.refCode && (
+                    <span className="px-2.5 py-1 border border-[#d4af37]/45 text-[#d4af37] font-semibold rounded-md bg-[#d4af37]/5 tracking-widest text-[9px]">
+                      {selectedProperty.refCode}
+                    </span>
+                  )}
                 </div>
-                <h2 className="text-2xl lg:text-4xl font-serif mb-6 leading-tight text-pearl">
+                <h2 className="text-2xl lg:text-4xl font-serif mb-6 leading-tight text-pearl font-bold">
                   {lang === "es" && selectedProperty.nameEs ? selectedProperty.nameEs : selectedProperty.name}
                 </h2>
                 
@@ -1707,9 +1712,6 @@ export default function Home() {
 
         <div className="mx-auto max-w-[1600px] mt-8 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-500 uppercase tracking-widest gap-4">
           <div>
-            &copy; {new Date().getFullYear()} Imagine Real Estate & Property Management. All rights reserved.
-          </div>
-          <div>
             <button 
               onClick={() => setIsAdminOpen(true)}
               className="hover:text-sunset font-semibold text-[#d4af37]/75 transition flex items-center gap-1.5 cursor-pointer bg-transparent border-0 outline-none"
@@ -1717,6 +1719,9 @@ export default function Home() {
               <span>⚙️</span>
               <span>{lang === "es" ? "Acceso Portal Admin" : "Admin Portal Access"}</span>
             </button>
+          </div>
+          <div>
+            &copy; {new Date().getFullYear()} Imagine Real Estate & Property Management. All rights reserved.
           </div>
         </div>
       </footer>
