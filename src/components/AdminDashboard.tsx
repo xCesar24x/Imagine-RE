@@ -1593,12 +1593,14 @@ export default function AdminDashboard({
                         >
                           <Edit2 size={13} />
                         </button>
-                        <button 
-                          onClick={() => onDeleteProperty(p.id)}
-                          className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        {currentUser?.role === "Administrador" && (
+                          <button 
+                            onClick={() => onDeleteProperty(p.id)}
+                            className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -2314,7 +2316,7 @@ export default function AdminDashboard({
 
           {/* TAB 6: Settings & Collaborators */}
           {activeTab === "settings" && (
-            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className={`grid gap-8 ${currentUser?.role === "Administrador" ? "lg:grid-cols-[0.9fr_1.1fr]" : "grid-cols-1 max-w-xl mx-auto"}`}>
               {/* Col 1: Change Password Form */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md flex flex-col justify-between h-fit">
                 <form onSubmit={handleChangePassword} className="space-y-4">
@@ -2397,7 +2399,8 @@ export default function AdminDashboard({
               </div>
 
               {/* Col 2: Collaborators List & Creation Form */}
-              <div className="space-y-6">
+              {currentUser?.role === "Administrador" && (
+                <div className="space-y-6">
                 {/* Form to create/edit collaborator */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
                   <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
@@ -2523,8 +2526,9 @@ export default function AdminDashboard({
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
         </div>
       </div>
