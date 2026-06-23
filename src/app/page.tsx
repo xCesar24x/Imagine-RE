@@ -1885,14 +1885,10 @@ export default function Home() {
             rel="noreferrer"
             className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[#1a4d2e] hover:bg-[#215e37] border border-[#d4af37]/40 hover:border-[#d4af37] transition-all duration-300 shadow-[0_4px_20px_rgba(26,77,46,0.4)] hover:shadow-[0_4px_28px_rgba(212,175,55,0.15)]"
           >
-            <span className="font-sans normal-case text-[11px] text-white/80 group-hover:text-white transition-colors tracking-wide whitespace-nowrap">
-              {lang === "es" ? "Desarrollado por" : "Developed by"}
+            <span className="font-sans normal-case text-[11px] text-white/80 group-hover:text-white transition-colors tracking-wide">
+              {lang === "es" ? "Desarrollado por" : "Developed by"}{" "}
+              <span style={{ fontFamily: "var(--font-abril)" }} className="text-white font-normal text-[13px] tracking-wide normal-case">Ruta Digital</span>
             </span>
-            <img
-              src="/images/ruta-digital-logo.png"
-              alt="Ruta Digital"
-              className="h-5 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
-            />
           </a>
 
           {/* Row 3 — Admin Portal, left-aligned, very subtle */}
