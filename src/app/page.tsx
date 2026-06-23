@@ -1872,12 +1872,12 @@ export default function Home() {
         </div>
 
         <div className="mx-auto max-w-[1600px] mt-8 flex flex-col items-center gap-5 text-[10px] text-gray-500 uppercase tracking-widest">
-          {/* Copyright — centered so it never hides behind the wishlist button */}
+          {/* Copyright — centered */}
           <div className="text-center text-gray-500 uppercase tracking-widest text-[10px]">
-            &copy; {new Date().getFullYear()} Imagine Real Estate &amp; Property Management. All rights reserved.
+            &copy; {new Date().getFullYear()}{" "}Imagine Real Estate &amp; Property Management. All rights reserved.
           </div>
 
-          {/* Admin access — below the copyright, left-aligned on desktop */}
+          {/* Admin + Ruta Digital row */}
           <div className="w-full flex justify-between items-center">
             <button 
               onClick={() => setIsAdminOpen(true)}
@@ -1892,18 +1892,20 @@ export default function Home() {
               href="https://rutadigital.lat"
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex items-center gap-2 text-gray-600 hover:text-white transition-colors duration-300 normal-case tracking-normal"
+              className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:border-[#d4af37]/40 hover:bg-[#d4af37]/5 transition-all duration-300"
               title="Desarrollado por Ruta Digital"
             >
               <img
                 src="https://rutadigital.lat/favicon.ico"
                 alt="Ruta Digital"
-                className="w-4 h-4 rounded opacity-60 group-hover:opacity-100 transition-opacity"
+                width={14}
+                height={14}
+                className="rounded opacity-80 group-hover:opacity-100 transition-opacity"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               />
-              <span className="text-[9px] font-sans normal-case tracking-wide text-gray-600 group-hover:text-gray-300 transition-colors">
+              <span className="font-sans normal-case tracking-wide text-gray-400 group-hover:text-gray-200 transition-colors text-[10px]">
                 {lang === "es" ? "Desarrollado por" : "Developed by"}{" "}
-                <span className="text-[#d4af37]/70 group-hover:text-[#d4af37] font-semibold transition-colors">Ruta Digital</span>
+                <span className="text-[#d4af37] font-semibold">Ruta Digital</span>
               </span>
             </a>
           </div>
