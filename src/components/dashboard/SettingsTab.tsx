@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Shield, Plus, Edit2, Trash2 } from "lucide-react";
+import { Shield, Plus, Edit2, Trash2, Eye, EyeOff } from "lucide-react";
+import { PropertyType } from "@/constants/properties";
 
 interface Collaborator {
   id: string;
@@ -16,6 +17,8 @@ interface SettingsTabProps {
   currentUser: Collaborator | null;
   onUpdateCollaborators: (cols: Collaborator[]) => void;
   onUpdateCurrentUser: (user: Collaborator) => void;
+  propertyTypes: PropertyType[];
+  onUpdatePropertyTypes: (types: PropertyType[]) => void;
   lang: "en" | "es";
 }
 
@@ -24,6 +27,8 @@ export default function SettingsTab({
   currentUser,
   onUpdateCollaborators,
   onUpdateCurrentUser,
+  propertyTypes,
+  onUpdatePropertyTypes,
   lang
 }: SettingsTabProps) {
   const [editingColId, setEditingColId] = useState<string | null>(null);
@@ -42,6 +47,47 @@ export default function SettingsTab({
   });
   const [pwError, setPwError] = useState("");
   const [pwSuccess, setPwSuccess] = useState("");
+
+  // Property Types state
+  const [typeForm, setTypeForm] = useState({ nameEs: "", nameEn: "" });
+  const [typeError, setTypeError] = useState("");
+
+  const handleToggleTypeVisibility = (id: string) => {
+    const updated = propertyTypes.map(pt => pt.id === id ? { ...pt, visible: !pt.visible } : pt);
+    onUpdatePropertyTypes(updated);
+  };
+
+  const handleAddPropertyType = (e: FormEvent) => {
+    e.preventDefault();
+    setTypeError("");
+
+    if (!typeForm.nameEs || !typeForm.nameEn) {
+      setTypeError(lang === "es" ? "Ambos nombres (Español e Inglés) son obligatorios." : "Both names (Spanish & English) are required.");
+      return;
+    }
+
+    const typeId = typeForm.nameEs.trim();
+    const duplicate = propertyTypes.find(pt => pt.id.toLowerCase() === typeId.toLowerCase());
+    if (duplicate) {
+      setTypeError(lang === "es" ? "Este tipo de propiedad ya está registrado." : "This property type already exists.");
+      return;
+    }
+
+    const newType: PropertyType = {
+      id: typeId,
+      nameEs: typeForm.nameEs.trim(),
+      nameEn: typeForm.nameEn.trim(),
+      visible: true
+    };
+
+    onUpdatePropertyTypes([...propertyTypes, newType]);
+    setTypeForm({ nameEs: "", nameEn: "" });
+  };
+
+  const handleDeletePropertyType = (id: string) => {
+    const updated = propertyTypes.filter(pt => pt.id !== id);
+    onUpdatePropertyTypes(updated);
+  };
 
   const handleSaveCollaborator = (e: FormEvent) => {
     e.preventDefault();
@@ -365,6 +411,105 @@ export default function SettingsTab({
                       disabled={currentUser?.id === c.id}
                       className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
                       title="Delete"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Property Types Management Section (Full Width at bottom) */}
+      {isUserAdmin && (
+        <div className="lg:col-span-2 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] border-t border-white/10 pt-8 mt-4">
+          {/* Add Property Type Card */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md h-fit">
+            <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
+              <Plus size={18} className="text-[#d4af37]" />
+              {lang === "es" ? "Agregar Tipo de Propiedad" : "Add Property Type"}
+            </h3>
+
+            {typeError && (
+              <div className="bg-rose-950/40 border border-rose-500/30 text-rose-300 px-4 py-2 rounded-xl text-xs font-sans text-center mb-4">
+                {typeError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddPropertyType} className="space-y-4">
+              <div>
+                <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                  {lang === "es" ? "Nombre en Español" : "Name in Spanish"}
+                </label>
+                <input 
+                  type="text" 
+                  required
+                  value={typeForm.nameEs}
+                  onChange={e => setTypeForm({ ...typeForm, nameEs: e.target.value })}
+                  placeholder="e.g. Finca Agrícola"
+                  className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                  {lang === "es" ? "Nombre en Inglés" : "Name in English"}
+                </label>
+                <input 
+                  type="text" 
+                  required
+                  value={typeForm.nameEn}
+                  onChange={e => setTypeForm({ ...typeForm, nameEn: e.target.value })}
+                  placeholder="e.g. Agricultural Farm"
+                  className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-sans" 
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center transition"
+              >
+                {lang === "es" ? "Agregar Tipo" : "Add Type"}
+              </button>
+            </form>
+          </div>
+
+          {/* Property Types List Card */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
+            <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3">
+              {lang === "es" ? "Tipos de Propiedades Registrados" : "Registered Property Types"} ({propertyTypes.length})
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-1">
+              {propertyTypes.map(pt => (
+                <div key={pt.id} className="flex gap-4 p-3.5 border border-white/5 bg-[#011a14] rounded-xl items-center justify-between animate-none">
+                  <div className="min-w-0">
+                    <div className="font-serif text-xs text-pearl font-semibold truncate">
+                      {lang === "es" ? pt.nameEs : pt.nameEn}
+                    </div>
+                    <div className="text-[9px] text-gray-500 font-mono truncate mt-0.5">
+                      ID: {pt.id} | {lang === "es" ? `EN: ${pt.nameEn}` : `ES: ${pt.nameEs}`}
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button 
+                      type="button"
+                      onClick={() => handleToggleTypeVisibility(pt.id)}
+                      className={`p-2 rounded-lg border transition cursor-pointer ${
+                        pt.visible 
+                          ? "border-[#d4af37]/35 text-[#d4af37] hover:bg-[#d4af37]/10" 
+                          : "border-white/10 text-gray-500 hover:text-white"
+                      }`}
+                      title={pt.visible ? (lang === "es" ? "Ocultar" : "Hide") : (lang === "es" ? "Mostrar" : "Show")}
+                    >
+                      {pt.visible ? <Eye size={12} /> : <EyeOff size={12} />}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handleDeletePropertyType(pt.id)}
+                      className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer"
+                      title={lang === "es" ? "Eliminar" : "Delete"}
                     >
                       <Trash2 size={12} />
                     </button>

@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PROPERTIES, Property, PROVINCE_REGIONS } from "@/constants/properties";
+import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
 import AirbnbCalculator from "@/components/AirbnbCalculator";
@@ -92,6 +92,21 @@ export default function Home() {
     const updated = properties.filter(p => p.id !== id);
     setProperties(updated);
     localStorage.setItem("imagine_properties", JSON.stringify(updated));
+  };
+
+  // Dynamic Property Types state
+  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>(DEFAULT_PROPERTY_TYPES);
+
+  useEffect(() => {
+    const storedTypes = localStorage.getItem("imagine_property_types");
+    if (storedTypes) {
+      setPropertyTypes(JSON.parse(storedTypes));
+    }
+  }, []);
+
+  const handleUpdatePropertyTypes = (updatedTypes: PropertyType[]) => {
+    setPropertyTypes(updatedTypes);
+    localStorage.setItem("imagine_property_types", JSON.stringify(updatedTypes));
   };
 
   // Routing State
@@ -818,22 +833,14 @@ export default function Home() {
                       className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                       <option value="all">{t.catalog.filters.allTypes}</option>
-                      {activeSegment !== "Commercial" ? (
-                        <>
-                          <option value="Casa">{lang === "es" ? "Casa" : "Home"}</option>
-                          <option value="Cabaña">{lang === "es" ? "Cabaña" : "Cabin"}</option>
-                          <option value="Quinta">{lang === "es" ? "Quinta" : "Estate"}</option>
-                          <option value="Lote">{lang === "es" ? "Lote" : "Lot"}</option>
-                          <option value="Quinta de Descanso">{lang === "es" ? "Quinta de Descanso" : "Rest Quinta"}</option>
-                          <option value="Terreno de Montaña">{lang === "es" ? "Terreno de Montaña" : "Mountain Land"}</option>
-                          <option value="Villa Exclusiva">{lang === "es" ? "Villa Exclusiva" : "Exclusive Villa"}</option>
-                        </>
-                      ) : (
-                        <>
-                          <option value="Edificio">{lang === "es" ? "Edificio Comercial" : "Commercial Building"}</option>
-                          <option value="Bodega">{lang === "es" ? "Bodega / Local" : "Warehouse"}</option>
-                        </>
-                      )}
+                      {propertyTypes
+                        .filter(pt => pt.visible)
+                        .map(pt => (
+                          <option key={pt.id} value={pt.id}>
+                            {lang === "es" ? pt.nameEs : pt.nameEn}
+                          </option>
+                        ))
+                      }
                     </select>
                     <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
@@ -1835,6 +1842,8 @@ export default function Home() {
           onAddProperty={handleAddProperty}
           onUpdateProperty={handleUpdateProperty}
           onDeleteProperty={handleDeleteProperty}
+          propertyTypes={propertyTypes}
+          onUpdatePropertyTypes={handleUpdatePropertyTypes}
           lang={lang}
           onClose={() => setIsAdminOpen(false)}
         />

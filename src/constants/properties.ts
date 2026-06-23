@@ -9,7 +9,7 @@ export interface Property {
   description: string;
   image: string;
   panorama: string;
-  type: "Casa" | "Cabaña" | "Quinta" | "Lote" | "Quinta de Descanso" | "Terreno de Montaña" | "Villa Exclusiva" | "Edificio" | "Bodega";
+  type: string;
   segment: "Luxury" | "Standard" | "Commercial";
   province: "San José" | "Alajuela" | "Cartago" | "Heredia" | "Guanacaste" | "Puntarenas" | "Limón";
   lifestyle: "Naturaleza" | "Ciudad";
@@ -31,6 +31,31 @@ export interface Property {
   fincaRegistryNum?: string;
   catasterMapNum?: string;
 }
+
+export interface PropertyType {
+  id: string;
+  nameEs: string;
+  nameEn: string;
+  visible: boolean;
+}
+
+export const DEFAULT_PROPERTY_TYPES: PropertyType[] = [
+  { id: "Casa", nameEs: "Casa", nameEn: "House", visible: true },
+  { id: "Apartamento", nameEs: "Apartamento", nameEn: "Apartment", visible: true },
+  { id: "Condominio", nameEs: "Condominio", nameEn: "Condo", visible: true },
+  { id: "Villa Exclusiva", nameEs: "Villa Exclusiva", nameEn: "Exclusive Villa", visible: true },
+  { id: "Cabaña", nameEs: "Cabaña", nameEn: "Cabin", visible: true },
+  { id: "Quinta", nameEs: "Quinta", nameEn: "Estate", visible: true },
+  { id: "Quinta de Descanso", nameEs: "Quinta de Descanso", nameEn: "Rest Quinta", visible: true },
+  { id: "Lote", nameEs: "Lote", nameEn: "Lot", visible: true },
+  { id: "Terreno de Montaña", nameEs: "Terreno de Montaña", nameEn: "Mountain Land", visible: true },
+  { id: "Finca", nameEs: "Finca / Finca Agrícola", nameEn: "Farm / Ranch", visible: true },
+  { id: "Edificio", nameEs: "Edificio Comercial", nameEn: "Commercial Building", visible: true },
+  { id: "Bodega", nameEs: "Bodega / Local", nameEn: "Warehouse / Retail Space", visible: true },
+  { id: "Oficina", nameEs: "Oficina", nameEn: "Office", visible: true },
+  { id: "Penthouse", nameEs: "Penthouse", nameEn: "Penthouse", visible: true },
+  { id: "Hotel", nameEs: "Hotel / Hostal", nameEn: "Hotel / B&B", visible: true }
+];
 
 export interface Lead {
   id: string;

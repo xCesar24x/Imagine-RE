@@ -3,7 +3,7 @@
 import { useState, useMemo, type FormEvent } from "react";
 import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Download, Check, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Property, PROVINCE_REGIONS } from "@/constants/properties";
+import { Property, PROVINCE_REGIONS, PropertyType } from "@/constants/properties";
 
 interface Collaborator {
   id: string;
@@ -18,6 +18,7 @@ interface InventoryCRUDProps {
   onAddProperty: (p: Property) => void;
   onUpdateProperty: (p: Property) => void;
   onDeleteProperty: (id: string) => void;
+  propertyTypes: PropertyType[];
   lang: "en" | "es";
   currentUser: Collaborator | null;
 }
@@ -27,6 +28,7 @@ export default function InventoryCRUD({
   onAddProperty,
   onUpdateProperty,
   onDeleteProperty,
+  propertyTypes,
   lang,
   currentUser
 }: InventoryCRUDProps) {
@@ -319,15 +321,14 @@ export default function InventoryCRUD({
                 onChange={e => setCrudForm({ ...crudForm, type: e.target.value as any })}
                 className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
               >
-                <option value="Casa">Casa</option>
-                <option value="Cabaña">Cabaña</option>
-                <option value="Quinta">Quinta</option>
-                <option value="Lote">Lote</option>
-                <option value="Quinta de Descanso">Quinta de Descanso</option>
-                <option value="Terreno de Montaña">Terreno de Montaña</option>
-                <option value="Villa Exclusiva">Villa Exclusiva</option>
-                <option value="Edificio">Edificio Comercial</option>
-                <option value="Bodega">Bodega / Local</option>
+                {propertyTypes
+                  .filter(pt => pt.visible)
+                  .map(pt => (
+                    <option key={pt.id} value={pt.id}>
+                      {lang === "es" ? pt.nameEs : pt.nameEn}
+                    </option>
+                  ))
+                }
               </select>
             </div>
             <div>

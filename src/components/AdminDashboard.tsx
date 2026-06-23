@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, type FormEvent } from "react";
 import { X, Shield, AlertTriangle, Edit2, Users, Sparkles, FileText, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Property, Lead } from "@/constants/properties";
+import { Property, Lead, PropertyType } from "@/constants/properties";
 
 // Import modular dashboard subcomponents
 import InventoryCRUD from "./dashboard/InventoryCRUD";
@@ -18,6 +18,8 @@ interface AdminDashboardProps {
   onAddProperty: (p: Property) => void;
   onUpdateProperty: (p: Property) => void;
   onDeleteProperty: (id: string) => void;
+  propertyTypes: PropertyType[];
+  onUpdatePropertyTypes: (types: PropertyType[]) => void;
   lang: "en" | "es";
   onClose: () => void;
 }
@@ -35,6 +37,8 @@ export default function AdminDashboard({
   onAddProperty,
   onUpdateProperty,
   onDeleteProperty,
+  propertyTypes,
+  onUpdatePropertyTypes,
   lang,
   onClose
 }: AdminDashboardProps) {
@@ -406,6 +410,7 @@ export default function AdminDashboard({
                   onAddProperty={handleAddPropertyWithMatching}
                   onUpdateProperty={onUpdateProperty}
                   onDeleteProperty={onDeleteProperty}
+                  propertyTypes={propertyTypes}
                   lang={lang}
                   currentUser={currentUser}
                 />
@@ -450,6 +455,8 @@ export default function AdminDashboard({
                   currentUser={currentUser}
                   onUpdateCollaborators={handleUpdateCollaborators}
                   onUpdateCurrentUser={setCurrentUser}
+                  propertyTypes={propertyTypes}
+                  onUpdatePropertyTypes={onUpdatePropertyTypes}
                   lang={lang}
                 />
               )}
