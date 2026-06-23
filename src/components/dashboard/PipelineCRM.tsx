@@ -495,7 +495,7 @@ export default function PipelineCRM({
                 <button
                   type="button"
                   onClick={() => {
-                    const WHATSAPP_NUMBER = "50688888888"; // Replace with Bryan's real number
+                    const WHATSAPP_NUMBER = "50688621215";
                     const service = selectedLead.requestedService;
                     const props = (selectedLead.wishlistPropertyIds || [])
                       .map(id => properties.find(p => p.id === id)?.name)

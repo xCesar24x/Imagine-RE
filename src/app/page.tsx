@@ -270,7 +270,7 @@ export default function Home() {
 
   // Build personalized WhatsApp message based on service type
   const buildWhatsAppMessage = () => {
-    const WHATSAPP_NUMBER = "50688888888"; // Replace with Bryan's real number
+    const WHATSAPP_NUMBER = "50688621215";
     const wishlistNames = wishlistedIds
       .map(id => PROPERTIES.find(p => p.id === id)?.name)
       .filter(Boolean)
