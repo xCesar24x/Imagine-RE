@@ -1871,18 +1871,41 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-[1600px] mt-8 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-500 uppercase tracking-widest gap-4">
-          <div>
+        <div className="mx-auto max-w-[1600px] mt-8 flex flex-col items-center gap-5 text-[10px] text-gray-500 uppercase tracking-widest">
+          {/* Copyright — centered so it never hides behind the wishlist button */}
+          <div className="text-center text-gray-500 uppercase tracking-widest text-[10px]">
+            &copy; {new Date().getFullYear()} Imagine Real Estate &amp; Property Management. All rights reserved.
+          </div>
+
+          {/* Admin access — below the copyright, left-aligned on desktop */}
+          <div className="w-full flex justify-between items-center">
             <button 
               onClick={() => setIsAdminOpen(true)}
-              className="hover:text-sunset font-semibold text-[#d4af37]/75 transition flex items-center gap-1.5 cursor-pointer bg-transparent border-0 outline-none"
+              className="hover:text-sunset font-semibold text-[#d4af37]/75 transition flex items-center gap-1.5 cursor-pointer bg-transparent border-0 outline-none text-[10px] uppercase tracking-widest"
             >
               <span>⚙️</span>
               <span>{lang === "es" ? "Acceso Portal Admin" : "Admin Portal Access"}</span>
             </button>
-          </div>
-          <div>
-            &copy; {new Date().getFullYear()} Imagine Real Estate & Property Management. All rights reserved.
+
+            {/* Ruta Digital credit */}
+            <a
+              href="https://rutadigital.lat"
+              target="_blank"
+              rel="noreferrer"
+              className="group inline-flex items-center gap-2 text-gray-600 hover:text-white transition-colors duration-300 normal-case tracking-normal"
+              title="Desarrollado por Ruta Digital"
+            >
+              <img
+                src="https://rutadigital.lat/favicon.ico"
+                alt="Ruta Digital"
+                className="w-4 h-4 rounded opacity-60 group-hover:opacity-100 transition-opacity"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              <span className="text-[9px] font-sans normal-case tracking-wide text-gray-600 group-hover:text-gray-300 transition-colors">
+                {lang === "es" ? "Desarrollado por" : "Developed by"}{" "}
+                <span className="text-[#d4af37]/70 group-hover:text-[#d4af37] font-semibold transition-colors">Ruta Digital</span>
+              </span>
+            </a>
           </div>
         </div>
       </footer>
