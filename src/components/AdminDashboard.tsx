@@ -47,6 +47,7 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState<"inventory" | "crm" | "social" | "contracts" | "reports">("inventory");
 
   // --- CRUD State ---
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [crudForm, setCrudForm] = useState({
     name: "",
     location: "",
