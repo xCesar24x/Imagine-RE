@@ -597,6 +597,12 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center gap-3 rounded-full border border-sunset/20 bg-[#e5c777]/10 px-5 py-2 text-[10px] md:text-xs uppercase tracking-[0.36em] text-sunset/90 shadow-sm shadow-sunset/10">
                   {t.hero.badge}
                 </div>
+                
+                {/* Bryan's Personal Intro Greeting */}
+                <p className="mx-auto mt-6 max-w-2xl text-xs md:text-sm leading-relaxed text-pearl/85 font-sans italic px-4">
+                  "{(t.hero as any).intro}"
+                </p>
+
                 <h1 className="mt-8 text-4xl md:text-6xl xl:text-7xl font-serif uppercase tracking-[-0.03em] leading-tight text-pearl">
                   {t.hero.title1} <span className="text-sunset">{t.hero.title2}</span>
                 </h1>
