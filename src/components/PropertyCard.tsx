@@ -112,8 +112,8 @@ export default function PropertyCard({
           <Heart size={16} className={wishlisted ? segmentStyles.heartFill : ""} />
         </button>
 
-        {/* Status Badge */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 items-start z-10">
+        {/* Status Badges & Vibe Tags */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 items-start z-10 max-w-[70%]">
           <span
             className={`px-3 py-1.5 text-[9px] font-sans tracking-widest uppercase border rounded-full shadow-md ${statusStyles[property.status]}`}
           >
@@ -124,14 +124,10 @@ export default function PropertyCard({
               {property.refCode}
             </span>
           )}
-        </div>
-
-        {/* Vibe Tags */}
-        <div className="absolute top-16 left-4 flex flex-wrap gap-2 max-w-[70%] z-10">
           {property.vibeTags.slice(0, 1).map((tag, i) => (
             <span
               key={i}
-              className="px-2.5 py-1 text-[9px] font-sans tracking-widest uppercase bg-black/55 backdrop-blur-md border border-white/10 rounded-full text-pearl/90"
+              className="px-2.5 py-1 text-[9px] font-sans tracking-widest uppercase bg-black/55 backdrop-blur-md border border-white/10 rounded-full text-pearl/90 shadow-md"
             >
               {tag}
             </span>
