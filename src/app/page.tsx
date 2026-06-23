@@ -340,9 +340,10 @@ export default function Home() {
   const filteredProperties = useMemo(() => {
     return properties.filter(p => {
       // Price Filter
-      if (priceFilter === "under-5" && p.price >= 5000000) return false;
-      if (priceFilter === "5-10" && (p.price < 5000000 || p.price > 10000000)) return false;
-      if (priceFilter === "over-10" && p.price <= 10000000) return false;
+      if (priceFilter === "under-500k" && p.price >= 500000) return false;
+      if (priceFilter === "500k-1.5m" && (p.price < 500000 || p.price > 1500000)) return false;
+      if (priceFilter === "1.5m-5m" && (p.price < 1500000 || p.price > 5000000)) return false;
+      if (priceFilter === "over-5m" && p.price <= 5000000) return false;
 
       // Size Filter
       if (sizeFilter === "under-5k" && p.sqft >= 5000) return false;
@@ -613,10 +614,11 @@ export default function Home() {
                       onChange={(e) => setPriceFilter(e.target.value)}
                       className="w-full bg-[#041b15] border border-white/10 text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none focus:border-sunset/50 cursor-pointer pr-8 animate-none"
                     >
-                      <option value="all">{t.catalog.filters.all}</option>
-                      <option value="under-5">{t.catalog.filters.under5}</option>
-                      <option value="5-10">{t.catalog.filters.between5and10}</option>
-                      <option value="over-10">{t.catalog.filters.over10}</option>
+                       <option value="all">{t.catalog.filters.all}</option>
+                       <option value="under-500k">{t.catalog.filters.under500k}</option>
+                       <option value="500k-1.5m">{t.catalog.filters.between500kand15m}</option>
+                       <option value="1.5m-5m">{t.catalog.filters.between15mand5m}</option>
+                       <option value="over-5m">{t.catalog.filters.over5m}</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={13} />
                   </div>
@@ -980,9 +982,10 @@ export default function Home() {
                                 className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs font-sans px-4 py-3.5 rounded-2xl appearance-none focus:outline-none focus:border-sunset cursor-pointer pr-10 animate-none"
                               >
                                 <option value="">{lang === "es" ? "-- Seleccionar rango --" : "-- Select budget --"}</option>
-                                <option value="Under 5M">{lang === "es" ? "Menos de $5,000,000" : "Under $5,000,000"}</option>
-                                <option value="5M - 10M">$5,000,000 - $10,000,000</option>
-                                <option value="Over 10M">{lang === "es" ? "Más de $10,000,000" : "Over $10,000,000"}</option>
+                                <option value="Under 500K">{lang === "es" ? "Menos de $500,000" : "Under $500,000"}</option>
+                                <option value="500K - 1.5M">$500,000 - $1,500,000</option>
+                                <option value="1.5M - 5M">$1,500,000 - $5,000,000</option>
+                                <option value="Over 5M">{lang === "es" ? "Más de $5,000,000" : "Over $5,000,000"}</option>
                               </select>
                               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sunset" size={14} />
                             </div>

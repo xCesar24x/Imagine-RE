@@ -306,8 +306,9 @@ export default function AdminDashboard({
     const matches = leads.filter(l => {
       // Budget matching
       let budgetLimit = 999999999;
-      if (l.budgetRange.includes("Under 5M")) budgetLimit = 5000000;
-      else if (l.budgetRange.includes("5M - 10M")) budgetLimit = 10000000;
+      if (l.budgetRange.includes("Under 500K")) budgetLimit = 500000;
+      else if (l.budgetRange.includes("500K - 1.5M")) budgetLimit = 1500000;
+      else if (l.budgetRange.includes("1.5M - 5M")) budgetLimit = 5000000;
       
       const budgetMatched = newProp.price <= budgetLimit;
       const typeMatched = true; // Simple matching
