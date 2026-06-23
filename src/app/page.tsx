@@ -28,7 +28,9 @@ import {
   Play,
   ArrowRight,
   ArrowLeft,
-  Shield
+  Shield,
+  Home,
+  Building2
 } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
 import { getAssetPath } from "@/utils/paths";
@@ -691,30 +693,68 @@ export default function Home() {
           <section id="collection" className={`py-24 px-6 md:px-12 transition-colors duration-500 scroll-mt-24 ${catalogTheme.bg}`}>
             
             {/* Segment Selector Tabs */}
-            <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-16 border-b border-white/5 pb-8 max-w-[1600px] mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-[1600px] mx-auto">
               {[
-                { id: "Luxury", label: lang === "es" ? "Colección Signature (Lujo)" : "Signature Collection (Luxury)", activeColor: "text-sunset border-sunset bg-white/5", hoverColor: "text-gray-400 border-transparent hover:text-sunset" },
-                { id: "Standard", label: lang === "es" ? "Residencial & Lotes" : "Residential & Land", activeColor: "text-cyan-400 border-cyan-400 bg-white/5", hoverColor: "text-gray-400 border-transparent hover:text-cyan-400" },
-                { id: "Commercial", label: lang === "es" ? "Comercial & Inversiones" : "Commercial & Investments", activeColor: "text-blue-400 border-blue-400 bg-white/5", hoverColor: "text-gray-400 border-transparent hover:text-blue-400" }
-              ].map(seg => (
-                <button
-                  key={seg.id}
-                  onClick={() => {
-                    setActiveSegment(seg.id as any);
-                    setPriceFilter("all");
-                    setSizeFilter("all");
-                    setProvinceFilter("all");
-                    setLocationFilter("all");
-                    setTypeFilter("all");
-                    setLifestyleFilter("all");
-                  }}
-                  className={`w-full md:w-auto px-8 py-4 text-xs font-sans uppercase tracking-[0.2em] font-bold border-b-2 transition duration-300 cursor-pointer text-center ${
-                    activeSegment === seg.id ? seg.activeColor : seg.hoverColor
-                  }`}
-                >
-                  {seg.label}
-                </button>
-              ))}
+                { 
+                  id: "Luxury", 
+                  label: lang === "es" ? "Colección Signature" : "Signature Collection", 
+                  desc: lang === "es" ? "Propiedades selectas con ubicaciones y acabados premium" : "Handpicked premium properties in prime locations",
+                  icon: Sparkles,
+                  activeColor: "border-sunset text-sunset bg-[#e5c777]/5 shadow-[0_0_25px_rgba(229,199,119,0.12)] scale-[1.02]",
+                  hoverColor: "border-white/10 hover:border-sunset/50 hover:bg-white/5 hover:text-sunset text-pearl/80 hover:scale-[1.01]"
+                },
+                { 
+                  id: "Standard", 
+                  label: lang === "es" ? "Residencial & Lotes" : "Residential & Land", 
+                  desc: lang === "es" ? "Casas familiares, quintas de descanso y lotes listos para construir" : "Family homes, rest estates and lots ready to build",
+                  icon: Home,
+                  activeColor: "border-cyan-400 text-cyan-400 bg-cyan-400/5 shadow-[0_0_25px_rgba(34,211,238,0.12)] scale-[1.02]",
+                  hoverColor: "border-white/10 hover:border-cyan-400/50 hover:bg-white/5 hover:text-cyan-400 text-pearl/80 hover:scale-[1.01]"
+                },
+                { 
+                  id: "Commercial", 
+                  label: lang === "es" ? "Comercial & Inversiones" : "Commercial & Investments", 
+                  desc: lang === "es" ? "Locales, bodegas y proyectos comerciales con alto potencial" : "Commercial buildings, warehouses and ROI projects",
+                  icon: Building2,
+                  activeColor: "border-blue-400 text-blue-400 bg-blue-400/5 shadow-[0_0_25px_rgba(96,165,250,0.12)] scale-[1.02]",
+                  hoverColor: "border-white/10 hover:border-blue-400/50 hover:bg-white/5 hover:text-blue-400 text-pearl/80 hover:scale-[1.01]"
+                }
+              ].map(seg => {
+                const Icon = seg.icon;
+                const isActive = activeSegment === seg.id;
+                return (
+                  <button
+                    key={seg.id}
+                    onClick={() => {
+                      setActiveSegment(seg.id as any);
+                      setPriceFilter("all");
+                      setSizeFilter("all");
+                      setProvinceFilter("all");
+                      setLocationFilter("all");
+                      setTypeFilter("all");
+                      setLifestyleFilter("all");
+                    }}
+                    className={`relative p-6 rounded-3xl border text-left transition-all duration-300 cursor-pointer overflow-hidden group ${
+                      isActive ? seg.activeColor : seg.hoverColor
+                    }`}
+                  >
+                    {/* Background gradient layout */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className={`p-3 rounded-2xl transition duration-300 shrink-0 ${
+                        isActive ? "bg-white/10" : "bg-white/5 group-hover:bg-white/10"
+                      }`}>
+                        <Icon size={20} className="transition duration-300" />
+                      </div>
+                      <div>
+                        <div className="font-serif text-base tracking-wide font-semibold">{seg.label}</div>
+                        <div className="text-[11px] opacity-75 font-sans tracking-wide mt-1.5 leading-relaxed">{seg.desc}</div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
             <motion.div 
@@ -730,8 +770,8 @@ export default function Home() {
                 </h2>
                 <h3 className="text-3xl md:text-5xl font-serif">
                   {lang === "es" 
-                    ? (activeSegment === "Luxury" ? "Propiedades de Lujo" : activeSegment === "Standard" ? "Inmobiliaria Residencial" : "Bienes Raíces Comerciales")
-                    : (activeSegment === "Luxury" ? "Luxury Real Estate" : activeSegment === "Standard" ? "Residential Realty" : "Commercial Estates")
+                    ? (activeSegment === "Luxury" ? "Colección Signature" : activeSegment === "Standard" ? "Inmobiliaria Residencial" : "Bienes Raíces Comerciales")
+                    : (activeSegment === "Luxury" ? "Signature Collection" : activeSegment === "Standard" ? "Residential Realty" : "Commercial Estates")
                   }
                 </h3>
               </div>

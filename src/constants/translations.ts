@@ -10,12 +10,12 @@ export const TRANSLATIONS = {
     hero: {
       badge: "Bryan Viquez - Your real estate ally.",
       intro: "Hello, I am Bryan. At Imagine RE & PM, I do not believe in complicated processes. My goal is to make things easy for you with honesty and real market knowledge, whether you are looking for a mountain lot, a business location, or a home for your family. Let us walk this path together with total peace of mind.",
-      title1: "Exclusivity redefined",
-      title2: "for Costa Rica",
+      title1: "Your path to the",
+      title2: "ideal property in Costa Rica",
       description: "We source exceptional residences, elevate ownership with dedicated concierge care, and make every acquisition feel like a private celebration.",
       stats: {
         investment: "Investment",
-        investmentDesc: "Selected luxury properties live now.",
+        investmentDesc: "Selected properties live now.",
         concierge: "Concierge",
         conciergeDesc: "White-glove access from search to ownership.",
         signature: "Signature",
@@ -34,7 +34,7 @@ export const TRANSLATIONS = {
       cards: [
         {
           title: "Find Your Dream Home",
-          description: "We find the perfect luxury property for you, even those that are not listed on the market.",
+          description: "We find the perfect property for you, even those that are not listed on the market.",
         },
         {
           title: "We Take Care of Everything",
@@ -219,12 +219,12 @@ export const TRANSLATIONS = {
     hero: {
       badge: "Bryan Viquez - Tu aliado inmobiliario.",
       intro: "Hola, soy Bryan. En Imagine RE & PM no creo en los procesos complicados. Mi meta es facilitarte las cosas con honestidad y conocimiento real del mercado, ya sea que estés buscando un lote de montaña, la ubicación para tu negocio o la casa para tu familia. Caminemos juntos el proceso con total tranquilidad.",
-      title1: "Exclusividad redefinida",
-      title2: "para Costa Rica",
+      title1: "Tu camino a la",
+      title2: "propiedad ideal en Costa Rica",
       description: "Encontramos residencias excepcionales, elevamos la propiedad con un servicio concierge dedicado y hacemos que cada adquisición se sienta como una celebración privada.",
       stats: {
         investment: "Inversión",
-        investmentDesc: "Propiedades de lujo seleccionadas activas ahora.",
+        investmentDesc: "Propiedades seleccionadas activas ahora.",
         concierge: "Concierge",
         conciergeDesc: "Acceso premium desde la búsqueda hasta la adquisición.",
         signature: "Firma",
