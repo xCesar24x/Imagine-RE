@@ -8,7 +8,7 @@ export const TRANSLATIONS = {
       tours: "Discovery Tours",
     },
     hero: {
-      badge: "Premium concierge for high-net-worth living",
+      badge: "Bryan Viquez M. Your real estate ally.",
       title1: "Exclusivity redefined",
       title2: "for Costa Rica",
       description: "We source exceptional residences, elevate ownership with dedicated concierge care, and make every acquisition feel like a private celebration.",
@@ -216,7 +216,7 @@ export const TRANSLATIONS = {
       tours: "Tours VIP",
     },
     hero: {
-      badge: "Servicios concierge premium para un estilo de vida exclusivo",
+      badge: "Bryan Viquez M. Tu aliado inmobiliario.",
       title1: "Exclusividad redefinida",
       title2: "para Costa Rica",
       description: "Encontramos residencias excepcionales, elevamos la propiedad con un servicio concierge dedicado y hacemos que cada adquisición se sienta como una celebración privada.",
