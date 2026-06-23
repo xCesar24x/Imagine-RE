@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES } from "@/constants/properties";
+import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
 import AirbnbCalculator from "@/components/AirbnbCalculator";
@@ -30,7 +30,8 @@ import {
   ArrowLeft,
   Shield,
   Home as HomeIcon,
-  Building2
+  Building2,
+  RefreshCw
 } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
 import { getAssetPath } from "@/utils/paths";
@@ -48,8 +49,11 @@ export default function Home() {
     JPY: 158,
     USD: 1
   });
+  const [ratesUpdatedAt, setRatesUpdatedAt] = useState<Date | null>(null);
+  const [ratesLoading, setRatesLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchRates = () => {
+    setRatesLoading(true);
     fetch("https://open.er-api.com/v6/latest/USD")
       .then(res => res.json())
       .then(data => {
@@ -60,9 +64,19 @@ export default function Home() {
             JPY: data.rates.JPY || 158,
             USD: 1
           });
+          setRatesUpdatedAt(new Date());
         }
       })
-      .catch(err => console.error("Error fetching rates, using defaults:", err));
+      .catch(err => console.error("Error fetching rates, using defaults:", err))
+      .finally(() => setRatesLoading(false));
+  };
+
+  // Fetch on mount and then auto-refresh every 30 minutes
+  useEffect(() => {
+    fetchRates();
+    const interval = setInterval(fetchRates, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Dynamic Properties CRUD state
@@ -107,6 +121,21 @@ export default function Home() {
   const handleUpdatePropertyTypes = (updatedTypes: PropertyType[]) => {
     setPropertyTypes(updatedTypes);
     localStorage.setItem("imagine_property_types", JSON.stringify(updatedTypes));
+  };
+
+  // Dynamic Regions state
+  const [regions, setRegions] = useState<Region[]>(DEFAULT_REGIONS);
+
+  useEffect(() => {
+    const storedRegions = localStorage.getItem("imagine_regions");
+    if (storedRegions) {
+      setRegions(JSON.parse(storedRegions));
+    }
+  }, []);
+
+  const handleUpdateRegions = (updatedRegions: Region[]) => {
+    setRegions(updatedRegions);
+    localStorage.setItem("imagine_regions", JSON.stringify(updatedRegions));
   };
 
   // Routing State
@@ -383,9 +412,9 @@ export default function Home() {
   }), [lang]);
 
   const availableRegions = useMemo(() => {
-    const baseRegions = provinceFilter !== "all"
-      ? (PROVINCE_REGIONS[provinceFilter] || [])
-      : Object.values(PROVINCE_REGIONS).flat();
+    const baseRegions = regions
+      .filter(r => r.visible && (provinceFilter === "all" || r.province === provinceFilter))
+      .map(r => r.name);
 
     // Also include any custom location created in admin dashboard that matches the selected province
     const activeLocations = properties
@@ -394,7 +423,7 @@ export default function Home() {
 
     const merged = new Set([...baseRegions, ...activeLocations]);
     return Array.from(merged).sort();
-  }, [provinceFilter, properties]);
+  }, [provinceFilter, properties, regions]);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -925,6 +954,28 @@ export default function Home() {
                       <option value="JPY">{t.catalog.filters.showJPY}</option>
                     </select>
                     <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
+                  </div>
+                  {/* Live Rate Indicator */}
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <div className="text-[9px] text-gray-500 font-sans leading-tight">
+                      {ratesLoading
+                        ? (lang === "es" ? "Actualizando..." : "Updating...")
+                        : ratesUpdatedAt
+                          ? (lang === "es"
+                              ? `TC: ${ratesUpdatedAt.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })}`
+                              : `Rate: ${ratesUpdatedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`)
+                          : (lang === "es" ? "Tipo de cambio en vivo" : "Live exchange rate")
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      onClick={fetchRates}
+                      disabled={ratesLoading}
+                      title={lang === "es" ? "Actualizar tipo de cambio" : "Refresh exchange rate"}
+                      className={`p-1 rounded-lg transition cursor-pointer ${ratesLoading ? "text-gray-600" : `${catalogTheme.textAccent} hover:bg-white/10`}`}
+                    >
+                      <RefreshCw size={11} className={ratesLoading ? "animate-spin" : ""} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1844,6 +1895,8 @@ export default function Home() {
           onDeleteProperty={handleDeleteProperty}
           propertyTypes={propertyTypes}
           onUpdatePropertyTypes={handleUpdatePropertyTypes}
+          regions={regions}
+          onUpdateRegions={handleUpdateRegions}
           lang={lang}
           onClose={() => setIsAdminOpen(false)}
         />

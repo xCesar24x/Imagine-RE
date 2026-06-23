@@ -3,7 +3,7 @@
 import { useState, useMemo, type FormEvent } from "react";
 import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Download, Check, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Property, PROVINCE_REGIONS, PropertyType } from "@/constants/properties";
+import { Property, PROVINCE_REGIONS, PropertyType, Region } from "@/constants/properties";
 
 interface Collaborator {
   id: string;
@@ -19,6 +19,7 @@ interface InventoryCRUDProps {
   onUpdateProperty: (p: Property) => void;
   onDeleteProperty: (id: string) => void;
   propertyTypes: PropertyType[];
+  regions: Region[];
   lang: "en" | "es";
   currentUser: Collaborator | null;
 }
@@ -29,6 +30,7 @@ export default function InventoryCRUD({
   onUpdateProperty,
   onDeleteProperty,
   propertyTypes,
+  regions,
   lang,
   currentUser
 }: InventoryCRUDProps) {
@@ -73,8 +75,10 @@ export default function InventoryCRUD({
   });
 
   const activeProvinceRegions = useMemo(() => {
-    return PROVINCE_REGIONS[crudForm.province] || [];
-  }, [crudForm.province]);
+    return regions
+      .filter(r => r.visible && r.province === crudForm.province)
+      .map(r => r.name);
+  }, [crudForm.province, regions]);
 
   const isCustomLocation = useMemo(() => {
     return crudForm.location !== "" && !activeProvinceRegions.includes(crudForm.location);

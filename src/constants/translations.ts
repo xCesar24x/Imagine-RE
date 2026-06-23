@@ -407,7 +407,7 @@ export const TRANSLATIONS = {
     discoveryTours: {
       title: "Discovery Tours Costa Rica",
       subtitle: "Tours concierge privados de sus futuros vecindarios",
-      description: "Únase a nuestra buseta concierge premium de descubrimiento. Visite nuestras propiedades de lujo seleccionadas, experimente el estilo de vida local, conozca abogados de confianza y deguste la gastronomía regional.",
+      description: "Únase a nuestra buseta concierge premium de descubrimiento. Visite nuestras propiedades seleccionadas en las mejores zonas de Costa Rica, experimente el estilo de vida local, conozca abogados de confianza y deguste la gastronomía regional.",
       upcomingTours: "Próximas Fechas de Tours",
       reserveSeat: "Reservar Espacio en la Buseta",
       tourSelected: "Tour Seleccionado",

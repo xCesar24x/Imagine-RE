@@ -57,6 +57,59 @@ export const DEFAULT_PROPERTY_TYPES: PropertyType[] = [
   { id: "Hotel", nameEs: "Hotel / Hostal", nameEn: "Hotel / B&B", visible: true }
 ];
 
+export interface Region {
+  id: string;
+  name: string;
+  province: string;
+  visible: boolean;
+}
+
+export const DEFAULT_REGIONS: Region[] = [
+  // San José
+  { id: "Barrio Escalante", name: "Barrio Escalante", province: "San José", visible: true },
+  { id: "Escazú", name: "Escazú", province: "San José", visible: true },
+  { id: "Santa Ana", name: "Santa Ana", province: "San José", visible: true },
+  { id: "San José Centro", name: "San José Centro", province: "San José", visible: true },
+  { id: "Curridabat", name: "Curridabat", province: "San José", visible: true },
+  { id: "Pérez Zeledón", name: "Pérez Zeledón", province: "San José", visible: true },
+  // Alajuela
+  { id: "Atenas", name: "Atenas", province: "Alajuela", visible: true },
+  { id: "Alajuela Centro", name: "Alajuela Centro", province: "Alajuela", visible: true },
+  { id: "San Carlos", name: "San Carlos", province: "Alajuela", visible: true },
+  { id: "Grecia", name: "Grecia", province: "Alajuela", visible: true },
+  { id: "Orotina", name: "Orotina", province: "Alajuela", visible: true },
+  // Cartago
+  { id: "Cartago Centro", name: "Cartago Centro", province: "Cartago", visible: true },
+  { id: "Tres Ríos", name: "Tres Ríos", province: "Cartago", visible: true },
+  { id: "Turrialba", name: "Turrialba", province: "Cartago", visible: true },
+  { id: "Paraíso", name: "Paraíso", province: "Cartago", visible: true },
+  // Heredia
+  { id: "Heredia Centro", name: "Heredia Centro", province: "Heredia", visible: true },
+  { id: "Belén", name: "Belén", province: "Heredia", visible: true },
+  { id: "Santo Domingo", name: "Santo Domingo", province: "Heredia", visible: true },
+  { id: "San Isidro", name: "San Isidro", province: "Heredia", visible: true },
+  // Guanacaste
+  { id: "Papagayo Peninsula", name: "Papagayo Peninsula", province: "Guanacaste", visible: true },
+  { id: "Nosara", name: "Nosara", province: "Guanacaste", visible: true },
+  { id: "Tamarindo", name: "Tamarindo", province: "Guanacaste", visible: true },
+  { id: "Liberia", name: "Liberia", province: "Guanacaste", visible: true },
+  { id: "Flamingo", name: "Flamingo", province: "Guanacaste", visible: true },
+  { id: "Playas del Coco", name: "Playas del Coco", province: "Guanacaste", visible: true },
+  // Puntarenas
+  { id: "Santa Teresa", name: "Santa Teresa", province: "Puntarenas", visible: true },
+  { id: "Manuel Antonio", name: "Manuel Antonio", province: "Puntarenas", visible: true },
+  { id: "Monteverde", name: "Monteverde", province: "Puntarenas", visible: true },
+  { id: "Jacó", name: "Jacó", province: "Puntarenas", visible: true },
+  { id: "Quepos", name: "Quepos", province: "Puntarenas", visible: true },
+  { id: "Uvita", name: "Uvita", province: "Puntarenas", visible: true },
+  { id: "Dominical", name: "Dominical", province: "Puntarenas", visible: true },
+  // Limón
+  { id: "Puerto Viejo", name: "Puerto Viejo", province: "Limón", visible: true },
+  { id: "Limón Centro", name: "Limón Centro", province: "Limón", visible: true },
+  { id: "Cahuita", name: "Cahuita", province: "Limón", visible: true },
+  { id: "Tortuguero", name: "Tortuguero", province: "Limón", visible: true }
+];
+
 export interface Lead {
   id: string;
   name: string;
