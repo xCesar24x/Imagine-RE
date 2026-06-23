@@ -1871,42 +1871,40 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-[1600px] mt-8 pb-6 flex flex-col items-center gap-4">
+        <div className="mx-auto max-w-[1600px] mt-8 pb-8 flex flex-col items-center gap-5">
 
           {/* Row 1 — Copyright */}
           <p className="text-center text-gray-500 uppercase tracking-widest text-[10px]">
             &copy; {new Date().getFullYear()}{" "}Imagine Real Estate &amp; Property Management. All rights reserved.
           </p>
 
-          {/* Row 2 — Ruta Digital credit */}
+          {/* Row 2 — Ruta Digital branded badge */}
           <a
             href="https://rutadigital.lat"
             target="_blank"
             rel="noreferrer"
-            className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-white/5 hover:border-[#d4af37]/50 hover:bg-[#d4af37]/8 transition-all duration-300"
+            className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[#1a4d2e] hover:bg-[#215e37] border border-[#2d6e42]/60 hover:border-[#3a8c55] transition-all duration-300 shadow-[0_4px_20px_rgba(26,77,46,0.4)]"
           >
-            <img
-              src="https://rutadigital.lat/favicon.ico"
-              alt="Ruta Digital logo"
-              width={16}
-              height={16}
-              className="rounded-sm"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-            <span className="font-sans normal-case tracking-wide text-[11px] text-gray-300 group-hover:text-white transition-colors">
+            {/* RD monogram dot */}
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-[9px] font-black tracking-tight">
+              RD
+            </span>
+            <span className="font-sans normal-case text-[11px] text-white/80 group-hover:text-white transition-colors tracking-wide">
               {lang === "es" ? "Desarrollado por" : "Developed by"}{" "}
-              <span className="text-[#d4af37] font-bold">Ruta Digital</span>
+              <span className="text-white font-black uppercase tracking-wider">Ruta Digital</span>
             </span>
           </a>
 
-          {/* Row 3 — Admin Portal Access */}
-          <button
-            onClick={() => setIsAdminOpen(true)}
-            className="text-[#d4af37]/50 hover:text-sunset text-[9px] font-sans uppercase tracking-widest transition flex items-center gap-1 cursor-pointer bg-transparent border-0 outline-none"
-          >
-            <span>⚙️</span>
-            <span>{lang === "es" ? "Acceso Portal Admin" : "Admin Portal Access"}</span>
-          </button>
+          {/* Row 3 — Admin Portal, left-aligned, very subtle */}
+          <div className="w-full flex justify-start">
+            <button
+              onClick={() => setIsAdminOpen(true)}
+              className="text-gray-700 hover:text-gray-400 text-[9px] font-sans uppercase tracking-[0.2em] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0 outline-none opacity-50 hover:opacity-100"
+            >
+              <span className="text-[10px]">⚙</span>
+              <span>{lang === "es" ? "admin" : "admin"}</span>
+            </button>
+          </div>
 
         </div>
       </footer>
