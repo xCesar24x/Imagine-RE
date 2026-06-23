@@ -401,10 +401,12 @@ export default function Home() {
       if (p.segment !== activeSegment) return false;
 
       // Price Filter
-      if (priceFilter === "under-500k" && p.price >= 500000) return false;
-      if (priceFilter === "500k-1.5m" && (p.price < 500000 || p.price > 1500000)) return false;
-      if (priceFilter === "1.5m-5m" && (p.price < 1500000 || p.price > 5000000)) return false;
-      if (priceFilter === "over-5m" && p.price <= 5000000) return false;
+      if (priceFilter === "under-200k" && p.price >= 200000) return false;
+      if (priceFilter === "200k-500k" && (p.price < 200000 || p.price > 500000)) return false;
+      if (priceFilter === "500k-700k" && (p.price < 500000 || p.price > 700000)) return false;
+      if (priceFilter === "700k-1m" && (p.price < 700000 || p.price > 1000000)) return false;
+      if (priceFilter === "1m-2m" && (p.price < 1000000 || p.price > 2000000)) return false;
+      if (priceFilter === "over-2m" && p.price <= 2000000) return false;
 
       // Size Filter
       if (sizeFilter === "under-5k" && p.sqft >= 5000) return false;
@@ -716,10 +718,12 @@ export default function Home() {
                       className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
                     >
                        <option value="all">{t.catalog.filters.all}</option>
-                       <option value="under-500k">{t.catalog.filters.under500k}</option>
-                       <option value="500k-1.5m">{t.catalog.filters.between500kand15m}</option>
-                       <option value="1.5m-5m">{t.catalog.filters.between15mand5m}</option>
-                       <option value="over-5m">{t.catalog.filters.over5m}</option>
+                       <option value="under-200k">{t.catalog.filters.under200k}</option>
+                       <option value="200k-500k">{t.catalog.filters.between200kand500k}</option>
+                       <option value="500k-700k">{t.catalog.filters.between500kand700k}</option>
+                       <option value="700k-1m">{t.catalog.filters.between700kand1m}</option>
+                       <option value="1m-2m">{t.catalog.filters.between1mand2m}</option>
+                       <option value="over-2m">{t.catalog.filters.over2m}</option>
                     </select>
                     <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
                   </div>
