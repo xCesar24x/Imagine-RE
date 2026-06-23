@@ -25,6 +25,8 @@ export interface Property {
   hasFiberOptic: boolean;
   hasStarlink: boolean;
   gallery?: string[];
+  nameEs?: string;
+  descriptionEs?: string;
 }
 
 export const PROVINCE_REGIONS: Record<string, string[]> = {

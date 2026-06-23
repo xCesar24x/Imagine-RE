@@ -153,7 +153,7 @@ export default function PropertyCard({
           </div>
           
           <h3 className="text-xl md:text-2xl font-serif text-pearl mb-1.5 leading-tight truncate">
-            {property.name}
+            {lang === "es" && property.nameEs ? property.nameEs : property.name}
           </h3>
           
           <div className="text-lg md:text-xl font-sans font-medium text-white mb-3">

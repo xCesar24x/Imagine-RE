@@ -1016,7 +1016,9 @@ export default function Home() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h5 className="font-serif text-sm text-pearl truncate leading-tight">{property.name}</h5>
+                            <h5 className="font-serif text-sm text-pearl truncate leading-tight">
+                              {lang === "es" && property.nameEs ? property.nameEs : property.name}
+                            </h5>
                             <p className="text-[10px] text-sunset font-sans truncate mt-0.5">{property.location}</p>
                             <p className="text-xs text-white font-sans mt-1 font-medium">${property.price.toLocaleString("en-US")} USD</p>
                           </div>
@@ -1606,7 +1608,7 @@ export default function Home() {
                   {selectedProperty.location}
                 </div>
                 <h2 className="text-2xl lg:text-4xl font-serif mb-6 leading-tight text-pearl">
-                  {selectedProperty.name}
+                  {lang === "es" && selectedProperty.nameEs ? selectedProperty.nameEs : selectedProperty.name}
                 </h2>
                 
                 <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white flex justify-between items-baseline">
@@ -1625,7 +1627,7 @@ export default function Home() {
                   <div>
                     <h4 className="text-[10px] font-sans uppercase tracking-widest text-gray-400 mb-2">{t.modal.archSoul}</h4>
                     <p className="font-sans text-xs md:text-sm text-gray-300 leading-relaxed font-light">
-                      {selectedProperty.description}
+                      {lang === "es" && selectedProperty.descriptionEs ? selectedProperty.descriptionEs : selectedProperty.description}
                     </p>
                   </div>
                   

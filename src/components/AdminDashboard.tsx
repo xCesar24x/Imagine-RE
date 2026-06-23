@@ -84,6 +84,33 @@ export default function AdminDashboard({
     return crudForm.location !== "" && !activeProvinceRegions.includes(crudForm.location);
   }, [crudForm.location, activeProvinceRegions]);
 
+  // Bilingual tab state and upload logs state
+  const [formLangTab, setFormLangTab] = useState<"en" | "es">("en");
+  const [uploadLogs, setUploadLogs] = useState<string[]>([]);
+
+  const handleSimulatedUpload = (fileName: string) => {
+    setUploadLogs([`[System] Iniciando carga de archivo: ${fileName}...`]);
+    
+    setTimeout(() => {
+      setUploadLogs(prev => [...prev, `[System] Analizando dimensiones y espacio de color...`]);
+    }, 800);
+    
+    setTimeout(() => {
+      setUploadLogs(prev => [...prev, `[System] Optimizando imagen y comprimiendo a WebP (Calidad: 82%)...`]);
+    }, 1600);
+    
+    setTimeout(() => {
+      const reducedSize = Math.floor(Math.random() * 80 + 10);
+      setUploadLogs(prev => [...prev, `[System] ¡Conversión completa! Archivo comprimido un ${reducedSize}% sin pérdida visible.`]);
+    }, 2400);
+
+    setTimeout(() => {
+      const mockWebpUrl = `/images/${fileName.split(".")[0]}.webp`;
+      setUploadLogs(prev => [...prev, `[System] Cargado exitosamente al Media Vault: ${mockWebpUrl}`]);
+      setCrudForm(prev => ({ ...prev, image: mockWebpUrl }));
+    }, 3200);
+  };
+
   // --- CRM State ---
   const [leads, setLeeds] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -591,7 +618,6 @@ export default function AdminDashboard({
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#02100b]">
-          
           {/* TAB 1: Inventory CRUD */}
           {activeTab === "inventory" && (
             <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -602,7 +628,29 @@ export default function AdminDashboard({
                   {editingPropertyId ? (lang === "es" ? "Editar Propiedad" : "Edit Property") : (lang === "es" ? "Agregar Nueva Propiedad" : "Add New Property")}
                 </h3>
                 <form onSubmit={handleCrudSubmit} className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  {/* Language Tab Switcher */}
+                  <div className="flex border-b border-white/10 mb-4 bg-white/5 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setFormLangTab("en")}
+                      className={`flex-1 py-2 text-[10px] font-sans uppercase tracking-wider font-semibold rounded-lg transition ${
+                        formLangTab === "en" ? "bg-sunset text-jungle font-bold" : "text-gray-400 hover:text-pearl"
+                      }`}
+                    >
+                      English Texts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormLangTab("es")}
+                      className={`flex-1 py-2 text-[10px] font-sans uppercase tracking-wider font-semibold rounded-lg transition ${
+                        formLangTab === "es" ? "bg-sunset text-jungle font-bold" : "text-gray-400 hover:text-pearl"
+                      }`}
+                    >
+                      Textos en Español
+                    </button>
+                  </div>
+
+                  {formLangTab === "en" ? (
                     <div>
                       <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Name (English)</label>
                       <input 
@@ -612,6 +660,7 @@ export default function AdminDashboard({
                         className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
                       />
                     </div>
+                  ) : (
                     <div>
                       <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Nombre (Español)</label>
                       <input 
@@ -621,7 +670,7 @@ export default function AdminDashboard({
                         className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
                       />
                     </div>
-                  </div>
+                  )}
 
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div>
@@ -864,28 +913,64 @@ export default function AdminDashboard({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Description (English)</label>
-                    <textarea 
-                      value={crudForm.description} 
-                      onChange={e => setCrudForm({ ...crudForm, description: e.target.value })} 
-                      required 
-                      rows={3}
-                      className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
-                    />
-                  </div>
+                  {formLangTab === "en" ? (
+                    <div>
+                      <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Description (English)</label>
+                      <textarea 
+                        value={crudForm.description} 
+                        onChange={e => setCrudForm({ ...crudForm, description: e.target.value })} 
+                        required 
+                        rows={3}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Descripción (Español)</label>
+                      <textarea 
+                        value={crudForm.descriptionEs} 
+                        onChange={e => setCrudForm({ ...crudForm, descriptionEs: e.target.value })} 
+                        required 
+                        rows={3}
+                        className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+                      />
+                    </div>
+                  )}
 
                   {/* Simulated Image Drag and Drop */}
                   <div>
-                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Property Image URL (WebP Recommended)</label>
+                    <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Property Image URL / Drag & Drop</label>
                     <input 
                       value={crudForm.image} 
                       onChange={e => setCrudForm({ ...crudForm, image: e.target.value })} 
                       className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
                     />
-                    <div className="mt-2 p-4 border border-dashed border-white/20 rounded-xl bg-white/5 text-center text-[10px] text-gray-400">
-                      Drag & Drop files here to auto-compress and convert to WebP format.
+                    <div 
+                      onDragOver={e => e.preventDefault()}
+                      onDrop={e => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                          handleSimulatedUpload(file.name);
+                        }
+                      }}
+                      onClick={() => {
+                        const mockName = `luxury_villa_${Date.now().toString().slice(-4)}.jpg`;
+                        handleSimulatedUpload(mockName);
+                      }}
+                      className="mt-2 p-6 border-2 border-dashed border-[#d4af37]/30 hover:border-[#d4af37]/65 rounded-xl bg-white/5 text-center text-[10px] text-gray-300 transition duration-200 cursor-pointer flex flex-col items-center justify-center gap-2"
+                    >
+                      <span>Drag & Drop files here or click to simulate auto-compression WebP upload</span>
+                      <span className="text-[9px] text-[#d4af37]/75 font-mono">Format: WebP auto-optimized (under 2s loaded)</span>
                     </div>
+
+                    {uploadLogs.length > 0 && (
+                      <div className="mt-3 p-3 bg-black/60 rounded-xl border border-white/10 text-[9px] font-mono text-emerald-400 space-y-1 max-h-[120px] overflow-y-auto">
+                        {uploadLogs.map((log, i) => (
+                          <div key={i}>{log}</div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-3 pt-4 border-t border-white/15">
@@ -935,6 +1020,30 @@ export default function AdminDashboard({
                         </div>
                         <p className="text-[10px] text-gray-400 truncate mt-0.5">{p.location}</p>
                         <p className="text-xs text-white mt-1.5 font-bold font-sans">${p.price.toLocaleString()} USD</p>
+                        
+                        {/* Status Toggle Row */}
+                        <div className="flex flex-wrap gap-1 mt-2 border-t border-white/5 pt-2">
+                          {(["Disponible", "Opcionada", "Vendida", "Destacada"] as const).map(status => (
+                            <button
+                              key={status}
+                              type="button"
+                              onClick={() => {
+                                const updated = { ...p, status };
+                                onUpdateProperty(updated);
+                              }}
+                              className={`px-2 py-0.5 rounded-full text-[7.5px] font-sans uppercase tracking-wider border transition cursor-pointer font-semibold ${
+                                p.status === status
+                                  ? "bg-[#d4af37] border-[#d4af37] text-[#02100b]"
+                                  : "bg-transparent border-white/10 text-gray-400 hover:text-white"
+                              }`}
+                            >
+                              {status === "Disponible" ? (lang === "es" ? "Disp" : "Avail") : 
+                               status === "Opcionada" ? (lang === "es" ? "Opc" : "Pend") : 
+                               status === "Vendida" ? (lang === "es" ? "Vend" : "Sold") : 
+                               (lang === "es" ? "Dest" : "Feat")}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                       <div className="flex flex-col gap-2">
                         <button 
