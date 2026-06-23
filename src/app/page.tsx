@@ -1883,15 +1883,11 @@ export default function Home() {
             href="https://rutadigital.lat"
             target="_blank"
             rel="noreferrer"
-            className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[#1a4d2e] hover:bg-[#215e37] border border-[#2d6e42]/60 hover:border-[#3a8c55] transition-all duration-300 shadow-[0_4px_20px_rgba(26,77,46,0.4)]"
+            className="group inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[#1a4d2e] hover:bg-[#215e37] border border-[#d4af37]/40 hover:border-[#d4af37] transition-all duration-300 shadow-[0_4px_20px_rgba(26,77,46,0.4)] hover:shadow-[0_4px_28px_rgba(212,175,55,0.15)]"
           >
-            {/* RD monogram dot */}
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-[9px] font-black tracking-tight">
-              RD
-            </span>
             <span className="font-sans normal-case text-[11px] text-white/80 group-hover:text-white transition-colors tracking-wide">
               {lang === "es" ? "Desarrollado por" : "Developed by"}{" "}
-              <span className="text-white font-black uppercase tracking-wider">Ruta Digital</span>
+              <span style={{ fontFamily: "var(--font-abril)" }} className="text-white font-normal text-[13px] tracking-wide normal-case">Ruta Digital</span>
             </span>
           </a>
 
