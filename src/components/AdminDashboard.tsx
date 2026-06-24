@@ -102,7 +102,7 @@ export default function AdminDashboard({
           horizon: "Immediate",
           motivation: "Vacation",
           requestedService: "guided_tour",
-          wishlistPropertyIds: ["villa-morpho", "quepos-zenith"],
+          wishlistPropertyIds: [],
           status: "Discovery Tour Programado",
           tourDates: "2026-07-10 to 2026-07-15",
           tourPeople: 4,
@@ -112,7 +112,7 @@ export default function AdminDashboard({
           lastInteractionDate: new Date().toISOString(),
           gdprConsent: true,
           tourAgent: "Bryan Viquez",
-          tourVisitedProperties: ["villa-morpho"]
+          tourVisitedProperties: []
         },
         {
           id: "lead-2",
@@ -124,7 +124,7 @@ export default function AdminDashboard({
           horizon: "1-3 months",
           motivation: "Relocation",
           requestedService: "information",
-          wishlistPropertyIds: ["cloud-forest", "nosara-flow"],
+          wishlistPropertyIds: [],
           status: "Lead Nuevo",
           notes: ["Prefers mountain or cloud forest properties with fiber optic connection."],
           lastInteractionDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), // 6 days ago (triggers warning)
@@ -140,7 +140,7 @@ export default function AdminDashboard({
           horizon: "6+ months",
           motivation: "Airbnb",
           requestedService: "visit",
-          wishlistPropertyIds: ["guanacaste-gold", "papagayo-point"],
+          wishlistPropertyIds: [],
           status: "Propuesta/Negociación",
           tourDates: "2026-06-25 to 2026-06-30",
           tourPeople: 2,
@@ -160,12 +160,7 @@ export default function AdminDashboard({
     if (storedPostings) {
       setPostingDates(JSON.parse(storedPostings));
     } else {
-      const initialPostings: Record<string, string> = {
-        "villa-morpho": new Date().toISOString(),
-        "obsidian-canopy": new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        "quepos-zenith": new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        "guanacaste-gold": new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString()
-      };
+      const initialPostings: Record<string, string> = {};
       setPostingDates(initialPostings);
       localStorage.setItem("imagine_posting_dates", JSON.stringify(initialPostings));
     }

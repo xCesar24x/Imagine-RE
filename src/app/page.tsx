@@ -86,7 +86,13 @@ export default function Home() {
   useEffect(() => {
     const storedProps = localStorage.getItem("imagine_properties");
     if (storedProps) {
-      setProperties(JSON.parse(storedProps));
+      const parsed = JSON.parse(storedProps);
+      if (parsed.some((p: any) => p.id === "villa-morpho")) {
+        setProperties([]);
+        localStorage.setItem("imagine_properties", JSON.stringify([]));
+      } else {
+        setProperties(parsed);
+      }
     }
   }, []);
 
