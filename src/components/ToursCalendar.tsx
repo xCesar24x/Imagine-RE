@@ -106,8 +106,8 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
 
   const experienceItems = lang === "es" ? [
     {
-      title: "Transporte Privado de Alta Gama",
-      description: "Recogida exclusiva en el aeropuerto (SJO/LIR) en SUV premium (Fortuner/Land Cruiser) o traslado opcional en helicóptero directo a las zonas de interés.",
+      title: "Transporte Privado en Buseta",
+      description: "Recogida privada y cómoda en el aeropuerto (SJO/LIR) y traslado directo a las propiedades de su interés a bordo de nuestra buseta dedicada.",
       icon: Car
     },
     {
@@ -127,8 +127,8 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
     }
   ] : [
     {
-      title: "Premium Private Transport",
-      description: "Exclusive airport pickup (SJO/LIR) in premium SUVs (Fortuner/Land Cruiser) or optional helicopter transfers directly to your regions of interest.",
+      title: "Private Shuttle Transport",
+      description: "Comfortable, private airport pickup (SJO/LIR) and direct transfers to your selected properties in our dedicated shuttle van.",
       icon: Car
     },
     {
