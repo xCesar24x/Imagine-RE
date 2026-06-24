@@ -1,7 +1,7 @@
 export const TRANSLATIONS = {
   en: {
     nav: {
-      collection: "RE Properties",
+      collection: "Listings",
       services: "Services",
       contact: "Contact",
       management: "Property Management",
@@ -210,7 +210,7 @@ export const TRANSLATIONS = {
   },
   es: {
     nav: {
-      collection: "Propiedades RE",
+      collection: "Propiedades",
       services: "Servicios",
       contact: "Contacto",
       management: "Administración",
