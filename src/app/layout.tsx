@@ -21,6 +21,9 @@ const abrilFatface = Abril_Fatface({
 export const metadata: Metadata = {
   title: "Bryan Viquez | Imagine Property Management & Real Estate",
   description: "Architect of Exclusivity in Costa Rica. High-end, sophisticated Property Management.",
+  icons: {
+    icon: "/images/imagine-logo.jpg",
+  },
 };
 
 export default function RootLayout({
