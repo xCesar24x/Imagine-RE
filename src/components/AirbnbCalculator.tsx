@@ -1,26 +1,82 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Send, Calculator, Building, DollarSign } from "lucide-react";
+import { useState } from "react";
+import { Send, Building, Calendar, Wrench, Sparkles, Droplet, Coffee, FileText, ShieldCheck } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
 
 interface AirbnbCalculatorProps {
   lang?: "en" | "es";
 }
 
-const TYPE_RATES = {
-  Casa: 450,
-  Cabaña: 250,
-  Quinta: 600,
-  Lote: 0,
+const SERVICES_DATA = {
+  en: [
+    {
+      title: "Booking & Guest Relations",
+      description: "Listing setup & optimization on platforms like Airbnb/VRBO, dynamic pricing settings, 24/7 guest communications, check-in coordination, and booking management.",
+      icon: Calendar
+    },
+    {
+      title: "Full Property Maintenance",
+      description: "Preventive upkeep checkups, rapid response to plumbing, electric, AC, and structural issues. We work with certified, trustworthy local technicians.",
+      icon: Wrench
+    },
+    {
+      title: "Luxury Housekeeping & Linens",
+      description: "Five-star hotel quality cleaning between guest stays, professional deep cleaning, high-quality laundry operations, and replenishing signature bath amenities.",
+      icon: Sparkles
+    },
+    {
+      title: "Pool & Landscaping Care",
+      description: "Regular garden mowing, professional landscape design, leaf clearing, pool skimming, water testing, and chemical balance preservation.",
+      icon: Droplet
+    },
+    {
+      title: "Exclusive VIP Concierge",
+      description: "On-site guest concierge services, private airport pick-up scheduling, booking of local tours/shuttles, private chef coordination, and tailored regional recommendations.",
+      icon: Coffee
+    },
+    {
+      title: "Utility, Bills & Compliance",
+      description: "Direct handling of water, electric, fiber optic internet, and municipality payments, plus local tax declarations and insurance management.",
+      icon: FileText
+    }
+  ],
+  es: [
+    {
+      title: "Reservas y Atención al Huésped",
+      description: "Configuración y optimización de anuncios en plataformas como Airbnb/VRBO, tarifas dinámicas inteligentes, atención al cliente 24/7, registro de entrada/salida y control de reservas.",
+      icon: Calendar
+    },
+    {
+      title: "Mantenimiento Técnico Integral",
+      description: "Inspecciones preventivas periódicas y atención rápida de fontanería, electricidad, aire acondicionado y detalles estructurales con personal técnico certificado y de confianza.",
+      icon: Wrench
+    },
+    {
+      title: "Limpieza VIP y Lavandería",
+      description: "Limpieza profunda con estándares de hotel de 5 estrellas entre reservas, lavado profesional de blancos (sábanas y toallas) y reabastecimiento de amenidades de lujo.",
+      icon: Sparkles
+    },
+    {
+      title: "Cuidado de Áreas Verdes y Piscina",
+      description: "Mantenimiento periódico de jardines, poda, diseño paisajístico, limpieza diaria de piscina, control de químicos y equilibrio del agua.",
+      icon: Droplet
+    },
+    {
+      title: "Servicios de Concierge Exclusivo",
+      description: "Atención personalizada al huésped, gestión de transporte privado, chef privado en sitio, reserva de tours recomendados y experiencias locales de primer nivel.",
+      icon: Coffee
+    },
+    {
+      title: "Administración Legal y de Servicios",
+      description: "Pago puntual de servicios (agua, luz, internet de fibra óptica), impuestos municipales, patentes de alquiler vacacional y coordinación de pólizas de seguro.",
+      icon: FileText
+    }
+  ]
 };
 
 export default function AirbnbCalculator({ lang = "en" }: AirbnbCalculatorProps) {
   const t = TRANSLATIONS[lang].propertyManagement;
-
-  // Calculator variables
-  const [propertyType, setPropertyType] = useState<"Casa" | "Cabaña" | "Quinta" | "Lote">("Casa");
-  const [occupancy, setOccupancy] = useState<number>(60);
 
   // Owner details form
   const [ownerName, setOwnerName] = useState("");
@@ -30,13 +86,7 @@ export default function AirbnbCalculator({ lang = "en" }: AirbnbCalculatorProps)
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const estimatedEarnings = useMemo(() => {
-    const adr = TYPE_RATES[propertyType];
-    if (adr === 0) return { monthly: 0, annual: 0, adr: 0 };
-    const monthly = adr * 30 * (occupancy / 100);
-    const annual = adr * 365 * (occupancy / 100);
-    return { monthly, annual, adr };
-  }, [propertyType, occupancy]);
+  const services = SERVICES_DATA[lang];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,12 +106,12 @@ export default function AirbnbCalculator({ lang = "en" }: AirbnbCalculatorProps)
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] max-w-5xl mx-auto items-start">
-      {/* Interactive Calculator panel */}
+    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] max-w-6xl mx-auto items-start">
+      {/* Services Showcase grid */}
       <div className="rounded-[2.5rem] border border-white/10 bg-[#041c16]/90 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-        <div className="flex items-center gap-3.5 mb-6">
+        <div className="flex items-center gap-3.5 mb-8">
           <div className="p-3 bg-sunset/10 rounded-2xl text-sunset">
-            <Calculator size={24} />
+            <ShieldCheck size={24} />
           </div>
           <div>
             <h3 className="font-serif text-2xl text-pearl">{t.calculatorTitle}</h3>
@@ -69,92 +119,43 @@ export default function AirbnbCalculator({ lang = "en" }: AirbnbCalculatorProps)
           </div>
         </div>
 
-        <div className="space-y-6">
-          {/* Property Type Selection */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-gray-400 mb-3">{t.propertyType}</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(Object.keys(TYPE_RATES) as Array<keyof typeof TYPE_RATES>).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setPropertyType(type)}
-                  className={`py-3 px-4 rounded-2xl border text-xs font-sans uppercase tracking-widest font-semibold transition cursor-pointer ${
-                    propertyType === type
-                      ? "bg-sunset border-sunset text-jungle shadow-[0_10px_30px_rgba(212,175,55,0.15)]"
-                      : "bg-white/5 border-white/10 text-gray-300 hover:border-sunset/30"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Occupancy Rate Slider */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-[10px] uppercase tracking-[0.25em] text-gray-400">{t.occupancyRate}</label>
-              <span className="text-sm font-sans font-bold text-sunset">{occupancy}%</span>
-            </div>
-            <input
-              type="range"
-              min="20"
-              max="95"
-              step="5"
-              value={occupancy}
-              onChange={(e) => setOccupancy(parseInt(e.target.value))}
-              className="w-full h-1 bg-[#01140f] rounded-lg appearance-none cursor-pointer accent-sunset"
-            />
-            <div className="flex justify-between text-[9px] text-gray-400 uppercase tracking-wider mt-2">
-              <span>Low (20%)</span>
-              <span>Moderate (60%)</span>
-              <span>High (95%)</span>
-            </div>
-          </div>
-
-          {/* Earnings Display */}
-          {propertyType === "Lote" ? (
-            <div className="p-5 rounded-2xl bg-white/5 border border-white/10 text-center text-xs md:text-sm text-gray-400 leading-relaxed font-light italic">
-              {lang === "es" 
-                ? "¡Los lotes no generan renta vacacional directa! Consulta con Imagine para diseñar y construir una cabaña eco-luxury y desbloquear ingresos estimados de $250+ por noche."
-                : "Lots don't yield vacation rental income directly! Partner with Imagine to design & build an eco-luxury cabin to unlock $250+ nightly estimated revenue."}
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 pt-4 border-t border-white/10">
-              <div className="rounded-2xl bg-[#01140f] p-5 border border-white/5">
-                <span className="text-[9px] uppercase tracking-[0.25em] text-gray-400">{t.estMonthly}</span>
-                <div className="text-2xl md:text-3xl font-sans font-bold text-sunset mt-1">
-                  ${Math.round(estimatedEarnings.monthly).toLocaleString("en-US")}
+        <div className="grid gap-6 md:grid-cols-2">
+          {services.map((srv, idx) => {
+            const IconComponent = srv.icon;
+            return (
+              <div 
+                key={idx} 
+                className="rounded-2xl border border-white/5 bg-[#01140f]/80 p-5 hover:border-sunset/30 transition-all duration-300"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-sunset/15 rounded-xl text-sunset">
+                    <IconComponent size={18} />
+                  </div>
+                  <h4 className="font-serif text-sm md:text-base text-pearl font-medium">{srv.title}</h4>
                 </div>
-                <span className="text-[9px] text-gray-400 block mt-1">At ${estimatedEarnings.adr}/night ADR</span>
+                <p className="text-xs text-gray-300/80 leading-relaxed font-light">
+                  {srv.description}
+                </p>
               </div>
-              <div className="rounded-2xl bg-[#01140f] p-5 border border-white/5">
-                <span className="text-[9px] uppercase tracking-[0.25em] text-gray-400">{t.estIncome}</span>
-                <div className="text-2xl md:text-3xl font-sans font-bold text-white mt-1">
-                  ${Math.round(estimatedEarnings.annual).toLocaleString("en-US")}
-                </div>
-                <span className="text-[9px] text-gray-400 block mt-1">At {occupancy}% projected occupancy</span>
-              </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       </div>
 
       {/* Owner Lead Capture form */}
-      <div className="rounded-[2.5rem] border border-white/10 bg-[#041c16]/90 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.3)] backdrop-blur-xl h-full flex flex-col">
-        <h4 className="font-serif text-xl text-pearl mb-2 flex items-center gap-2">
-          <Building size={18} className="text-sunset" />
-          {t.contactUsPM}
-        </h4>
-        <p className="text-xs text-gray-300 leading-relaxed mb-6 font-light">
-          {lang === "es"
-            ? "Mándanos las características generales de tu propiedad. Nuestro concierge analizará la plusvalía y te contactará con opciones a la medida."
-            : "Send us the general parameters of your property. Our concierge will analyze the appreciation values and reach out with tailored proposals."}
-        </p>
+      <div className="rounded-[2.5rem] border border-white/10 bg-[#041c16]/90 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.3)] backdrop-blur-xl h-full flex flex-col justify-between">
+        <div>
+          <h4 className="font-serif text-xl text-pearl mb-2 flex items-center gap-2">
+            <Building size={18} className="text-sunset" />
+            {t.contactUsPM}
+          </h4>
+          <p className="text-xs text-gray-300 leading-relaxed mb-6 font-light">
+            {lang === "es"
+              ? "Envíenos los detalles de su propiedad. Coordinaremos una llamada de asesoría personalizada sin ningún compromiso."
+              : "Send us the general parameters of your property. We will coordinate a personalized consultation call with no obligation."}
+          </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col justify-between">
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">{t.ownerName}</label>
               <input
@@ -192,17 +193,17 @@ export default function AirbnbCalculator({ lang = "en" }: AirbnbCalculatorProps)
                 className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3 text-xs text-pearl outline-none focus:border-sunset"
               />
             </div>
-          </div>
 
-          <div className="mt-6">
-            {formError && <div className="text-xs text-rose-300 font-sans mb-3">{formError}</div>}
-            {formSubmitted && <div className="text-xs text-emerald-300 font-sans mb-3">{t.successMsg}</div>}
+            <div className="mt-6 pt-2">
+              {formError && <div className="text-xs text-rose-300 font-sans mb-3">{formError}</div>}
+              {formSubmitted && <div className="text-xs text-emerald-300 font-sans mb-3">{t.successMsg}</div>}
 
-            <button type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sunset px-5 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-jungle shadow-md hover:bg-white transition-colors duration-250 cursor-pointer">
-              <Send size={13} /> {t.submitPM}
-            </button>
-          </div>
-        </form>
+              <button type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sunset px-5 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-jungle shadow-md hover:bg-white transition-colors duration-250 cursor-pointer">
+                <Send size={13} /> {t.submitPM}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

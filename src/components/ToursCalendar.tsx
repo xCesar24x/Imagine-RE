@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, User, Mail, Phone, Compass, Send, Check, Shield, Landmark } from "lucide-react";
+import { Calendar, User, Mail, Phone, Compass, Send, Check, Shield, Landmark, Sparkles, Car } from "lucide-react";
 import { TRANSLATIONS } from "@/constants/translations";
 import { Property } from "@/constants/properties";
 
@@ -10,89 +10,8 @@ interface ToursCalendarProps {
   wishlistProperties?: Property[];
 }
 
-interface Tour {
-  id: string;
-  nameEN: string;
-  nameES: string;
-  date: string;
-  region: string;
-  seatsTotal: number;
-  seatsRemaining: number;
-  itineraryEN: string[];
-  itineraryES: string[];
-}
-
-const INITIAL_TOURS: Tour[] = [
-  {
-    id: "tour-papagayo",
-    nameEN: "Papagayo Gold Coast Discovery Tour",
-    nameES: "Tour de Descubrimiento Costa de Papagayo",
-    date: "July 12, 2026",
-    region: "Guanacaste (Papagayo)",
-    seatsTotal: 10,
-    seatsRemaining: 4,
-    itineraryEN: [
-      "08:00 AM - Luxury Shuttle pickup at Liberia Airport",
-      "10:00 AM - Private Tour of Villa Morpho & Guanacaste Gold Estate",
-      "01:00 PM - Gourmet seaside lunch at Marina Papagayo Yacht Club",
-      "03:00 PM - Legal Q&A Session (Residency, Escrow & Land laws)"
-    ],
-    itineraryES: [
-      "08:00 AM - Recogida en Shuttle privado en el Aeropuerto de Liberia",
-      "10:00 AM - Tour Privado de Villa Morpho y Guanacaste Gold Estate",
-      "01:00 PM - Almuerzo gourmet frente al mar en Marina Papagayo",
-      "03:00 PM - Sesión de preguntas y respuestas legales (Residencia y leyes de propiedad)"
-    ]
-  },
-  {
-    id: "tour-st",
-    nameEN: "Santa Teresa Surf & Mountain Discovery Tour",
-    nameES: "Tour de Altura y Surf en Santa Teresa",
-    date: "July 24, 2026",
-    region: "Santa Teresa & Nosara",
-    seatsTotal: 10,
-    seatsRemaining: 7,
-    itineraryEN: [
-      "09:00 AM - Helicopter/Shuttle arrival & pickup at Tambor",
-      "10:30 AM - Walkthrough of The Obsidian Canopy & Nosara Flow Villa",
-      "01:30 PM - Organic beachfront organic dining experience",
-      "03:30 PM - Property Management yields & rental marketing analysis"
-    ],
-    itineraryES: [
-      "09:00 AM - Llegada en helicóptero/shuttle y recogida en Tambor",
-      "10:30 AM - Recorrido de The Obsidian Canopy y Nosara Flow Villa",
-      "01:30 PM - Almuerzo orgánico frente a la playa en Santa Teresa",
-      "03:30 PM - Análisis de rendimientos de Property Management y Airbnb"
-    ]
-  },
-  {
-    id: "tour-ma",
-    nameEN: "Manuel Antonio Canopy & Cliffside Luxury Tour",
-    nameES: "Tour Concierge Manuel Antonio y Acantilados",
-    date: "August 08, 2026",
-    region: "Manuel Antonio & Quepos",
-    seatsTotal: 10,
-    seatsRemaining: 2,
-    itineraryEN: [
-      "08:30 AM - Pickup at San José (SJO) corporate private hangar",
-      "11:00 AM - Walkthrough of Quepos Zenith & The Reserve",
-      "01:30 PM - Gourmet canopy forest dining",
-      "04:00 PM - Relocation onboarding (Schooling, lifestyle, banking)"
-    ],
-    itineraryES: [
-      "08:30 AM - Recogida en hangar privado corporativo en San José (SJO)",
-      "11:00 AM - Recorrido de Quepos Zenith y The Reserve",
-      "01:30 PM - Almuerzo gourmet en el bosque tropical",
-      "04:00 PM - Introducción a la reubicación (Escuelas, estilo de vida, bancos)"
-    ]
-  }
-];
-
 export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: ToursCalendarProps) {
   const t = TRANSLATIONS[lang].discoveryTours;
-
-  const [tours, setTours] = useState<Tour[]>(INITIAL_TOURS);
-  const [selectedTourId, setSelectedTourId] = useState<string>(INITIAL_TOURS[0].id);
 
   // Booking Form State
   const [clientName, setClientName] = useState("");
@@ -100,28 +19,16 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
   const [clientPhone, setClientPhone] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [departureDate, setDepartureDate] = useState("");
-  const [passengerCount, setPassengerCount] = useState(1);
+  const [passengerCount, setPassengerCount] = useState(2);
   const [wantsLodging, setWantsLodging] = useState(false);
   const [lodgingPreference, setLodgingPreference] = useState("luxury");
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState("");
 
-  const activeTour = tours.find(tour => tour.id === selectedTourId) || tours[0];
-
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientName || !clientEmail || !clientPhone || !arrivalDate || !departureDate) {
       setBookingError(lang === "es" ? "Por favor complete todos los campos requeridos." : "Please fill out all required fields.");
-      return;
-    }
-
-    if (passengerCount < 1 || passengerCount > 9) {
-      setBookingError(lang === "es" ? "El límite de pasajeros para la buseta Hyundai Starex es de 9 personas." : "The passenger limit for the Hyundai Starex shuttle is 9 people.");
-      return;
-    }
-
-    if (activeTour.seatsRemaining <= 0) {
-      setBookingError(lang === "es" ? "Lo sentimos, este tour ya no cuenta con espacios disponibles." : "Sorry, this tour is fully booked.");
       return;
     }
 
@@ -167,31 +74,22 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
         email: leadEmail,
         phone: leadPhone,
         budgetRange: "5M - 10M",
-        financing: "Needs financing",
-        horizon: "1-3 months",
-        motivation: "Relocation",
+        financing: "Cash",
+        horizon: "Immediate",
+        motivation: "Vacation",
         wishlistPropertyIds: wishlistProperties.map(p => p.id),
         tourDates: tourDatesStr,
         tourPeople: passengerCount,
         tourLodging: wantsLodging,
         tourLodgingPref: wantsLodging ? lodgingPreference : undefined,
         status: "Discovery Tour Programado",
-        notes: [`Created via Discovery Tour customized cotizador.`],
+        notes: [`Requested Private Property Tour.`],
         lastInteractionDate: new Date().toISOString()
       };
       currentLeads.push(newLead);
     }
 
     localStorage.setItem("imagine_leads", JSON.stringify(currentLeads));
-
-    // Deduct seat locally
-    setTours(prev =>
-      prev.map(tour =>
-        tour.id === activeTour.id 
-          ? { ...tour, seatsRemaining: Math.max(0, tour.seatsRemaining - 1) }
-          : tour
-      )
-    );
 
     setTimeout(() => {
       setBookingSuccess(false);
@@ -200,11 +98,55 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
       setClientPhone("");
       setArrivalDate("");
       setDepartureDate("");
-      setPassengerCount(1);
+      setPassengerCount(2);
       setWantsLodging(false);
       setLodgingPreference("luxury");
-    }, 9000);
+    }, 5000);
   };
+
+  const experienceItems = lang === "es" ? [
+    {
+      title: "Transporte Privado de Alta Gama",
+      description: "Recogida exclusiva en el aeropuerto (SJO/LIR) en SUV premium (Fortuner/Land Cruiser) o traslado opcional en helicóptero directo a las zonas de interés.",
+      icon: Car
+    },
+    {
+      title: "Visitas Privadas Exclusivas",
+      description: "Acceso y recorridos privados uno a uno a las propiedades seleccionadas en su lista de favoritos, a su propio ritmo y con total discreción.",
+      icon: Sparkles
+    },
+    {
+      title: "Asesoría Legal e Impositiva",
+      description: "Coordinación de reuniones privadas con abogados locales de confianza para aclarar dudas sobre fideicomisos, residencia y derecho de propiedad en Costa Rica.",
+      icon: Landmark
+    },
+    {
+      title: "Inmersión de Estilo de Vida",
+      description: "Almuerzo o cena gourmet en restaurantes selectos de la zona, visita a colegios bilingües y exploración guiada de las playas y comunidades aledañas.",
+      icon: Compass
+    }
+  ] : [
+    {
+      title: "Premium Private Transport",
+      description: "Exclusive airport pickup (SJO/LIR) in premium SUVs (Fortuner/Land Cruiser) or optional helicopter transfers directly to your regions of interest.",
+      icon: Car
+    },
+    {
+      title: "Private One-on-One Viewings",
+      description: "Private, dedicated walkthroughs of your shortlisted properties, conducted at your own pace with total privacy and undivided attention.",
+      icon: Sparkles
+    },
+    {
+      title: "Legal & Residency Consultation",
+      description: "Private consultations with trusted local attorneys to clarify real estate laws, escrow processes, tax structures, and residency options.",
+      icon: Landmark
+    },
+    {
+      title: "Lifestyle & Dining Immersion",
+      description: "Gourmet dining at curated regional restaurants, tours of top bilingual schools, and guided neighborhood orientation checks.",
+      icon: Compass
+    }
+  ];
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] max-w-6xl mx-auto items-start">
@@ -216,70 +158,44 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
           </div>
           <div>
             <h3 className="font-serif text-2xl text-pearl">{t.upcomingTours}</h3>
-            <p className="text-xs text-gray-400 mt-1">{lang === "es" ? "Reserve su espacio en nuestra flota corporativa" : "Secure your space in our corporate fleet"}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {lang === "es" ? "Expediciones privadas e itinerarios de lujo personalizados" : "Private expeditions and bespoke luxury itineraries"}
+            </p>
           </div>
         </div>
 
-        {/* Tour selection rows */}
-        <div className="space-y-3">
-          {tours.map(tour => (
-            <button
-              key={tour.id}
-              onClick={() => setSelectedTourId(tour.id)}
-              className={`w-full text-left p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${
-                selectedTourId === tour.id
-                  ? "bg-white/5 border-sunset shadow-[inset_0_0_15px_rgba(212,175,55,0.08)]"
-                  : "bg-transparent border-white/10 hover:border-white/20"
-              }`}
-            >
-              <div className="min-w-0">
-                <div className="text-sunset text-[10px] uppercase tracking-widest font-semibold">{tour.date}</div>
-                <h4 className="font-serif text-sm md:text-base text-pearl truncate mt-1">
-                  {lang === "es" ? tour.nameES : tour.nameEN}
-                </h4>
-                <div className="text-[10px] text-gray-400 font-sans mt-0.5">{tour.region}</div>
+        {/* Experience Cards */}
+        <div className="space-y-4">
+          {experienceItems.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div key={idx} className="p-5 rounded-2xl border border-white/5 bg-[#01140f]/80 flex gap-4 items-start">
+                <div className="p-2.5 bg-sunset/15 rounded-xl text-sunset flex-shrink-0">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <h4 className="font-serif text-sm md:text-base text-pearl font-medium">{item.title}</h4>
+                  <p className="text-xs text-gray-300/80 leading-relaxed font-light mt-1">
+                    {item.description}
+                  </p>
+                </div>
               </div>
-              <div className="text-right flex-shrink-0">
-                <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-                  tour.seatsRemaining <= 2 
-                    ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
-                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                }`}>
-                  {tour.seatsRemaining} {t.seatsLeft}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Selected Tour Itinerary */}
-        <div className="rounded-2xl border border-white/5 bg-[#01140f] p-6 space-y-4">
-          <div className="flex items-center gap-2 border-b border-white/5 pb-3">
-            <Compass size={16} className="text-sunset" />
-            <h5 className="text-xs uppercase tracking-[0.25em] text-sunset font-semibold">{t.itinerary}</h5>
-          </div>
-          <ol className="space-y-4">
-            {(lang === "es" ? activeTour.itineraryES : activeTour.itineraryEN).map((step, index) => (
-              <li key={index} className="flex gap-3 text-xs md:text-sm text-gray-300 leading-relaxed font-light">
-                <span className="text-sunset font-mono font-semibold select-none">0{index + 1}.</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
+            );
+          })}
         </div>
       </div>
 
-      {/* Seat Booking / Customized Shuttle Cotizador Form */}
+      {/* Booking Form */}
       <div className="rounded-[2.5rem] border border-white/10 bg-[#041c16]/90 p-8 shadow-[0_30px_90px_rgba(0,0,0,0.3)] backdrop-blur-xl h-full flex flex-col justify-between">
         <div>
           <h4 className="font-serif text-xl text-pearl mb-2 flex items-center gap-2">
             <User size={18} className="text-sunset" />
-            {lang === "es" ? "Cotizador de Discovery Tour a la Medida" : "Custom Discovery Tour Quote Planner"}
+            {t.reserveSeat}
           </h4>
           <p className="text-xs text-gray-300 leading-relaxed mb-6 font-light">
             {lang === "es"
-              ? "Planifique su expedición privada en nuestro shuttle Hyundai Starex premium. Cotizamos itinerarios, paradas gastronómicas y hospedaje exclusivo."
-              : "Plan your private expedition in our premium Hyundai Starex shuttle. We quote custom itineraries, dining stops, and exclusive lodging."}
+              ? "Planifique su recorrido privado por las propiedades de su interés. Diseñaremos un itinerario exclusivo adaptado a su agenda."
+              : "Plan your private property tour. We will design a custom itinerary fully aligned with your schedule."}
           </p>
 
           <form onSubmit={handleBooking} className="space-y-4">
@@ -289,12 +205,12 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
                   <Check size={20} />
                 </div>
                 <h5 className="font-serif text-lg text-center text-emerald-400">
-                  {lang === "es" ? "Solicitud de Itinerario Recibida" : "Itinerary Request Received"}
+                  {lang === "es" ? "Solicitud de Tour Recibida" : "Tour Request Received"}
                 </h5>
                 <p className="text-xs leading-relaxed text-gray-300 text-center font-light">
                   {lang === "es"
-                    ? "¡Petición de cotización recibida con éxito! Nuestro equipo preparará un itinerario a la medida en formato PDF con cotización personalizada para su Discovery Tour y se lo enviará en las próximas 24 horas por correo electrónico y WhatsApp."
-                    : "Quote request received successfully! Our team will prepare a custom PDF itinerary with a personalized quote for your Discovery Tour and send it within the next 24 hours via email and WhatsApp."}
+                    ? "¡Petición recibida con éxito! Nuestro equipo preparará una propuesta de itinerario privado con opciones de transporte y logística personalizada y se comunicará con usted en menos de 24 horas."
+                    : "Request received successfully! Our team will prepare a private itinerary proposal with custom transport and logistics details and reach out within 24 hours."}
                 </p>
                 <div className="pt-2 text-center text-[10px] text-gray-400 uppercase tracking-wider">
                   Imagine Concierge Priority Tech
@@ -302,18 +218,10 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
               </div>
             ) : (
               <>
-                {/* Selected Tour Reference */}
-                <div className="p-4 rounded-xl bg-[#01140f] border border-white/5 mb-4">
-                  <span className="text-[9px] uppercase tracking-widest text-gray-400 block">{t.tourSelected}</span>
-                  <span className="text-xs md:text-sm text-pearl font-serif font-medium mt-1 block">
-                    {lang === "es" ? activeTour.nameES : activeTour.nameEN} ({activeTour.date})
-                  </span>
-                </div>
-
                 {/* Variable destinations from Wishlist */}
                 <div className="p-4 rounded-xl bg-[#01140f] border border-white/5">
                   <span className="text-[9px] uppercase tracking-widest text-sunset font-semibold block">
-                    {lang === "es" ? "Destinos de Interés (de su Lista de Favoritos)" : "Custom Destinations (from your Wishlist)"}
+                    {t.tourSelected}
                   </span>
                   {wishlistProperties.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -326,7 +234,7 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
                   ) : (
                     <p className="text-[11px] text-gray-400 italic mt-1 font-light">
                       {lang === "es"
-                        ? "Agregue propiedades a favoritos en el catálogo para agregarlas como paradas automáticas del tour."
+                        ? "Agregue propiedades a favoritos en el catálogo para incluirlas automáticamente en su itinerario."
                         : "Heart properties in the catalog to add them as custom tour stops automatically."}
                     </p>
                   )}
@@ -360,14 +268,14 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[9px] uppercase tracking-[0.25em] text-gray-400 mb-1.5">
-                      {lang === "es" ? "Pasajeros (Starex)" : "Passengers (Starex)"}
+                      {lang === "es" ? "Cantidad de Personas" : "Number of People"}
                     </label>
                     <select
                       value={passengerCount}
                       onChange={(e) => setPassengerCount(Number(e.target.value))}
                       className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3 text-xs text-pearl outline-none focus:border-sunset"
                     >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                         <option key={num} value={num}>{num} {num === 1 ? (lang === "es" ? "Persona" : "Person") : (lang === "es" ? "Personas" : "People")}</option>
                       ))}
                     </select>
@@ -396,7 +304,7 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
                       onChange={(e) => setLodgingPreference(e.target.value)}
                       className="w-full rounded-2xl border border-white/10 bg-[#01140f] px-4 py-3 text-xs text-pearl outline-none focus:border-sunset"
                     >
-                      <option value="budget">{lang === "es" ? "Estándar / Eco-Lodge" : "Standard / Eco-Lodge"}</option>
+                      <option value="eco">{lang === "es" ? "Estándar / Eco-Lodge" : "Standard / Eco-Lodge"}</option>
                       <option value="boutique">{lang === "es" ? "Hotel Boutique" : "Boutique Hotel"}</option>
                       <option value="luxury">{lang === "es" ? "Villa Privada de Lujo" : "Luxury Private Villa"}</option>
                     </select>
@@ -444,7 +352,7 @@ export default function ToursCalendar({ lang = "en", wishlistProperties = [] }: 
                     type="submit"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sunset px-5 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-jungle shadow-md hover:bg-white transition-colors duration-250 cursor-pointer font-bold"
                   >
-                    <Send size={13} /> {lang === "es" ? "Solicitar Cotización de Tour" : "Request Tour Quote"}
+                    <Send size={13} /> {t.bookNow}
                   </button>
                 </div>
               </>
