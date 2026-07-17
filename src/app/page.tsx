@@ -36,7 +36,77 @@ import {
 import { TRANSLATIONS } from "@/constants/translations";
 import { getAssetPath } from "@/utils/paths";
 import AdminDashboard from "@/components/AdminDashboard";
-import { formatCognitivePrice } from "@/utils/price";
+import { formatCognitivePrice, formatDualPrice } from "@/utils/price";
+
+interface AEAnimatedTextProps {
+  text: string;
+  className?: string;
+  delay?: number;
+}
+
+function AEAnimatedText({ 
+  text, 
+  className = "", 
+  delay = 0
+}: AEAnimatedTextProps) {
+  const words = text.split(" ");
+  
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.02,
+        delayChildren: delay,
+      }
+    }
+  };
+
+  const letterVariants = {
+    hidden: { 
+      y: "110%",
+      rotateX: 60,
+      opacity: 0
+    },
+    visible: { 
+      y: 0,
+      rotateX: 0,
+      opacity: 1,
+      transition: { 
+        type: "spring" as const,
+        damping: 18,
+        stiffness: 90,
+      }
+    }
+  };
+
+  return (
+    <motion.span
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className={`${className} inline-flex flex-wrap justify-center`}
+      style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
+    >
+      {words.map((word, wordIdx) => (
+        <span 
+          key={wordIdx} 
+          className="inline-block whitespace-nowrap mr-[0.25em] overflow-hidden py-[0.1em]"
+        >
+          {Array.from(word).map((char, charIdx) => (
+            <motion.span
+              key={charIdx}
+              variants={letterVariants}
+              className="inline-block origin-bottom transform-gpu"
+              style={{ display: "inline-block" }}
+            >
+              {char}
+            </motion.span>
+          ))}
+        </span>
+      ))}
+    </motion.span>
+  );
+}
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "es">("en");
@@ -52,23 +122,28 @@ export default function Home() {
   const [ratesUpdatedAt, setRatesUpdatedAt] = useState<Date | null>(null);
   const [ratesLoading, setRatesLoading] = useState(false);
 
-  const fetchRates = () => {
+  const fetchRates = async () => {
     setRatesLoading(true);
-    fetch("https://open.er-api.com/v6/latest/USD")
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.rates) {
-          setRates({
-            CRC: data.rates.CRC || 520,
-            EUR: data.rates.EUR || 0.92,
-            JPY: data.rates.JPY || 158,
-            USD: 1
-          });
-          setRatesUpdatedAt(new Date());
-        }
-      })
-      .catch(err => console.error("Error fetching rates, using defaults:", err))
-      .finally(() => setRatesLoading(false));
+    try {
+      const res = await fetch("https://open.er-api.com/v6/latest/USD");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data && data.rates) {
+        setRates({
+          CRC: data.rates.CRC || 520,
+          EUR: data.rates.EUR || 0.92,
+          JPY: data.rates.JPY || 158,
+          USD: 1
+        });
+        setRatesUpdatedAt(new Date());
+      }
+    } catch (err) {
+      console.warn("Could not fetch live rates, using local fallback rates. Error:", err);
+    } finally {
+      setRatesLoading(false);
+    }
   };
 
   // Fetch on mount and then auto-refresh every 30 minutes
@@ -482,7 +557,11 @@ export default function Home() {
   const filteredProperties = useMemo(() => {
     return properties.filter(p => {
       // Segment Filter
-      if (p.segment !== activeSegment) return false;
+      if (Array.isArray(p.segment)) {
+        if (!p.segment.includes(activeSegment)) return false;
+      } else {
+        if (p.segment !== activeSegment) return false;
+      }
 
       // Price Filter
       if (priceFilter === "under-200k" && p.price >= 200000) return false;
@@ -504,7 +583,13 @@ export default function Home() {
       if (provinceFilter !== "all" && p.province !== provinceFilter) return false;
 
       // Type Filter
-      if (typeFilter !== "all" && p.type !== typeFilter) return false;
+      if (typeFilter !== "all") {
+        if (Array.isArray(p.type)) {
+          if (!p.type.includes(typeFilter)) return false;
+        } else {
+          if (p.type !== typeFilter) return false;
+        }
+      }
 
       // Lifestyle Filter
       if (lifestyleFilter !== "all" && p.lifestyle !== lifestyleFilter) return false;
@@ -684,8 +769,10 @@ export default function Home() {
                   "{(t.hero as any).intro}"
                 </p>
 
-                <h1 className="mt-8 text-4xl md:text-6xl xl:text-7xl font-serif uppercase tracking-[-0.03em] leading-tight text-pearl">
-                  {t.hero.title1} <span className="text-sunset">{t.hero.title2}</span>
+                <h1 className="mt-8 text-4xl md:text-6xl xl:text-7xl font-serif uppercase tracking-[-0.03em] leading-tight text-pearl flex flex-wrap justify-center">
+                  <AEAnimatedText text={t.hero.title1} delay={0.15} />
+                  <span className="inline-block w-full h-0 md:hidden" />
+                  <AEAnimatedText text={t.hero.title2} delay={0.5} className="text-sunset" />
                 </h1>
                 <p className="mx-auto mt-6 max-w-3xl text-sm md:text-base leading-relaxed text-gray-300/90">
                   {t.hero.description}
@@ -1784,15 +1871,8 @@ export default function Home() {
                   {lang === "es" && selectedProperty.nameEs ? selectedProperty.nameEs : selectedProperty.name}
                 </h2>
                 
-                <div className="text-xl lg:text-2xl font-sans font-light mb-8 border-b border-white/10 pb-6 text-white flex justify-between items-baseline">
-                  <span>
-                    {formatCognitivePrice(selectedProperty.price, currencyMode, lang, rates)}
-                  </span>
-                  {currencyMode !== "USD" && (
-                    <span className="text-xs text-gray-400 font-normal">
-                      (Approx. {formatCognitivePrice(selectedProperty.price, "USD", lang, rates)})
-                    </span>
-                  )}
+                <div className="text-base lg:text-lg font-sans font-semibold mb-8 border-b border-white/10 pb-6 text-[#d4af37]">
+                  {formatDualPrice(selectedProperty.price, selectedProperty.currency || "USD", rates, lang).dualString}
                 </div>
 
                 <div className="space-y-6 mb-8">
@@ -1805,19 +1885,85 @@ export default function Home() {
                   
                   <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/10">
                     <div>
-                      <div className="text-sunset text-[10px] mb-1 font-sans uppercase tracking-wider">{t.modal.interiorSpace}</div>
+                      <div className="text-sunset text-[10px] mb-1 font-sans uppercase tracking-wider">
+                        {lang === "es" ? "Construcción" : "Construction Area"}
+                      </div>
                       <div className="text-sm lg:text-base font-serif text-pearl">
-                        {selectedProperty.sqft.toLocaleString("en-US")} {t.card.sqft}
+                        {(selectedProperty.constructionSizeM2 || selectedProperty.m2 || Math.round(selectedProperty.sqft * 0.092903)).toLocaleString("en-US")} m²
                         <span className="block text-[10px] font-sans text-gray-400 font-normal mt-0.5">
-                          ({Math.round(selectedProperty.sqft * 0.092903).toLocaleString("en-US")} m²)
+                          (~{Math.round((selectedProperty.constructionSizeM2 || selectedProperty.m2 || Math.round(selectedProperty.sqft * 0.092903)) * 10.76391).toLocaleString("en-US")} {t.card.sqft})
                         </span>
                       </div>
                     </div>
                     <div>
+                      <div className="text-sunset text-[10px] mb-1 font-sans uppercase tracking-wider">
+                        {lang === "es" ? "Terreno" : "Lot Size"}
+                      </div>
+                      <div className="text-sm lg:text-base font-serif text-pearl">
+                        {(selectedProperty.lotSizeM2 || 0) > 0 ? (
+                          <>
+                            {(selectedProperty.lotSizeM2 || 0).toLocaleString("en-US")} m²
+                            <span className="block text-[10px] font-sans text-gray-400 font-normal mt-0.5">
+                              (~{Math.round((selectedProperty.lotSizeM2 || 0) * 10.76391).toLocaleString("en-US")} {t.card.sqft} / {((selectedProperty.lotSizeM2 || 0) / 4046.85642).toFixed(4)} acres)
+                            </span>
+                          </>
+                        ) : (
+                          "N/A"
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-span-2">
                       <div className="text-sunset text-[10px] mb-1 font-sans uppercase tracking-wider">{t.modal.accommodations}</div>
                       <div className="text-sm lg:text-base font-serif text-pearl">{selectedProperty.suites} {t.modal.suitesSuffix}</div>
                     </div>
                   </div>
+
+                  {selectedProperty.amenities && selectedProperty.amenities.length > 0 && (
+                    <div className="pt-6 border-t border-white/10">
+                      <h4 className="text-sunset text-[10px] mb-3 font-sans uppercase tracking-wider">
+                        {lang === "es" ? "Amenidades" : "Amenities"}
+                      </h4>
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-300 font-sans font-light">
+                        {selectedProperty.amenities.map(amenityId => {
+                          const matched = [
+                            { id: "garden", es: "Jardín", en: "Garden" },
+                            { id: "attic", es: "Ático", en: "Attic" },
+                            { id: "garage", es: "Garaje", en: "Garage" },
+                            { id: "terrace", es: "Terraza", en: "Terrace" },
+                            { id: "pool", es: "Piscina Privada", en: "Private Pool" },
+                            { id: "closet", es: "Walk-in Closet", en: "Walk-in Closet" },
+                            { id: "kitchen", es: "Cocina Integral", en: "Equipped Kitchen" },
+                            { id: "laundry", es: "Cuarto de Lavado", en: "Laundry Room" },
+                            { id: "storage", es: "Bodega", en: "Storage Room" },
+                            { id: "balcony", es: "Balcón", en: "Balcony" },
+                            { id: "theater", es: "Cine en Casa", en: "Home Theater" },
+                            { id: "games", es: "Sala de Juegos", en: "Game Room" },
+                            { id: "bar", es: "Minibar / Bar Privado", en: "Home Bar" },
+                            { id: "wine", es: "Cava de Vinos", en: "Wine Cellar" },
+                            { id: "gym", es: "Gimnasio Privado", en: "Private Gym" },
+                            { id: "sauna", es: "Spa / Sauna", en: "Sauna / Spa" },
+                            { id: "court", es: "Cancha de Tenis/Pádel", en: "Tennis/Padel Court" },
+                            { id: "helipad", es: "Helipuerto", en: "Helipad" },
+                            { id: "funicular", es: "Funicular", en: "Funicular" },
+                            { id: "guesthouse", es: "Casa de Huéspedes", en: "Guest House" },
+                            { id: "firepit", es: "Fogata / Fire Pit", en: "Fire Pit" },
+                            { id: "jacuzzi", es: "Jacuzzi Exterior", en: "Outdoor Jacuzzi" }
+                          ].find(a => a.id === amenityId);
+                          return matched ? (
+                            <div key={amenityId} className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                              <span>{lang === "es" ? matched.es : matched.en}</span>
+                            </div>
+                          ) : (
+                            <div key={amenityId} className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                              <span className="capitalize">{amenityId}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-8">

@@ -163,7 +163,7 @@ export default function PipelineCRM({
           <p style="margin: 3px 0; font-size: 12px; color: #02140f; font-weight: bold;">$${p.price.toLocaleString()} USD</p>
         </div>
         <div style="font-size: 10px; color: #777; text-align: right;">
-          ${p.suites} Suites | ${p.sqft.toLocaleString()} sqft<br/>
+          ${p.suites} Suites | ${(p.m2 || Math.round(p.sqft * 0.092903)).toLocaleString()} m² (${p.sqft.toLocaleString()} sqft)<br/>
           ${p.hasFiberOptic ? "Fibra Óptica ✓" : ""}${p.hasStarlink ? " | Starlink ✓" : ""}
         </div>
       </div>

@@ -23,6 +23,7 @@ interface AdminDashboardProps {
   regions: Region[];
   onUpdateRegions: (regions: Region[]) => void;
   lang: "en" | "es";
+  rates?: { CRC: number; EUR: number; JPY: number; USD: number };
   onClose: () => void;
 }
 
@@ -44,6 +45,7 @@ export default function AdminDashboard({
   regions,
   onUpdateRegions,
   lang,
+  rates,
   onClose
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<"inventory" | "crm" | "social" | "contracts" | "reports" | "settings">("inventory");
@@ -412,6 +414,7 @@ export default function AdminDashboard({
                   propertyTypes={propertyTypes}
                   regions={regions}
                   lang={lang}
+                  rates={rates}
                   currentUser={currentUser}
                 />
               )}

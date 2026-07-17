@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Shield, Plus, Edit2, Trash2, Eye, EyeOff } from "lucide-react";
+import { Shield, Plus, Edit2, Trash2, Eye, EyeOff, X } from "lucide-react";
 import { PropertyType, Region } from "@/constants/properties";
 
 interface Collaborator {
@@ -255,7 +255,7 @@ export default function SettingsTab({
   const isUserAdmin = currentUser?.role === "Administrador";
 
   return (
-    <div className={`grid gap-8 ${isUserAdmin ? "lg:grid-cols-[0.9fr_1.1fr]" : "grid-cols-1 max-w-xl mx-auto"}`}>
+    <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
       {/* Col 1: Change Password Form */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md flex flex-col justify-between h-fit">
         <form onSubmit={handleChangePassword} className="space-y-4">
@@ -337,9 +337,10 @@ export default function SettingsTab({
         </form>
       </div>
 
-      {/* Col 2: Collaborators List & Creation Form (Only for Administrator role) */}
-      {isUserAdmin && (
-        <div className="space-y-6">
+      {/* Col 2: Collaborators Management & Team List */}
+      <div className="space-y-6">
+        {/* Add/Edit Collaborator Form (Only for Administrator role) */}
+        {isUserAdmin && (
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
             <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
               <Plus size={18} className="text-[#d4af37]" />
@@ -426,46 +427,63 @@ export default function SettingsTab({
               </div>
             </form>
           </div>
+        )}
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
-            <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3">
-              {lang === "es" ? "Colaboradores Activos" : "Active Collaborators"} ({collaborators.length})
-            </h3>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-              {collaborators.map(c => (
+        {/* Active Collaborators List (Visible to everyone, but credentials masked for non-admins) */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md">
+          <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3">
+            {lang === "es" ? "Colaboradores Activos" : "Active Collaborators"} ({collaborators.length})
+          </h3>
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+            {collaborators.map(c => {
+              const isOwnAccount = currentUser?.id === c.id;
+              const canViewCredentials = isUserAdmin || isOwnAccount;
+              
+              return (
                 <div key={c.id} className="flex gap-4 p-4 border border-white/5 bg-[#011a14] rounded-xl items-center justify-between">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-serif text-xs text-pearl font-semibold">{c.name}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37]">{c.role}</span>
+                      <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37]">
+                        {c.role}
+                      </span>
+                      {isOwnAccount && (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-emerald-500/20 bg-emerald-950/30 font-semibold text-emerald-400">
+                          {lang === "es" ? "Tú" : "You"}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-1 font-mono">{lang === "es" ? "Usuario:" : "User:"} <span className="text-white">{c.username}</span> | {lang === "es" ? "Contraseña:" : "Password:"} <span className="text-white font-sans">{c.password}</span></p>
+                    <p className="text-[10px] text-gray-400 mt-1 font-mono">
+                      {lang === "es" ? "Usuario:" : "User:"} <span className="text-white">{canViewCredentials ? c.username : "••••••"}</span> | {lang === "es" ? "Contraseña:" : "Password:"} <span className="text-white font-sans">{canViewCredentials ? c.password : "••••••"}</span>
+                    </p>
                   </div>
-                  <div className="flex gap-2">
-                    <button 
-                      type="button"
-                      onClick={() => handleEditCollaboratorClick(c)}
-                      className="p-2 rounded-lg border border-white/10 hover:border-[#d4af37] text-gray-400 hover:text-[#d4af37] transition cursor-pointer"
-                      title="Edit"
-                    >
-                      <Edit2 size={12} />
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => handleDeleteCollaborator(c.id)}
-                      disabled={currentUser?.id === c.id}
-                      className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
-                      title="Delete"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
+                  {isUserAdmin && (
+                    <div className="flex gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => handleEditCollaboratorClick(c)}
+                        className="p-2 rounded-lg border border-white/10 hover:border-[#d4af37] text-gray-400 hover:text-[#d4af37] transition cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit2 size={12} />
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleDeleteCollaborator(c.id)}
+                        disabled={currentUser?.id === c.id}
+                        className="p-2 rounded-lg border border-white/10 hover:border-rose-500 hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+                        title="Delete"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Property Types Management Section (Full Width at bottom) */}
       {isUserAdmin && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, type FormEvent } from "react";
-import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Download, Check, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Download, Check, RefreshCw, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Property, PROVINCE_REGIONS, PropertyType, Region } from "@/constants/properties";
 
@@ -21,6 +21,7 @@ interface InventoryCRUDProps {
   propertyTypes: PropertyType[];
   regions: Region[];
   lang: "en" | "es";
+  rates?: { CRC: number; EUR: number; JPY: number; USD: number };
   currentUser: Collaborator | null;
 }
 
@@ -32,6 +33,7 @@ export default function InventoryCRUD({
   propertyTypes,
   regions,
   lang,
+  rates,
   currentUser
 }: InventoryCRUDProps) {
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
@@ -45,18 +47,28 @@ export default function InventoryCRUD({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadLogs, setUploadLogs] = useState<string[]>([]);
 
+  const [isSegmentDropdownOpen, setIsSegmentDropdownOpen] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [isCustomAmenitiesExpanded, setIsCustomAmenitiesExpanded] = useState(false);
+  const [customAmenityInput, setCustomAmenityInput] = useState("");
+
   const [crudForm, setCrudForm] = useState({
     name: "",
     location: "",
     price: 0,
-    sqft: 0,
+    currency: "USD" as "USD" | "CRC",
+    commissionType: "percentage" as "percentage" | "fixed",
+    commissionValue: 5,
+    lotSizeM2: 0,
+    constructionSizeM2: 0,
     suites: 0,
     vibeTags: "",
     description: "",
     descriptionEs: "",
     nameEs: "",
-    type: "Casa" as Property["type"],
-    segment: "Luxury" as Property["segment"],
+    type: ["Casa"] as any,
+    segment: ["Luxury"] as Property["segment"],
+    amenities: [] as string[],
     province: "San José" as Property["province"],
     lifestyle: "Naturaleza" as Property["lifestyle"],
     status: "Disponible" as Property["status"],
@@ -127,6 +139,19 @@ export default function InventoryCRUD({
     });
   };
 
+  const handleAddCustomAmenity = () => {
+    const trimmed = customAmenityInput.trim();
+    if (!trimmed) return;
+    const currentAmenities = crudForm.amenities || [];
+    if (!currentAmenities.includes(trimmed)) {
+      setCrudForm(prev => ({
+        ...prev,
+        amenities: [...currentAmenities, trimmed]
+      }));
+    }
+    setCustomAmenityInput("");
+  };
+
   const handleCrudSubmit = (e: FormEvent) => {
     e.preventDefault();
     const formattedTags = crudForm.vibeTags.split(",").map(t => t.trim()).filter(Boolean);
@@ -136,7 +161,11 @@ export default function InventoryCRUD({
       name: crudForm.name,
       location: crudForm.location,
       price: Number(crudForm.price),
-      sqft: Number(crudForm.sqft),
+      m2: Number(crudForm.constructionSizeM2 || 0),
+      sqft: Math.round(Number(crudForm.constructionSizeM2 || 0) * 10.76391),
+      acres: Number((Number(crudForm.lotSizeM2 || 0) / 4046.85642).toFixed(4)),
+      lotSizeM2: Number(crudForm.lotSizeM2),
+      constructionSizeM2: Number(crudForm.constructionSizeM2),
       suites: Number(crudForm.suites),
       vibeTags: formattedTags,
       description: crudForm.description,
@@ -160,6 +189,13 @@ export default function InventoryCRUD({
       descriptionEs: crudForm.descriptionEs,
       fincaRegistryNum: crudForm.fincaRegistryNum,
       catasterMapNum: crudForm.catasterMapNum,
+      amenities: crudForm.amenities,
+      currency: crudForm.currency,
+      commissionType: crudForm.commissionType,
+      commissionValue: Number(crudForm.commissionValue),
+      commissionAmount: crudForm.commissionType === "percentage"
+        ? Number(crudForm.price) * (Number(crudForm.commissionValue) / 100)
+        : Number(crudForm.commissionValue),
       refCode: editingPropertyId
         ? (properties.find(p => p.id === editingPropertyId)?.refCode || nextRefCode)
         : nextRefCode
@@ -174,8 +210,8 @@ export default function InventoryCRUD({
     // Reset Form
     setEditingPropertyId(null);
     setCrudForm({
-      name: "", location: "", price: 0, sqft: 0, suites: 0, vibeTags: "",
-      description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", province: "San José", lifestyle: "Naturaleza",
+      name: "", location: "", price: 0, currency: "USD", commissionType: "percentage", commissionValue: 5, lotSizeM2: 0, constructionSizeM2: 0, suites: 0, vibeTags: "",
+      description: "", descriptionEs: "", nameEs: "", type: ["Casa"], segment: ["Luxury"], amenities: [], province: "San José", lifestyle: "Naturaleza",
       status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
       airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
       hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
@@ -189,14 +225,19 @@ export default function InventoryCRUD({
       name: p.name,
       location: p.location,
       price: p.price,
-      sqft: p.sqft,
+      currency: p.currency || "USD",
+      commissionType: p.commissionType || "percentage",
+      commissionValue: p.commissionValue !== undefined ? p.commissionValue : 5,
+      lotSizeM2: p.lotSizeM2 || 0,
+      constructionSizeM2: p.constructionSizeM2 || p.m2 || Math.round(p.sqft * 0.092903),
       suites: p.suites,
       vibeTags: p.vibeTags.join(", "),
       description: p.description,
       descriptionEs: p.descriptionEs || p.description,
       nameEs: p.nameEs || p.name,
-      type: p.type,
-      segment: p.segment,
+      type: (Array.isArray(p.type) ? p.type : (p.type ? [p.type] : ["Casa"])) as any,
+      segment: (Array.isArray(p.segment) ? p.segment : (p.segment ? [p.segment] : ["Luxury"])) as any,
+      amenities: p.amenities || [],
       province: p.province || "San José",
       lifestyle: p.lifestyle,
       status: p.status,
@@ -284,9 +325,11 @@ export default function InventoryCRUD({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-4">
             <div>
-              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Price (USD)</label>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                {lang === "es" ? "Precio de Venta" : "Sale Price"}
+              </label>
               <input 
                 type="number"
                 value={crudForm.price || ""} 
@@ -294,16 +337,65 @@ export default function InventoryCRUD({
                 required 
                 className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
               />
+              <div className="flex gap-4 items-center mt-2.5">
+                <label className="flex items-center gap-1.5 text-[10px] text-pearl cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="currency"
+                    checked={crudForm.currency === "USD"}
+                    onChange={() => setCrudForm(prev => ({ ...prev, currency: "USD" }))}
+                    className="accent-[#d4af37]"
+                  />
+                  <span>USD ($)</span>
+                </label>
+                <label className="flex items-center gap-1.5 text-[10px] text-pearl cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="currency"
+                    checked={crudForm.currency === "CRC"}
+                    onChange={() => setCrudForm(prev => ({ ...prev, currency: "CRC" }))}
+                    className="accent-[#d4af37]"
+                  />
+                  <span>CRC (₡)</span>
+                </label>
+              </div>
             </div>
             <div>
-              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Size (sqft)</label>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                {lang === "es" ? "Construcción (m²)" : "Construction (m²)"}
+              </label>
               <input 
                 type="number"
-                value={crudForm.sqft || ""} 
-                onChange={e => setCrudForm({ ...crudForm, sqft: Number(e.target.value) })} 
+                value={crudForm.constructionSizeM2 || ""} 
+                onChange={e => setCrudForm({ ...crudForm, constructionSizeM2: Number(e.target.value) })} 
                 required 
                 className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
               />
+              {crudForm.constructionSizeM2 > 0 && (
+                <div className="text-[9px] text-gray-400 mt-1 font-mono leading-none">
+                  {lang === "es" ? "Equivale a: " : "Equivalency: "}
+                  <span className="text-[#d4af37] font-semibold">{Math.round(crudForm.constructionSizeM2 * 10.76391).toLocaleString()}</span> sqft
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                {lang === "es" ? "Terreno (m²)" : "Lot / Land (m²)"}
+              </label>
+              <input 
+                type="number"
+                value={crudForm.lotSizeM2 || ""} 
+                onChange={e => setCrudForm({ ...crudForm, lotSizeM2: Number(e.target.value) })} 
+                required 
+                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+              />
+              {crudForm.lotSizeM2 > 0 && (
+                <div className="text-[9px] text-gray-400 mt-1 font-mono leading-none">
+                  {lang === "es" ? "Equivale a: " : "Equivalency: "}
+                  <span className="text-[#d4af37] font-semibold">{Math.round(crudForm.lotSizeM2 * 10.76391).toLocaleString()}</span> sqft /{" "}
+                  <span className="text-[#d4af37] font-semibold">{(crudForm.lotSizeM2 / 4046.85642).toFixed(4)}</span> acres
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Suites</label>
@@ -317,35 +409,220 @@ export default function InventoryCRUD({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-4">
-            <div>
-              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Type</label>
-              <select 
-                value={crudForm.type}
-                onChange={e => setCrudForm({ ...crudForm, type: e.target.value as any })}
-                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-              >
-                {propertyTypes
-                  .filter(pt => pt.visible)
-                  .map(pt => (
-                    <option key={pt.id} value={pt.id}>
-                      {lang === "es" ? pt.nameEs : pt.nameEn}
-                    </option>
-                  ))
-                }
-              </select>
+          {/* Commission/Earning Section */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+            <h4 className="block text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
+              {lang === "es" ? "Monto que nos vamos a ganar (Comisión)" : "Our Earnings (Commission)"}
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                  {lang === "es" ? "Tipo de Comisión" : "Commission Type"}
+                </label>
+                <div className="flex border border-white/10 p-0.5 rounded-xl bg-white/5 h-[37px] items-center">
+                  <button
+                    type="button"
+                    onClick={() => setCrudForm(prev => ({ ...prev, commissionType: "percentage" }))}
+                    className={`flex-1 py-1 text-[10px] font-sans uppercase tracking-wider font-semibold rounded-lg transition h-full cursor-pointer ${
+                      crudForm.commissionType === "percentage" ? "bg-[#d4af37] text-[#02100b] font-bold" : "text-gray-400 hover:text-pearl"
+                    }`}
+                  >
+                    {lang === "es" ? "% Porcentaje" : "% Percentage"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCrudForm(prev => ({ ...prev, commissionType: "fixed" }))}
+                    className={`flex-1 py-1 text-[10px] font-sans uppercase tracking-wider font-semibold rounded-lg transition h-full cursor-pointer ${
+                      crudForm.commissionType === "fixed" ? "bg-[#d4af37] text-[#02100b] font-bold" : "text-gray-400 hover:text-pearl"
+                    }`}
+                  >
+                    {lang === "es" ? "Monto Fijo" : "Fixed Amount"}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                  {crudForm.commissionType === "percentage" 
+                    ? (lang === "es" ? "Valor de Comisión (%)" : "Commission Value (%)") 
+                    : (lang === "es" ? `Monto Fijo (${crudForm.currency})` : `Fixed Amount (${crudForm.currency})`)
+                  }
+                </label>
+                <input 
+                  type="number"
+                  value={crudForm.commissionValue || ""} 
+                  onChange={e => setCrudForm({ ...crudForm, commissionValue: Number(e.target.value) })} 
+                  required 
+                  className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+                />
+              </div>
             </div>
-            <div>
+
+            {/* Live Commission Display */}
+            {(() => {
+              const basePrice = Number(crudForm.price) || 0;
+              const value = Number(crudForm.commissionValue) || 0;
+              const rate = rates?.CRC || 520;
+              
+              const baseCommission = crudForm.commissionType === "percentage"
+                ? basePrice * (value / 100)
+                : value;
+              
+              let usdCommission = 0;
+              let crcCommission = 0;
+              
+              if (crudForm.currency === "CRC") {
+                crcCommission = baseCommission;
+                usdCommission = Math.round(baseCommission / rate);
+              } else {
+                usdCommission = baseCommission;
+                crcCommission = Math.round(baseCommission * rate);
+              }
+              
+              return (
+                <div className="text-[10px] text-gray-400 font-mono border-t border-white/5 pt-2 flex items-center justify-between">
+                  <span>{lang === "es" ? "Ganancia Estimada:" : "Estimated Earnings:"}</span>
+                  <span className="text-[#d4af37] font-semibold text-xs">
+                    ${usdCommission.toLocaleString()} USD / ₡{crcCommission.toLocaleString()} CRC
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-4">
+            <div className="relative">
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Type</label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                  className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] text-left flex justify-between items-center h-[37px] cursor-pointer"
+                >
+                  <span className="truncate">
+                    {!crudForm.type || crudForm.type.length === 0
+                      ? (lang === "es" ? "Seleccionar Tipos" : "Select Types")
+                      : (Array.isArray(crudForm.type) ? crudForm.type : [crudForm.type]).map(tId => {
+                          const matched = propertyTypes.find(pt => pt.id === tId);
+                          return matched ? (lang === "es" ? matched.nameEs : matched.nameEn) : tId;
+                        }).join(", ")
+                    }
+                  </span>
+                  <ChevronDown size={14} className="text-gray-400" />
+                </button>
+
+                <AnimatePresence>
+                  {isTypeDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setIsTypeDropdownOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute left-0 right-0 mt-1.5 bg-[#01140f] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-white/5 max-h-60 overflow-y-auto"
+                      >
+                        {propertyTypes
+                          .filter(pt => pt.visible)
+                          .map(opt => {
+                            const currentTypes = Array.isArray(crudForm.type) ? crudForm.type : [crudForm.type];
+                            const isSelected = currentTypes.includes(opt.id);
+                            return (
+                              <button
+                                key={opt.id}
+                                type="button"
+                                onClick={() => {
+                                  let newTypes: string[] = [...currentTypes];
+                                  if (isSelected) {
+                                    newTypes = newTypes.filter(t => t !== opt.id);
+                                  } else {
+                                    newTypes.push(opt.id);
+                                  }
+                                  setCrudForm({ ...crudForm, type: newTypes });
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-xs text-pearl hover:bg-[#d4af37]/10 flex items-center justify-between transition cursor-pointer"
+                              >
+                                <span>{lang === "es" ? opt.nameEs : opt.nameEn}</span>
+                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition ${
+                                  isSelected ? "bg-[#d4af37] border-[#d4af37] text-[#02140f]" : "border-white/20 bg-black/20"
+                                }`}>
+                                  {isSelected && <Check size={10} strokeWidth={3} />}
+                                </div>
+                              </button>
+                            );
+                          })}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+            <div className="relative">
               <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Segment</label>
-              <select 
-                value={crudForm.segment}
-                onChange={e => setCrudForm({ ...crudForm, segment: e.target.value as any })}
-                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-              >
-                <option value="Luxury">Signature Luxury</option>
-                <option value="Standard">Standard Residential</option>
-                <option value="Commercial">Commercial & Investment</option>
-              </select>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsSegmentDropdownOpen(!isSegmentDropdownOpen)}
+                  className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] text-left flex justify-between items-center h-[37px] cursor-pointer"
+                >
+                  <span className="truncate">
+                    {!crudForm.segment || crudForm.segment.length === 0
+                      ? (lang === "es" ? "Seleccionar Segmentos" : "Select Segments")
+                      : (Array.isArray(crudForm.segment) ? crudForm.segment : [crudForm.segment]).map(seg => {
+                          if (seg === "Luxury") return "Signature Luxury";
+                          if (seg === "Standard") return "Standard Residential";
+                          if (seg === "Commercial") return "Commercial & Investment";
+                          return seg;
+                        }).join(", ")
+                    }
+                  </span>
+                  <ChevronDown size={14} className="text-gray-400" />
+                </button>
+
+                <AnimatePresence>
+                  {isSegmentDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setIsSegmentDropdownOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute left-0 right-0 mt-1.5 bg-[#01140f] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-white/5"
+                      >
+                        {[
+                          { value: "Luxury", label: "Signature Luxury" },
+                          { value: "Standard", label: "Standard Residential" },
+                          { value: "Commercial", label: "Commercial & Investment" }
+                        ].map(opt => {
+                          const currentSegments = Array.isArray(crudForm.segment) ? crudForm.segment : [crudForm.segment];
+                          const isSelected = currentSegments.includes(opt.value as any);
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                let newSegments: ("Luxury" | "Standard" | "Commercial")[] = [...currentSegments];
+                                if (isSelected) {
+                                  newSegments = newSegments.filter(s => s !== opt.value);
+                                } else {
+                                  newSegments.push(opt.value as any);
+                                }
+                                setCrudForm({ ...crudForm, segment: newSegments });
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-xs text-pearl hover:bg-[#d4af37]/10 flex items-center justify-between transition cursor-pointer"
+                            >
+                              <span>{opt.label}</span>
+                              <div className={`w-4 h-4 rounded border flex items-center justify-center transition ${
+                                isSelected ? "bg-[#d4af37] border-[#d4af37] text-[#02140f]" : "border-white/20 bg-black/20"
+                              }`}>
+                                {isSelected && <Check size={10} strokeWidth={3} />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
             <div>
               <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Lifestyle</label>
@@ -549,6 +826,202 @@ export default function InventoryCRUD({
             />
           </div>
 
+          {/* Amenities Section */}
+          <div className="border-t border-white/10 pt-4">
+            <h4 className="block text-[10px] uppercase tracking-wider text-gray-400 mb-3 font-semibold">
+              {lang === "es" ? "Amenidades de la Propiedad" : "Property Amenities"}
+            </h4>
+            
+            {/* Common Amenities Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {[
+                { id: "garden", es: "Jardín", en: "Garden" },
+                { id: "attic", es: "Ático", en: "Attic" },
+                { id: "garage", es: "Garaje", en: "Garage" },
+                { id: "terrace", es: "Terraza", en: "Terrace" },
+                { id: "pool", es: "Piscina Privada", en: "Private Pool" },
+                { id: "closet", es: "Walk-in Closet", en: "Walk-in Closet" },
+                { id: "kitchen", es: "Cocina Integral", en: "Equipped Kitchen" },
+                { id: "laundry", es: "Cuarto de Lavado", en: "Laundry Room" },
+                { id: "storage", es: "Bodega", en: "Storage Room" },
+                { id: "balcony", es: "Balcón", en: "Balcony" }
+              ].map(amenity => {
+                const isChecked = crudForm.amenities?.includes(amenity.id);
+                return (
+                  <label 
+                    key={amenity.id} 
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs text-pearl cursor-pointer transition select-none ${
+                      isChecked 
+                        ? "bg-[#d4af37]/10 border-[#d4af37]" 
+                        : "bg-[#01140f] border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    <input 
+                      type="checkbox" 
+                      checked={isChecked}
+                      onChange={() => {
+                        let newAmenities = [...(crudForm.amenities || [])];
+                        if (isChecked) {
+                          newAmenities = newAmenities.filter(id => id !== amenity.id);
+                        } else {
+                          newAmenities.push(amenity.id);
+                        }
+                        setCrudForm({ ...crudForm, amenities: newAmenities });
+                      }}
+                      className="hidden"
+                    />
+                    <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-all ${
+                      isChecked ? "bg-[#d4af37] border-[#d4af37] text-[#02140f]" : "border-white/30 bg-black/30"
+                    }`}>
+                      {isChecked && <Check size={10} strokeWidth={3} />}
+                    </div>
+                    <span>{lang === "es" ? amenity.es : amenity.en}</span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {/* Expandable Section for Less Frequent Amenities */}
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => setIsCustomAmenitiesExpanded(!isCustomAmenitiesExpanded)}
+                className="w-full py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] text-gray-400 hover:text-pearl flex items-center justify-center gap-1.5 transition uppercase tracking-wider font-semibold cursor-pointer font-mono"
+              >
+                <span>
+                  {isCustomAmenitiesExpanded 
+                    ? (lang === "es" ? "Ocultar amenidades exclusivas" : "Hide exclusive amenities")
+                    : (lang === "es" ? "Ver amenidades exclusivas / menos frecuentes" : "Ver amenidades exclusivas / menos frecuentes")
+                  }
+                </span>
+                {isCustomAmenitiesExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+
+              <AnimatePresence>
+                {isCustomAmenitiesExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3">
+                      {[
+                        { id: "theater", es: "Cine en Casa", en: "Home Theater" },
+                        { id: "games", es: "Sala de Juegos", en: "Game Room" },
+                        { id: "bar", es: "Minibar / Bar Privado", en: "Home Bar" },
+                        { id: "wine", es: "Cava de Vinos", en: "Wine Cellar" },
+                        { id: "gym", es: "Gimnasio Privado", en: "Private Gym" },
+                        { id: "sauna", es: "Spa / Sauna", en: "Sauna / Spa" },
+                        { id: "court", es: "Cancha de Tenis/Pádel", en: "Tennis/Padel Court" },
+                        { id: "helipad", es: "Helipuerto", en: "Helipad" },
+                        { id: "funicular", es: "Funicular", en: "Funicular" },
+                        { id: "guesthouse", es: "Casa de Huéspedes", en: "Guest House" },
+                        { id: "firepit", es: "Fogata / Fire Pit", en: "Fire Pit" },
+                        { id: "jacuzzi", es: "Jacuzzi Exterior", en: "Outdoor Jacuzzi" }
+                      ].map(amenity => {
+                        const isChecked = crudForm.amenities?.includes(amenity.id);
+                        return (
+                          <label 
+                            key={amenity.id} 
+                            className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs text-pearl cursor-pointer transition select-none ${
+                              isChecked 
+                                ? "bg-[#d4af37]/10 border-[#d4af37]" 
+                                : "bg-[#01140f] border-white/10 hover:border-white/20"
+                            }`}
+                          >
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => {
+                                let newAmenities = [...(crudForm.amenities || [])];
+                                if (isChecked) {
+                                  newAmenities = newAmenities.filter(id => id !== amenity.id);
+                                } else {
+                                  newAmenities.push(amenity.id);
+                                }
+                                setCrudForm({ ...crudForm, amenities: newAmenities });
+                              }}
+                              className="hidden"
+                            />
+                            <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-all ${
+                              isChecked ? "bg-[#d4af37] border-[#d4af37] text-[#02140f]" : "border-white/30 bg-black/30"
+                            }`}>
+                              {isChecked && <Check size={10} strokeWidth={3} />}
+                            </div>
+                            <span>{lang === "es" ? amenity.es : amenity.en}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Custom Amenities Builder */}
+            <div className="mt-4 border-t border-white/5 pt-4 space-y-3">
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400">
+                {lang === "es" ? "Agregar Amenidad Personalizada" : "Add Custom Amenity"}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customAmenityInput}
+                  onChange={e => setCustomAmenityInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddCustomAmenity();
+                    }
+                  }}
+                  placeholder={lang === "es" ? "ej. Cava de puros, Helipuerto privado" : "e.g. Cigar Lounge, Private Helipad"}
+                  className="flex-1 bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomAmenity}
+                  className="bg-[#d4af37]/15 hover:bg-[#d4af37]/35 border border-[#d4af37]/35 text-[#d4af37] text-xs px-4 py-2 rounded-xl transition font-mono uppercase tracking-wider font-semibold cursor-pointer"
+                >
+                  {lang === "es" ? "+ Agregar" : "+ Add"}
+                </button>
+              </div>
+
+              {/* Render custom selected amenities */}
+              {(() => {
+                const PREDEFINED_AMENITY_IDS = [
+                  "garden", "attic", "garage", "terrace", "pool", "closet", "kitchen", "laundry", "storage", "balcony",
+                  "theater", "games", "bar", "wine", "gym", "sauna", "court", "helipad", "funicular", "guesthouse", "firepit", "jacuzzi"
+                ];
+                const customSelected = (crudForm.amenities || []).filter(id => !PREDEFINED_AMENITY_IDS.includes(id));
+                
+                if (customSelected.length === 0) return null;
+                
+                return (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {customSelected.map(amenity => (
+                      <div 
+                        key={amenity}
+                        onClick={() => {
+                          setCrudForm(prev => ({
+                            ...prev,
+                            amenities: (prev.amenities || []).filter(id => id !== amenity)
+                          }));
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-sans font-medium text-pearl bg-[#d4af37]/10 border-[#d4af37] cursor-pointer hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 transition select-none"
+                        title={lang === "es" ? "Haz clic para remover" : "Click to remove"}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                        <span className="capitalize">{amenity}</span>
+                        <X size={10} className="ml-1 opacity-60 hover:opacity-100" />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
           {formLangTab === "en" ? (
             <div>
               <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">Description (English)</label>
@@ -643,8 +1116,8 @@ export default function InventoryCRUD({
                 onClick={() => {
                   setEditingPropertyId(null);
                   setCrudForm({
-                    name: "", location: "", price: 0, sqft: 0, suites: 0, vibeTags: "",
-                    description: "", descriptionEs: "", nameEs: "", type: "Casa", segment: "Luxury", province: "San José", lifestyle: "Naturaleza",
+                    name: "", location: "", price: 0, currency: "USD", commissionType: "percentage", commissionValue: 5, lotSizeM2: 0, constructionSizeM2: 0, suites: 0, vibeTags: "",
+                    description: "", descriptionEs: "", nameEs: "", type: ["Casa"], segment: ["Luxury"], amenities: [], province: "San José", lifestyle: "Naturaleza",
                     status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
                     airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
                     hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
@@ -688,7 +1161,11 @@ export default function InventoryCRUD({
                         </span>
                       )}
                       <h4 className="font-serif text-sm text-pearl truncate font-semibold">{p.name}</h4>
-                      <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37]">{p.type}</span>
+                      {Array.isArray(p.type) ? p.type.map(t => (
+                        <span key={t} className="px-1.5 py-0.5 rounded-full text-[7.5px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37] mr-1">{t}</span>
+                      )) : (
+                        <span className="px-2 py-0.5 rounded-full text-[8px] uppercase font-sans border border-white/15 bg-white/5 font-semibold text-[#d4af37]">{p.type}</span>
+                      )}
                     </div>
                     <p className="text-[10px] text-gray-400 truncate mt-0.5">{p.location}</p>
                     <p className="text-xs text-white mt-1.5 font-bold font-sans">${p.price.toLocaleString()} USD</p>
@@ -759,6 +1236,8 @@ export default function InventoryCRUD({
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
                           <div><span className="text-[#d4af37]">{lang === "es" ? "Finca:" : "Finca ID:"}</span> {p.fincaRegistryNum || "N/A"}</div>
                           <div><span className="text-[#d4af37]">{lang === "es" ? "Plano:" : "Plano ID:"}</span> {p.catasterMapNum || "N/A"}</div>
+                          <div><span className="text-gray-400">{lang === "es" ? "Construcción:" : "Const. Area:"}</span> {p.constructionSizeM2 || p.m2 || Math.round(p.sqft * 0.092903)} m²</div>
+                          <div><span className="text-gray-400">{lang === "es" ? "Terreno:" : "Lot Area:"}</span> {p.lotSizeM2 || 0} m²</div>
                           <div><span className="text-gray-400">Altitude:</span> {p.elevationM}m</div>
                           <div><span className="text-gray-400">Airport SJO:</span> {p.airportDistKm}km ({p.airportTimeMin}m)</div>
                           <div><span className="text-gray-400">City:</span> {p.closestCity} ({p.cityDistKm}km)</div>

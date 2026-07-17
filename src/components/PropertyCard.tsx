@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Property } from "@/constants/properties";
 import { BedDouble, Expand, Heart, MapPin } from "lucide-react";
 import { getAssetPath } from "@/utils/paths";
-import { formatCognitivePrice } from "@/utils/price";
+import { formatCognitivePrice, formatDualPrice } from "@/utils/price";
 import { TRANSLATIONS } from "@/constants/translations";
 
 interface PropertyCardProps {
@@ -52,11 +52,24 @@ export default function PropertyCard({
   const t = TRANSLATIONS[lang].card;
 
   const formattedPrice = useMemo(() => {
-    return formatCognitivePrice(property.price, currencyMode, lang, rates);
-  }, [property.price, currencyMode, lang, rates]);
+    return formatDualPrice(property.price, property.currency || "USD", rates || undefined, lang).dualString;
+  }, [property.price, property.currency, rates, lang]);
 
   const segmentStyles = useMemo(() => {
-    switch (property.segment) {
+    const segments = Array.isArray(property.segment) 
+      ? property.segment 
+      : (property.segment ? [property.segment] : ["Luxury"]);
+
+    let mainSegment: "Luxury" | "Standard" | "Commercial" = "Luxury";
+    if (segments.includes("Luxury")) {
+      mainSegment = "Luxury";
+    } else if (segments.includes("Commercial")) {
+      mainSegment = "Commercial";
+    } else if (segments.includes("Standard")) {
+      mainSegment = "Standard";
+    }
+
+    switch (mainSegment) {
       case "Standard":
         return {
           bg: "bg-[#08221b] border-white/10 hover:border-cyan-500/50",
@@ -145,26 +158,29 @@ export default function PropertyCard({
             {lang === "es" && property.nameEs ? property.nameEs : property.name}
           </h3>
           
-          <div className="text-lg md:text-xl font-sans font-medium text-white mb-3">
+          <div className="text-xs md:text-sm font-sans font-semibold text-[#d4af37] mb-3 tracking-wide bg-black/25 px-2.5 py-1 rounded-lg border border-white/5 w-fit">
             {formattedPrice}
-            {currencyMode !== "USD" && (
-              <span className="text-[10px] text-gray-400 font-normal block mt-0.5">
-                (Approx. ${(property.price).toLocaleString("en-US")} USD)
-              </span>
-            )}
           </div>
           
-          <div className="flex items-center gap-5 text-xs font-sans text-gray-300 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-500 delay-75 border-t border-white/15 pt-3">
-            <div className="flex items-center gap-1.5">
-              <Expand size={13} className={segmentStyles.iconAccent} />
-              <span>
-                {property.sqft.toLocaleString("en-US")} ft² / {Math.round(property.sqft * 0.092903).toLocaleString("en-US")} m²
+          <div className="flex items-center gap-4 flex-wrap text-[10.5px] font-sans text-gray-300 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-500 delay-75 border-t border-white/15 pt-3">
+            <div className="flex items-center gap-1">
+              <span className="text-[#d4af37] font-semibold">{lang === "es" ? "Const:" : "Const:"}</span>
+              <span className="text-pearl">
+                {(property.constructionSizeM2 || property.m2 || Math.round(property.sqft * 0.092903)).toLocaleString("en-US")} m²
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-[#d4af37] font-semibold">{lang === "es" ? "Lote:" : "Lot:"}</span>
+              <span className="text-pearl">
+                {(property.lotSizeM2 || 0) > 0 
+                  ? `${(property.lotSizeM2 || 0).toLocaleString("en-US")} m²` 
+                  : "N/A"}
               </span>
             </div>
             {property.suites > 0 && (
-              <div className="flex items-center gap-1.5">
-                <BedDouble size={13} className={segmentStyles.iconAccent} />
-                <span>{property.suites} {t.suites}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[#d4af37] font-semibold">{lang === "es" ? "Hab:" : "Suites:"}</span>
+                <span className="text-pearl">{property.suites}</span>
               </div>
             )}
           </div>

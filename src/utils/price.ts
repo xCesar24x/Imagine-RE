@@ -26,3 +26,39 @@ export function formatCognitivePrice(
   }
   return `${symbol}${val.toLocaleString(lang === "es" ? "es-CR" : "en-US")}`;
 }
+
+export function formatDualPrice(
+  price: number,
+  currency: "USD" | "CRC" = "USD",
+  rates: { CRC: number } = { CRC: 520 },
+  lang: "en" | "es" = "en"
+): { usd: string; crc: string; dualString: string } {
+  let usdValue = 0;
+  let crcValue = 0;
+
+  if (currency === "CRC") {
+    crcValue = price;
+    usdValue = Math.round(price / (rates.CRC || 520));
+  } else {
+    usdValue = price;
+    crcValue = Math.round(price * (rates.CRC || 520));
+  }
+
+  const formatOptions = {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  };
+
+  const usdFormatted = `$${usdValue.toLocaleString("en-US", formatOptions)} USD`;
+  const crcFormatted = `₡${crcValue.toLocaleString(lang === "es" ? "es-CR" : "en-US", formatOptions)} CRC`;
+
+  const dualString = currency === "CRC" 
+    ? `${crcFormatted} / ${usdFormatted}` 
+    : `${usdFormatted} / ${crcFormatted}`;
+
+  return {
+    usd: usdFormatted,
+    crc: crcFormatted,
+    dualString
+  };
+}
