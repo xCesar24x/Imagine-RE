@@ -246,6 +246,69 @@ const DEMO_CONTRACTS: DemoContract[] = [
         </div>
       </div>
     `
+  },
+  {
+    id: "commission-agreement-demo",
+    titleEs: "Contrato de Reconocimiento de Comisión & Honorarios",
+    titleEn: "Real Estate Commission & Fee Agreement",
+    categoryEs: "Honorarios de Intermediación",
+    categoryEn: "Commission & Brokerage Fee",
+    descEs: "Muestra de reconocimiento formal de honorarios y comisión de intermediación pactados para transacciones inmobiliarias.",
+    descEn: "Sample agreement formalizing agreed brokerage commission percentages, fee structure, and payout terms upon closing.",
+    htmlEs: `
+      <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
+        <div style="text-align: center; margin-bottom: 35px;">
+          <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">CONTRATO DE RECONOCIMIENTO DE COMISIÓN E INTERMEDIACIÓN INMOBILIARIA</h1>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A. [DOCUMENTO DE MUESTRA / DEMO]</p>
+        </div>
+        
+        <p>En la ciudad de San José, Costa Rica, al día <strong>20 de Julio del 2026</strong>, se suscribe el presente acuerdo de honorarios y comisión entre:</p>
+        <p>Por una parte, <strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong> (el "CORREDOR / INTERMEDIARIO"), y por la otra parte, <strong>CLIENTE PROPIETARIO / DESARROLLADOR DEMO</strong>, cédula jurídica/física N° 3-101-998877 (el "CONTRATANTE").</p>
+
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA PRIMERA: RECONOCIMIENTO DE COMISIÓN PACTADA</h3>
+        <p>El CONTRATANTE reconoce expresamente a favor del CORREDOR una comisión de éxito correspondiente al <strong>5% (cinco por ciento) + IVA</strong> sobre el monto bruto final negociado de la propiedad denominada <strong>"VILLA MORPHO - PAPAGAYO"</strong> (o bien un monto fijo acordado de <strong>$25,000 USD</strong>).</p>
+
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: MOMENTO Y FORMA DE PAGO</h3>
+        <p>La comisión pactada será exigible y liquidada de forma directa e irrevocable en el acto de firma del protocolo notarial de traspaso o mediante giro bancario coordinado al momento del cierre formal de la venta.</p>
+
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA TERCERA: CONFIDENCIALIDAD Y ASISTENCIA LEGAL</h3>
+        <p>Ambas partes se obligan a mantener absoluta confidencialidad sobre los términos económicos y legales pactados en esta negociación.</p>
+
+        <div style="margin-top: 70px; display: flex; justify-content: space-between;">
+          <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
+            <p><strong>IMAGINE S.A.</strong><br/>Bryan Viquez - Intermediario</p>
+          </div>
+          <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
+            <p><strong>CLIENTE DEMO</strong><br/>Contratante</p>
+          </div>
+        </div>
+      </div>
+    `,
+    htmlEn: `
+      <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
+        <div style="text-align: center; margin-bottom: 35px;">
+          <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">REAL ESTATE COMMISSION & FEE AGREEMENT</h1>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT [DEMO SAMPLE]</p>
+        </div>
+        
+        <p>Executed in San José, Costa Rica, by and between <strong>IMAGINE S.A.</strong> (the "BROKER") and <strong>DEMO CLIENT / DEVELOPER</strong> (the "PRINCIPAL"), regarding brokerage fee terms:</p>
+
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">FIRST CLAUSE: AGREED COMMISSION & SUCCESS FEE</h3>
+        <p>The PRINCIPAL acknowledges and agrees to pay the BROKER a success commission of <strong>5% + VAT</strong> (or a fixed fee of <strong>$25,000 USD</strong>) upon final closing of property <strong>"VILLA MORPHO - PAPAGAYO"</strong>.</p>
+
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">SECOND CLAUSE: PAYMENT TERMS & SETTLEMENT</h3>
+        <p>The commission shall be fully payable and disbursed directly upon execution of the notary deed of transfer at property closing.</p>
+
+        <div style="margin-top: 70px; display: flex; justify-content: space-between;">
+          <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
+            <p><strong>IMAGINE S.A.</strong><br/>Brokerage Representative</p>
+          </div>
+          <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
+            <p><strong>DEMO CLIENT</strong><br/>Principal</p>
+          </div>
+        </div>
+      </div>
+    `
   }
 ];
 
