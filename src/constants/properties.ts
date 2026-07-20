@@ -130,7 +130,55 @@ export interface Lead {
   requestedService?: string;
 }
 
-const SEEDED_PROPERTIES: Property[] = [];
+const SEEDED_PROPERTIES: Property[] = [
+  {
+    id: "prop-san-ramon-cabana",
+    name: "Cloud Forest Mountain Cabin",
+    nameEs: "Cabaña de Montaña en Bosque Nuboso",
+    location: "San Ramón, Alajuela",
+    approxLocation: "Ángeles Norte (Cerca de Hotel Villa Blanca)",
+    province: "Alajuela",
+    price: 102000000,
+    currency: "CRC",
+    sqft: 1668,
+    m2: 155,
+    acres: 1.24,
+    lotSizeM2: 5000,
+    constructionSizeM2: 155,
+    suites: 2,
+    vibeTags: ["Bosque Nuboso", "Clima Fresco", "Proyecto Privado", "Acceso Controlado", "Vista Panorámica", "Tranquilidad"],
+    description: "Beautiful 155 m² (1,668 sqft) mountain cabin set on a 5,000 m² (1.24 acre) private forest lot in Ángeles Norte, San Ramón, Alajuela. Located within a gated private estate project near the famous Villa Blanca Cloud Forest Hotel. At 1,100m elevation with spring-like weather year-round. Features 2 bedrooms, 2 full baths, bright living room, functional kitchen, laundry room, and a panoramic balcony with direct forest views. Only 12 km from downtown San Ramón and 1 hour from SJO International Airport.",
+    descriptionEs: "Hermosa cabaña de montaña de 155 m² (1,668 sqft) construida sobre un impresionante terreno de 5,000 m² (1.24 acres) de bosque privado y zonas verdes en Ángeles Norte de San Ramón, Alajuela. Ubicada en un exclusivo proyecto de quintas privado con acceso controlado cerca del reconocido Hotel Villa Blanca Cloud Forest. Situada a 1,100 m de altitud con un clima fresco tipo primavera todo el año. Dispone de 2 dormitorios amplios, 2 baños completos, sala con gran iluminación natural, cocina, lavandería y un balcón panorámico con vistas directas al bosque nuboso. A solo 12 km del centro de San Ramón y a 1 hora del Aeropuerto Internacional SJO.",
+    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80",
+    panorama: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80",
+    type: ["Cabaña", "Quinta de Descanso", "Terreno de Montaña"],
+    segment: ["Standard", "Luxury"],
+    lifestyle: "Naturaleza",
+    status: "Destacada",
+    elevationM: 1100,
+    airportDistKm: 60,
+    airportTimeMin: 60,
+    closestCity: "San Ramón",
+    cityDistKm: 12,
+    medicalDistMin: 20,
+    hasFiberOptic: true,
+    hasStarlink: true,
+    amenities: [
+      "Balcón Panorámico",
+      "Cocina Funcional",
+      "Cuarto de Lavandería",
+      "Amplias Zonas Verdes",
+      "Bosque Privado",
+      "Excelente Iluminación Natural",
+      "Acceso Controlado / Proyecto Privado"
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1600&q=80"
+    ]
+  }
+];
 
 export const PROPERTIES: Property[] = SEEDED_PROPERTIES.map((p, idx) => ({
   ...p,
