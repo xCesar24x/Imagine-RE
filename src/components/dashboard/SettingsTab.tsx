@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Shield, Plus, Edit2, Trash2, Eye, EyeOff, X } from "lucide-react";
 import { PropertyType, Region } from "@/constants/properties";
+import LegalDemoVault from "./LegalDemoVault";
 
 interface Collaborator {
   id: string;
@@ -483,6 +484,11 @@ export default function SettingsTab({
             })}
           </div>
         </div>
+      </div>
+
+      {/* Legal Contracts Demo Vault Section (Accessible to all associates and admins) */}
+      <div className="lg:col-span-2 border-t border-white/10 pt-6 mt-2">
+        <LegalDemoVault lang={lang} />
       </div>
 
       {/* Property Types Management Section (Full Width at bottom) */}
