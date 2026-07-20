@@ -27,36 +27,36 @@ const DEMO_CONTRACTS: DemoContract[] = [
     titleEn: "Property Management Agreement",
     categoryEs: "Gestión Hotelera & Alquileres",
     categoryEn: "Hospitality & Property Care",
-    descEs: "Muestra para propietarios que entregan su residencia a gestión de rentas cortas/largas y mantenimiento.",
-    descEn: "Sample for property owners delegating vacation rental management, maintenance, and concierge care.",
+    descEs: "Muestra para propietarios o desarrolladores que entregan su residencia a gestión de rentas y mantenimiento.",
+    descEn: "Sample for property owners or developers delegating vacation rental management, maintenance, and concierge care.",
     htmlEs: `
       <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 35px;">
           <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">CONTRATO DE ADMINISTRACIÓN DE PROPIEDAD</h1>
-          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A. [DOCUMENTO DE MUESTRA / DEMO]</p>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A. [PLANTILLA BORRADOR MUESTRA / DEMO]</p>
         </div>
         
-        <p>En la ciudad de San José, Costa Rica, al día <strong>20 de Julio del 2026</strong>, se celebra el presente contrato de administración entre:</p>
-        <p>Por una parte, <strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong>, cédula jurídica número 3-101-778899, representada en este acto por el Sr. <strong>Bryan Viquez</strong> en su calidad de apoderado (en adelante el "ADMINISTRADOR"), y por la otra parte, el/la Sr./Sra. <strong>CLIENTE EJEMPLO / PROPIETARIO DEMO</strong>, cédula/pasaporte N° 1-1234-5678 (en adelante el "PROPIETARIO").</p>
+        <p>En la ciudad de San José, Costa Rica, al día <strong>______ de __________________ del 2026</strong>, se celebra el presente contrato de administración entre:</p>
+        <p>Por una parte, <strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong>, cédula jurídica N° <strong>3-101-778899</strong>, representada por el Sr. <strong>Bryan Viquez</strong> (en adelante el "ADMINISTRADOR"), y por la otra parte, <strong>__________________________________________________</strong>, cédula / pasaporte N° <strong>________________________</strong> (en adelante la "CONTRAPARTE: PROPIETARIO / CORREDOR / DESARROLLADOR").</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA PRIMERA: OBJETO Y DATOS REGISTRALES DEL INMUEBLE</h3>
-        <p>El PROPIETARIO entrega en administración exclusiva al ADMINISTRADOR la finca habitacional denominada <strong>"VILLA MORPHO - DEMO ESTATE"</strong>, situada en Provincia de Guanacaste, Cantón de Carrillo, Distrito Sardinal (Península Papagayo), e inscrita bajo el número de <strong>Finca: 5-123456-000</strong> y <strong>Plano Catastro: G-9876543-2024</strong>.</p>
+        <p>La CONTRAPARTE entrega en administración exclusiva al ADMINISTRADOR la finca denominada <strong>"__________________________________________________"</strong>, ubicada en <strong>__________________________________________________</strong>, e inscrita bajo el número de <strong>Finca N°: ________________________</strong> y <strong>Plano Catastro N°: ________________________</strong>.</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: ALCANCE DE LOS SERVICIOS CONCIERGE & MANTENIMIENTO</h3>
-        <p>El ADMINISTRADOR asume la gestión comercial en plataformas digitales (Airbnb, VRBO, canal directo), atención de huéspedes 24/7, servicios de ama de llaves, limpieza de entrada/salida, jardinería y mantenimiento preventivo con rendición de cuentas mensual.</p>
+        <p>El ADMINISTRADOR asume la gestión comercial en plataformas digitales, atención de huéspedes 24/7, servicios de ama de llaves, limpieza de entrada/salida, jardinería y mantenimiento preventivo con rendición de cuentas mensual.</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA TERCERA: COMISIÓN DE GESTIÓN Y BALANCE FINANCIERO</h3>
-        <p>El PROPIETARIO reconoce al ADMINISTRADOR una comisión de administración equivalente al <strong>15% (quince por ciento)</strong> sobre los ingresos brutos generados por las reservas efectuadas durante la vigencia del contrato.</p>
+        <p>La CONTRAPARTE reconoce al ADMINISTRADOR una comisión de administración equivalente al <strong>________% (________________ por ciento)</strong> sobre los ingresos brutos generados por las reservas efectuadas durante la vigencia del contrato.</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA CUARTA: RESOLUCIÓN ALTERNA DE CONFLICTOS (RAC)</h3>
         <p>Toda controversia derivada de este instrumento será resuelta de manera definitiva mediante arbitraje de derecho de conformidad con los reglamentos del Centro de Conciliación y Arbitraje de la Cámara de Comercio de Costa Rica.</p>
         
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>IMAGINE S.A.</strong><br/>Bryan Viquez - Apoderado</p>
+            <p><strong>IMAGINE S.A.</strong><br/>Representante Legal / Administrador</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>PROPIETARIO DEMO</strong><br/>Cliente Ejemplo</p>
+            <p><strong>_____________________________________</strong><br/>Propietario / Corredor / Desarrollador</p>
           </div>
         </div>
       </div>
@@ -65,27 +65,27 @@ const DEMO_CONTRACTS: DemoContract[] = [
       <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 35px;">
           <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">PROPERTY MANAGEMENT AGREEMENT</h1>
-          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A. [DEMO SAMPLE DOCUMENT]</p>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A. [DEMO BLANK SAMPLE]</p>
         </div>
         
-        <p>Executed in San José, Costa Rica, on this <strong>20th day of July, 2026</strong>, by and between:</p>
-        <p><strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong>, Corporate ID No. 3-101-778899, represented herein by Mr. <strong>Bryan Viquez</strong> (hereinafter referred to as the "MANAGER"), and <strong>SAMPLE CLIENT / DEMO OWNER</strong>, Passport/ID No. 1-1234-5678 (hereinafter referred to as the "OWNER").</p>
+        <p>Executed in San José, Costa Rica, on this <strong>______ day of __________________, 2026</strong>, by and between:</p>
+        <p><strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong>, Corporate ID No. <strong>3-101-778899</strong>, represented herein by Mr. <strong>Bryan Viquez</strong> (the "MANAGER"), and <strong>__________________________________________________</strong>, ID No. <strong>________________________</strong> (the "COUNTERPART: OWNER / CO-BROKER / DEVELOPER").</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">FIRST CLAUSE: PROPERTY OBJECT AND REGISTRY DETAILS</h3>
-        <p>The OWNER grants exclusive property management rights to the MANAGER over the residential estate known as <strong>"VILLA MORPHO - DEMO ESTATE"</strong>, located in Guanacaste, Península Papagayo, registered under Property ID <strong>Finca: 5-123456-000</strong> and Survey Map <strong>Plano: G-9876543-2024</strong>.</p>
+        <p>The COUNTERPART grants property management rights over the estate known as <strong>"__________________________________________________"</strong>, located in <strong>________________________</strong>, registered under Property ID <strong>Finca: ________________________</strong> and Survey Map <strong>Plano: ________________________</strong>.</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">SECOND CLAUSE: SERVICES & CONCIERGE CARE</h3>
-        <p>The MANAGER assumes distribution across premium digital channels (Airbnb, VRBO, direct booking), 24/7 guest concierge, turnover housekeeping, grounds maintenance, and monthly accounting reporting.</p>
+        <p>The MANAGER assumes distribution across premium digital channels, 24/7 guest concierge, turnover housekeeping, grounds maintenance, and monthly accounting reporting.</p>
         
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">THIRD CLAUSE: MANAGEMENT COMMISSION</h3>
-        <p>The OWNER agrees to pay the MANAGER a management fee equal to <strong>15% (fifteen percent)</strong> of gross rental receipts during the duration of this agreement.</p>
+        <p>The COUNTERPART agrees to pay the MANAGER a management fee equal to <strong>________%</strong> of gross rental receipts during the duration of this agreement.</p>
         
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>IMAGINE S.A.</strong><br/>Bryan Viquez - Manager</p>
+            <p><strong>IMAGINE S.A.</strong><br/>Legal Manager</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>DEMO OWNER</strong><br/>Sample Client</p>
+            <p><strong>_____________________________________</strong><br/>Owner / Co-Broker / Developer</p>
           </div>
         </div>
       </div>
@@ -103,23 +103,31 @@ const DEMO_CONTRACTS: DemoContract[] = [
       <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 35px;">
           <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">CONTRATO DE CORRETAJE Y COMERCIALIZACIÓN EXCLUSIVA</h1>
-          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT [DOCUMENTO DE MUESTRA / DEMO]</p>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT [PLANTILLA DEMO]</p>
         </div>
         
-        <p>Entre los suscritos, <strong>IMAGINE S.A.</strong> (el "CORREDOR") y el Sr./Sra. <strong>PROPIETARIO DEMO</strong> (el "VENDEDOR"), se acuerda la intermediación inmobiliaria exclusiva del siguiente inmueble:</p>
+        <p>Entre los suscritos, <strong>IMAGINE S.A.</strong> (el "CORREDOR") y <strong>__________________________________________________</strong>, cédula N° <strong>________________________</strong> (la "CONTRAPARTE: PROPIETARIO / CORREDOR CO-BROKER"), se acuerda la intermediación inmobiliaria exclusiva del siguiente inmueble:</p>
         
-        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA PRIMERA: CONDICIONES DE VENTA Y COMISIÓN ACORDADA</h3>
-        <p>El VENDEDOR autoriza al CORREDOR a promocionar el inmueble por un precio de venta sugerido de <strong>$1,250,000 USD</strong> (o su equivalente en colones según el tipo de cambio oficial). Por la gestión de venta, se fija una comisión del <strong>5% + IVA</strong> sobre el precio final de cierre pactado.</p>
+        <p style="background: #f7f9f8; padding: 15px; border-left: 3px solid #d4af37; font-size: 12px;">
+          <strong>Nombre de la Propiedad:</strong> __________________________________________________<br/>
+          <strong>Ubicación Geográfica:</strong> __________________________________________________<br/>
+          <strong>Finca Registrada N°:</strong> ________________________<br/>
+          <strong>Plano Catastro N°:</strong> ________________________<br/>
+          <strong>Precio Mínimo de Publicación:</strong> $ ____________ USD (o equivalente en colones)
+        </p>
         
-        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: ESTRATEGIA DE MARKETING Y PRODUCCIÓN MULTIMEDIA</h3>
-        <p>El CORREDOR se compromete a realizar fotografía arquitectónica HD, recorrido virtual 360°, tomas con dron de alta resolución y publicidad dirigida en canales internacionales de bienes raíces.</p>
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA PRIMERA: DERECHO DE EXCLUSIVIDAD Y PLAZO</h3>
+        <p>La CONTRAPARTE concede al CORREDOR el derecho exclusivo para promocionar y negociar la venta de la propiedad descrita por un período obligatorio de <strong>________ meses</strong> naturales.</p>
+        
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: HONORARIOS DE CORRETAJE</h3>
+        <p>En caso de concretarse la venta, los honorarios correspondientes al CORREDOR serán del <strong>________% + IVA</strong> sobre el precio final pactado, pagaderos en el acto del traspaso notarial.</p>
         
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
             <p><strong>IMAGINE S.A.</strong><br/>Corredor Inmobiliario</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>VENDEDOR DEMO</strong><br/>Propietario</p>
+            <p><strong>_____________________________________</strong><br/>Propietario / Co-Broker</p>
           </div>
         </div>
       </div>
@@ -128,20 +136,20 @@ const DEMO_CONTRACTS: DemoContract[] = [
       <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 35px;">
           <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">EXCLUSIVE REAL ESTATE LISTING AGREEMENT</h1>
-          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT [SAMPLE DEMO]</p>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT [SAMPLE DRAFT DEMO]</p>
         </div>
         
-        <p>By and between <strong>IMAGINE S.A.</strong> (the "BROKER") and <strong>DEMO SELLER</strong> (the "SELLER"), exclusive brokerage representation is hereby granted for the marketing of the property listed at <strong>$1,250,000 USD</strong>.</p>
+        <p>By and between <strong>IMAGINE S.A.</strong> (the "BROKER") and <strong>__________________________________________________</strong>, ID No. <strong>________________________</strong> (the "COUNTERPART: OWNER / CO-BROKER"), exclusive representation is granted for property <strong>"________________________"</strong> listed at <strong>$ ____________ USD</strong>.</p>
 
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">FIRST CLAUSE: COMMISSION & SALES PRICE</h3>
-        <p>The SELLER agrees to pay the BROKER a success fee of <strong>5% + VAT</strong> upon closing of the sale transaction.</p>
+        <p>The COUNTERPART agrees to pay the BROKER a success fee of <strong>________% + VAT</strong> upon closing of the sale transaction.</p>
         
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>IMAGINE S.A.</strong><br/>Brokerage Team</p>
+            <p><strong>IMAGINE S.A.</strong><br/>Brokerage Representative</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>DEMO SELLER</strong><br/>Owner</p>
+            <p><strong>_____________________________________</strong><br/>Owner / Co-Broker</p>
           </div>
         </div>
       </div>
@@ -159,23 +167,23 @@ const DEMO_CONTRACTS: DemoContract[] = [
       <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 35px;">
           <h1 style="font-size: 20px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px;">CONTRATO DE OPCIÓN DE COMPRAVENTA DE BIEN INMUEBLE</h1>
-          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">DOCUMENTO LEGAL DE MUESTRA PARA CLIENTES [DEMO]</p>
+          <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">DOCUMENTO LEGAL DE MUESTRA PARA CLIENTES [BORRADOR GENERICO]</p>
         </div>
         
-        <p>Reunidos el <strong>VENDEDOR DEMO</strong> y el <strong>COMPRADOR DEMO</strong> con el testimonio de <strong>IMAGINE REAL ESTATE S.A.</strong>, acuerdan otorgar la presente opción de compraventa bajo los siguientes términos:</p>
+        <p>Reunidos el VENDEDOR <strong>__________________________________________________</strong>, cédula N° <strong>________________________</strong>, y el COMPRADOR <strong>__________________________________________________</strong>, cédula N° <strong>________________________</strong>, con el testimonio de <strong>IMAGINE REAL ESTATE S.A.</strong>, acuerdan otorgar la presente opción de compraventa:</p>
 
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA PRIMERA: PRIMA DE OPCIÓN Y PLAZO DE EJECUCIÓN</h3>
-        <p>El COMPRADOR entrega la suma de <strong>$50,000 USD (cincuenta mil dólares)</strong> en calidad de prima o señal de opción. El plazo acordado para llevar a cabo la firma de la escritura de compraventa en protocolo notarial será de <strong>60 días naturales</strong>.</p>
+        <p>El COMPRADOR entrega la suma de <strong>$ ____________ USD (__________________________________________________ dólares)</strong> en calidad de prima o señal de opción. El plazo para firmar la escritura notarial será de <strong>________ días naturales</strong>.</p>
         
-        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: LIBERTAD DE GRAVÁMENES Y ESTADO DE IMPUESTOS</h3>
-        <p>El VENDEDOR garantiza que la finca se traspasará libre de gravámenes hipotecarios, anotaciones judiciales y al día en el pago de impuestos municipales y de bienes inmuebles.</p>
+        <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: LIBERTAD DE GRAVÁMENES</h3>
+        <p>El VENDEDOR garantiza que la finca N° <strong>________________________</strong> se traspasará libre de gravámenes hipotecarios y al día en impuestos.</p>
 
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>VENDEDOR DEMO</strong><br/>Propietario</p>
+            <p><strong>_____________________________________</strong><br/>Vendedor / Propietario</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>COMPRADOR DEMO</strong><br/>Optante Comprador</p>
+            <p><strong>_____________________________________</strong><br/>Comprador Optante</p>
           </div>
         </div>
       </div>
@@ -187,14 +195,14 @@ const DEMO_CONTRACTS: DemoContract[] = [
           <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">CLIENT SAMPLE DRAFT [DEMO]</p>
         </div>
         
-        <p>By and between <strong>DEMO SELLER</strong> and <strong>DEMO BUYER</strong>, witnessed by <strong>IMAGINE REAL ESTATE S.A.</strong>, the parties agree on an earnest deposit option of <strong>$50,000 USD</strong> for 60 calendar days until final closing.</p>
+        <p>By and between SELLER <strong>________________________</strong>, ID No. <strong>________________________</strong>, and BUYER <strong>________________________</strong>, ID No. <strong>________________________</strong>, witnessed by <strong>IMAGINE REAL ESTATE S.A.</strong>, an earnest deposit option of <strong>$ ____________ USD</strong> is established for <strong>________ calendar days</strong>.</p>
 
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>DEMO SELLER</strong><br/>Seller</p>
+            <p><strong>_____________________________________</strong><br/>Seller</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>DEMO BUYER</strong><br/>Buyer</p>
+            <p><strong>_____________________________________</strong><br/>Buyer</p>
           </div>
         </div>
       </div>
@@ -215,14 +223,14 @@ const DEMO_CONTRACTS: DemoContract[] = [
           <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE [DOCUMENTO DEMO]</p>
         </div>
         
-        <p>Se hace constar la recepción del depósito de reserva por un monto de <strong>$5,000 USD (cinco mil dólares)</strong> efectuado por el cliente <strong>CLIENTE DEMO</strong> para congelar la oferta de la propiedad <strong>"CASA MANUEL ANTONIO"</strong> por un período de 10 días hábiles.</p>
+        <p>Se hace constar la recepción del depósito de reserva por un monto de <strong>$ ____________ USD (__________________________________________________ dólares)</strong> efectuado por el cliente / corredor <strong>__________________________________________________</strong>, cédula N° <strong>________________________</strong>, para congelar la oferta de la propiedad <strong>"__________________________________________________"</strong> por un período de <strong>________ días hábiles</strong>.</p>
         
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
             <p><strong>IMAGINE REAL ESTATE</strong><br/>Recibido Conforme</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>CLIENTE DEMO</strong><br/>Depositante</p>
+            <p><strong>_____________________________________</strong><br/>Depositante / Cliente / Corredor</p>
           </div>
         </div>
       </div>
@@ -234,14 +242,14 @@ const DEMO_CONTRACTS: DemoContract[] = [
           <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE [DEMO SAMPLE]</p>
         </div>
         
-        <p>This acknowledges the receipt of a refundable reservation deposit of <strong>$5,000 USD</strong> from <strong>DEMO CLIENT</strong> to place a temporary 10-day hold on property <strong>"CASA MANUEL ANTONIO"</strong>.</p>
+        <p>This acknowledges the receipt of a reservation deposit of <strong>$ ____________ USD</strong> from <strong>__________________________________________________</strong>, ID No. <strong>________________________</strong>, to place a temporary <strong>________-day hold</strong> on property <strong>"________________________"</strong>.</p>
         
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
             <p><strong>IMAGINE REAL ESTATE</strong><br/>Received By</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>DEMO CLIENT</strong><br/>Depositor</p>
+            <p><strong>_____________________________________</strong><br/>Depositor / Client / Co-Broker</p>
           </div>
         </div>
       </div>
@@ -253,8 +261,8 @@ const DEMO_CONTRACTS: DemoContract[] = [
     titleEn: "Real Estate Commission & Fee Agreement",
     categoryEs: "Honorarios de Intermediación",
     categoryEn: "Commission & Brokerage Fee",
-    descEs: "Muestra de reconocimiento formal de honorarios y comisión de intermediación pactados para transacciones inmobiliarias.",
-    descEn: "Sample agreement formalizing agreed brokerage commission percentages, fee structure, and payout terms upon closing.",
+    descEs: "Muestra de reconocimiento formal de honorarios y comisión pactados con propietarios, corredores co-brokers o desarrolladores.",
+    descEn: "Sample agreement formalizing agreed brokerage commission percentages and fee structure with owners, co-brokers, or developers.",
     htmlEs: `
       <div style="font-family: 'Times New Roman', Times, serif; color: #111; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 35px;">
@@ -262,11 +270,11 @@ const DEMO_CONTRACTS: DemoContract[] = [
           <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A. [DOCUMENTO DE MUESTRA / DEMO]</p>
         </div>
         
-        <p>En la ciudad de San José, Costa Rica, al día <strong>20 de Julio del 2026</strong>, se suscribe el presente acuerdo de honorarios y comisión entre:</p>
-        <p>Por una parte, <strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong> (el "CORREDOR / INTERMEDIARIO"), y por la otra parte, <strong>CLIENTE PROPIETARIO / DESARROLLADOR DEMO</strong>, cédula jurídica/física N° 3-101-998877 (el "CONTRATANTE").</p>
+        <p>En la ciudad de San José, Costa Rica, al día <strong>______ de __________________ del 2026</strong>, se suscribe el presente acuerdo de honorarios y comisión entre:</p>
+        <p>Por una parte, <strong>IMAGINE REAL ESTATE & PROPERTY MANAGEMENT S.A.</strong> (el "CORREDOR / INTERMEDIARIO"), y por la otra parte, <strong>__________________________________________________</strong>, cédula física / jurídica N° <strong>________________________</strong> (en adelante la "CONTRAPARTE: PROPIETARIO / CORREDOR CO-BROKER / DESARROLLADOR").</p>
 
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA PRIMERA: RECONOCIMIENTO DE COMISIÓN PACTADA</h3>
-        <p>El CONTRATANTE reconoce expresamente a favor del CORREDOR una comisión de éxito correspondiente al <strong>5% (cinco por ciento) + IVA</strong> sobre el monto bruto final negociado de la propiedad denominada <strong>"VILLA MORPHO - PAPAGAYO"</strong> (o bien un monto fijo acordado de <strong>$25,000 USD</strong>).</p>
+        <p>La CONTRAPARTE reconoce expresamente a favor del CORREDOR una comisión de éxito correspondiente al <strong>________% (________________ por ciento) + IVA</strong> sobre el monto bruto final negociado de la propiedad denominada <strong>"__________________________________________________"</strong> (o bien un monto fijo acordado de <strong>$ ____________ USD</strong>).</p>
 
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">CLÁUSULA SEGUNDA: MOMENTO Y FORMA DE PAGO</h3>
         <p>La comisión pactada será exigible y liquidada de forma directa e irrevocable en el acto de firma del protocolo notarial de traspaso o mediante giro bancario coordinado al momento del cierre formal de la venta.</p>
@@ -276,10 +284,10 @@ const DEMO_CONTRACTS: DemoContract[] = [
 
         <div style="margin-top: 70px; display: flex; justify-content: space-between;">
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>IMAGINE S.A.</strong><br/>Bryan Viquez - Intermediario</p>
+            <p><strong>IMAGINE S.A.</strong><br/>Corredor Intermediario</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>CLIENTE DEMO</strong><br/>Contratante</p>
+            <p><strong>_____________________________________</strong><br/>Propietario / Corredor Co-Broker / Desarrollador</p>
           </div>
         </div>
       </div>
@@ -291,10 +299,10 @@ const DEMO_CONTRACTS: DemoContract[] = [
           <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin: 0;">IMAGINE REAL ESTATE & PROPERTY MANAGEMENT [DEMO SAMPLE]</p>
         </div>
         
-        <p>Executed in San José, Costa Rica, by and between <strong>IMAGINE S.A.</strong> (the "BROKER") and <strong>DEMO CLIENT / DEVELOPER</strong> (the "PRINCIPAL"), regarding brokerage fee terms:</p>
+        <p>Executed in San José, Costa Rica, by and between <strong>IMAGINE S.A.</strong> (the "BROKER") and <strong>__________________________________________________</strong>, ID No. <strong>________________________</strong> (the "COUNTERPART: OWNER / CO-BROKER / DEVELOPER"), regarding brokerage fee terms:</p>
 
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">FIRST CLAUSE: AGREED COMMISSION & SUCCESS FEE</h3>
-        <p>The PRINCIPAL acknowledges and agrees to pay the BROKER a success commission of <strong>5% + VAT</strong> (or a fixed fee of <strong>$25,000 USD</strong>) upon final closing of property <strong>"VILLA MORPHO - PAPAGAYO"</strong>.</p>
+        <p>The COUNTERPART acknowledges and agrees to pay the BROKER a success commission of <strong>________% + VAT</strong> (or a fixed fee of <strong>$ ____________ USD</strong>) upon final closing of property <strong>"________________________"</strong>.</p>
 
         <h3 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 25px;">SECOND CLAUSE: PAYMENT TERMS & SETTLEMENT</h3>
         <p>The commission shall be fully payable and disbursed directly upon execution of the notary deed of transfer at property closing.</p>
@@ -304,7 +312,7 @@ const DEMO_CONTRACTS: DemoContract[] = [
             <p><strong>IMAGINE S.A.</strong><br/>Brokerage Representative</p>
           </div>
           <div style="width: 42%; border-top: 1px solid #000; text-align: center; padding-top: 8px; font-size: 11px;">
-            <p><strong>DEMO CLIENT</strong><br/>Principal</p>
+            <p><strong>_____________________________________</strong><br/>Owner / Co-Broker / Developer</p>
           </div>
         </div>
       </div>
