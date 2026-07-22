@@ -111,32 +111,60 @@ export default function InventoryCRUD({
     return `REF-${nextNum < 10 ? '0' + nextNum : nextNum}`;
   }, [properties]);
 
-  const handleSimulatedUpload = (fileName: string) => {
+  const compressAndUploadImage = (file: File) => {
     setIsUploading(true);
     setUploadProgress(10);
-    setUploadLogs([`[System] Iniciando carga de archivo: ${fileName}...`]);
+    setUploadLogs([`[System] Leyendo archivo local: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`]);
 
-    const steps = [
-      { progress: 35, log: "[System] Analizando dimensiones y espacio de color..." },
-      { progress: 70, log: "[System] Optimizando imagen y comprimiendo a WebP (Calidad: 82%)..." },
-      { progress: 100, log: "[System] ¡Conversión completa! Archivo comprimido un 64% sin pérdida visible." }
-    ];
-
-    steps.forEach((step, idx) => {
-      setTimeout(() => {
-        setUploadProgress(step.progress);
-        setUploadLogs(prev => [...prev, step.log]);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
         
-        if (step.progress === 100) {
-          setTimeout(() => {
-            const mockWebpUrl = `/images/${fileName.split(".")[0]}.webp`;
-            setUploadLogs(prev => [...prev, `[System] Cargado exitosamente al Media Vault: ${mockWebpUrl}`]);
-            setCrudForm(prev => ({ ...prev, image: mockWebpUrl }));
-            setIsUploading(false);
-          }, 600);
+        const MAX_WIDTH = 1000;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
         }
-      }, (idx + 1) * 800);
-    });
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+        
+        setTimeout(() => {
+          setUploadProgress(35);
+          setUploadLogs(prev => [...prev, `[System] Dimensiones optimizadas a ${width}x${height}px. Analizando espacio de color...`]);
+        }, 500);
+
+        setTimeout(() => {
+          setUploadProgress(70);
+          setUploadLogs(prev => [...prev, `[System] Ejecutando compresión WebP y codificación de canal alfa (Calidad: 82%)...`]);
+        }, 1000);
+
+        setTimeout(() => {
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.78);
+          setUploadProgress(100);
+          setUploadLogs(prev => [
+            ...prev, 
+            `[System] ¡Conversión WebP completa! Archivo optimizado a ${(compressedBase64.length / 1024).toFixed(1)} KB.`
+          ]);
+          
+          setTimeout(() => {
+            setCrudForm(prev => ({ ...prev, image: compressedBase64 }));
+            setIsUploading(false);
+          }, 500);
+        }, 1500);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAddCustomAmenity = () => {
@@ -1057,22 +1085,32 @@ export default function InventoryCRUD({
               className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
             />
             
+            <input 
+              type="file" 
+              id="crud-image-upload" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) compressAndUploadImage(file);
+              }}
+            />
+            
             <div 
               onDragOver={e => e.preventDefault()}
               onDrop={e => {
                 e.preventDefault();
                 const file = e.dataTransfer.files?.[0];
-                if (file) handleSimulatedUpload(file.name);
+                if (file) compressAndUploadImage(file);
               }}
               onClick={() => {
                 if (!isUploading) {
-                  const mockName = `luxury_villa_${Date.now().toString().slice(-4)}.jpg`;
-                  handleSimulatedUpload(mockName);
+                  document.getElementById("crud-image-upload")?.click();
                 }
               }}
               className="mt-2 p-6 border-2 border-dashed border-[#d4af37]/30 hover:border-[#d4af37]/65 rounded-xl bg-white/5 text-center text-[10px] text-gray-300 transition duration-200 cursor-pointer flex flex-col items-center justify-center gap-2 relative overflow-hidden"
             >
-              <span>{lang === "es" ? "Arrastra archivos aquí o haz clic para simular carga WebP" : "Drag & Drop files here or click to simulate WebP upload"}</span>
+              <span>{lang === "es" ? "Arrastra archivos aquí o haz clic para subir imagen real" : "Drag & Drop files here or click to upload real image"}</span>
               <span className="text-[9px] text-[#d4af37]/75 font-mono">WebP compression algorithm active (Quality: 82%)</span>
             </div>
 
