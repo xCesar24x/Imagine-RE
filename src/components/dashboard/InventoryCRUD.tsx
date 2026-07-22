@@ -83,7 +83,8 @@ export default function InventoryCRUD({
     hasStarlink: false,
     image: "/images/jungle.png",
     fincaRegistryNum: "",
-    catasterMapNum: ""
+    catasterMapNum: "",
+    gallery: [] as string[]
   });
 
   const activeProvinceRegions = useMemo(() => {
@@ -111,60 +112,73 @@ export default function InventoryCRUD({
     return `REF-${nextNum < 10 ? '0' + nextNum : nextNum}`;
   }, [properties]);
 
-  const compressAndUploadImage = (file: File) => {
+  const compressAndUploadMultipleImages = async (files: File[]) => {
     setIsUploading(true);
-    setUploadProgress(10);
-    setUploadLogs([`[System] Leyendo archivo local: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`]);
+    setUploadProgress(0);
+    setUploadLogs([`[System] Iniciando carga de lote: ${files.length} archivos...`]);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let width = img.width;
-        let height = img.height;
-        
-        const MAX_WIDTH = 1000;
-        if (width > MAX_WIDTH) {
-          height = Math.round((height * MAX_WIDTH) / width);
-          width = MAX_WIDTH;
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-        }
-        
-        setTimeout(() => {
-          setUploadProgress(35);
-          setUploadLogs(prev => [...prev, `[System] Dimensiones optimizadas a ${width}x${height}px. Analizando espacio de color...`]);
-        }, 500);
+    const compressedResults: string[] = [];
 
-        setTimeout(() => {
-          setUploadProgress(70);
-          setUploadLogs(prev => [...prev, `[System] Ejecutando compresión WebP y codificación de canal alfa (Calidad: 82%)...`]);
-        }, 1000);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileNum = i + 1;
+      setUploadLogs(prev => [...prev, `[System] Procesando archivo ${fileNum} de ${files.length}: ${file.name}...`]);
 
-        setTimeout(() => {
-          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.78);
-          setUploadProgress(100);
-          setUploadLogs(prev => [
-            ...prev, 
-            `[System] ¡Conversión WebP completa! Archivo optimizado a ${(compressedBase64.length / 1024).toFixed(1)} KB.`
-          ]);
-          
-          setTimeout(() => {
-            setCrudForm(prev => ({ ...prev, image: compressedBase64 }));
-            setIsUploading(false);
-          }, 500);
-        }, 1500);
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            
+            const MAX_WIDTH = 1000;
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+            }
+            
+            const result = canvas.toDataURL("image/jpeg", 0.78);
+            resolve(result);
+          };
+          img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      compressedResults.push(base64);
+      const currentProgress = Math.round((fileNum / files.length) * 100);
+      setUploadProgress(currentProgress);
+      setUploadLogs(prev => [...prev, `[System] ✓ Optimizado ${file.name} a ${(base64.length / 1024).toFixed(1)} KB.`]);
+    }
+
+    setUploadLogs(prev => [...prev, `[System] ¡Todos los archivos procesados con éxito!`]);
+
+    setTimeout(() => {
+      setCrudForm(prev => {
+        const newGallery = [...(prev.gallery || []), ...compressedResults];
+        const currentCover = prev.image;
+        const newCover = (!currentCover || currentCover === "/images/jungle.png") && compressedResults.length > 0
+          ? compressedResults[0]
+          : currentCover;
+
+        return {
+          ...prev,
+          image: newCover,
+          gallery: newGallery
+        };
+      });
+      setIsUploading(false);
+    }, 600);
   };
 
   const handleAddCustomAmenity = () => {
@@ -218,6 +232,7 @@ export default function InventoryCRUD({
       fincaRegistryNum: crudForm.fincaRegistryNum,
       catasterMapNum: crudForm.catasterMapNum,
       amenities: crudForm.amenities,
+      gallery: crudForm.gallery || [],
       currency: crudForm.currency,
       commissionType: crudForm.commissionType,
       commissionValue: Number(crudForm.commissionValue),
@@ -243,7 +258,7 @@ export default function InventoryCRUD({
       status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
       airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
       hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
-      fincaRegistryNum: "", catasterMapNum: ""
+      fincaRegistryNum: "", catasterMapNum: "", gallery: []
     });
   };
 
@@ -280,7 +295,8 @@ export default function InventoryCRUD({
       hasStarlink: p.hasStarlink ?? false,
       image: p.image,
       fincaRegistryNum: p.fincaRegistryNum || "",
-      catasterMapNum: p.catasterMapNum || ""
+      catasterMapNum: p.catasterMapNum || "",
+      gallery: p.gallery || []
     });
   };
 
@@ -1088,11 +1104,12 @@ export default function InventoryCRUD({
             <input 
               type="file" 
               id="crud-image-upload" 
+              multiple
               accept="image/*" 
               className="hidden" 
               onChange={e => {
-                const file = e.target.files?.[0];
-                if (file) compressAndUploadImage(file);
+                const files = e.target.files;
+                if (files && files.length > 0) compressAndUploadMultipleImages(Array.from(files));
               }}
             />
             
@@ -1100,8 +1117,8 @@ export default function InventoryCRUD({
               onDragOver={e => e.preventDefault()}
               onDrop={e => {
                 e.preventDefault();
-                const file = e.dataTransfer.files?.[0];
-                if (file) compressAndUploadImage(file);
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) compressAndUploadMultipleImages(Array.from(files));
               }}
               onClick={() => {
                 if (!isUploading) {
@@ -1110,8 +1127,8 @@ export default function InventoryCRUD({
               }}
               className="mt-2 p-6 border-2 border-dashed border-[#d4af37]/30 hover:border-[#d4af37]/65 rounded-xl bg-white/5 text-center text-[10px] text-gray-300 transition duration-200 cursor-pointer flex flex-col items-center justify-center gap-2 relative overflow-hidden"
             >
-              <span>{lang === "es" ? "Arrastra archivos aquí o haz clic para subir imagen real" : "Drag & Drop files here or click to upload real image"}</span>
-              <span className="text-[9px] text-[#d4af37]/75 font-mono">WebP compression algorithm active (Quality: 82%)</span>
+              <span>{lang === "es" ? "Arrastra imágenes aquí o haz clic para subir varias fotos a la vez" : "Drag & Drop images here or click to upload multiple photos at once"}</span>
+              <span className="text-[9px] text-[#d4af37]/75 font-mono">WebP multi-thread compression algorithm active (Quality: 82%)</span>
             </div>
 
             {/* Progress Visualizer */}
@@ -1145,6 +1162,70 @@ export default function InventoryCRUD({
                 ))}
               </div>
             )}
+
+            {/* Gallery Thumbnails Manager */}
+            {crudForm.gallery && crudForm.gallery.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <label className="block text-[9px] uppercase tracking-wider text-[#d4af37] font-semibold">
+                  {lang === "es" ? "Galería de Fotos Cargadas" : "Uploaded Photos Gallery"} ({crudForm.gallery.length})
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {crudForm.gallery.map((imgBase64, idx) => {
+                    const isCover = crudForm.image === imgBase64;
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`relative aspect-video rounded-lg overflow-hidden border ${isCover ? "border-[#d4af37] ring-1 ring-[#d4af37]" : "border-white/10"} bg-black/40 group`}
+                      >
+                        <img 
+                          src={imgBase64} 
+                          alt={`Uploaded ${idx}`} 
+                          className="object-cover w-full h-full" 
+                        />
+                        
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition duration-150">
+                          {!isCover && (
+                            <button
+                              type="button"
+                              onClick={() => setCrudForm(prev => ({ ...prev, image: imgBase64 }))}
+                              className="bg-[#d4af37] text-black text-[8px] font-bold px-1.5 py-0.5 rounded shadow hover:bg-white transition cursor-pointer"
+                            >
+                              {lang === "es" ? "Portada" : "Cover"}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCrudForm(prev => {
+                                const newGallery = (prev.gallery || []).filter((_, i) => i !== idx);
+                                let newCover = prev.image;
+                                if (prev.image === imgBase64) {
+                                  newCover = newGallery.length > 0 ? newGallery[0] : "/images/jungle.png";
+                                }
+                                return {
+                                  ...prev,
+                                  image: newCover,
+                                  gallery: newGallery
+                                };
+                              });
+                            }}
+                            className="bg-red-600 text-white p-1 rounded hover:bg-red-700 transition cursor-pointer"
+                          >
+                            <Trash2 size={10} />
+                          </button>
+                        </div>
+
+                        {isCover && (
+                          <div className="absolute top-1 left-1 bg-[#d4af37] text-black text-[7px] uppercase font-bold px-1 rounded">
+                            {lang === "es" ? "Portada" : "Cover"}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-white/15">
@@ -1159,7 +1240,7 @@ export default function InventoryCRUD({
                     status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
                     airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
                     hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
-                    fincaRegistryNum: "", catasterMapNum: ""
+                    fincaRegistryNum: "", catasterMapNum: "", gallery: []
                   });
                 }}
                 className="flex-1 border border-white/10 hover:border-rose-400 text-pearl text-xs py-3 rounded-xl uppercase tracking-widest font-semibold cursor-pointer text-center"
