@@ -12,6 +12,9 @@ import SocialHub from "./dashboard/SocialHub";
 import ContractAutomator from "./dashboard/ContractAutomator";
 import FinancialReports from "./dashboard/FinancialReports";
 import SettingsTab from "./dashboard/SettingsTab";
+import PMCRUD from "./dashboard/PMCRUD";
+import GlobalSettings from "./dashboard/GlobalSettings";
+import { PMProperty, GlobalSiteSettings } from "@/constants/properties";
 
 interface AdminDashboardProps {
   properties: Property[];
@@ -22,6 +25,12 @@ interface AdminDashboardProps {
   onUpdatePropertyTypes: (types: PropertyType[]) => void;
   regions: Region[];
   onUpdateRegions: (regions: Region[]) => void;
+  pmProperties: PMProperty[];
+  onAddPMProperty: (p: PMProperty) => void;
+  onUpdatePMProperty: (p: PMProperty) => void;
+  onDeletePMProperty: (id: string) => void;
+  siteSettings: GlobalSiteSettings;
+  onUpdateSiteSettings: (settings: GlobalSiteSettings) => void;
   lang: "en" | "es";
   rates?: { CRC: number; EUR: number; JPY: number; USD: number };
   onClose: () => void;
@@ -44,11 +53,17 @@ export default function AdminDashboard({
   onUpdatePropertyTypes,
   regions,
   onUpdateRegions,
+  pmProperties,
+  onAddPMProperty,
+  onUpdatePMProperty,
+  onDeletePMProperty,
+  siteSettings,
+  onUpdateSiteSettings,
   lang,
   rates,
   onClose
 }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"inventory" | "crm" | "social" | "contracts" | "reports" | "settings">("inventory");
+  const [activeTab, setActiveTab] = useState<"inventory" | "pm" | "crm" | "social" | "contracts" | "reports" | "global" | "settings">("inventory");
 
   // --- Restricted Access & Session States ---
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -370,10 +385,12 @@ export default function AdminDashboard({
         <div className="flex flex-wrap border-b border-white/10 bg-[#011a14] px-4">
           {[
             { id: "inventory", label: lang === "es" ? "Inventario CRUD" : "CRUD Inventory", icon: Edit2 },
+            { id: "pm", label: "Property Management", icon: Users },
             { id: "crm", label: "Mini-CRM Pipeline", icon: Users },
             { id: "social", label: "Social Media Hub", icon: Sparkles },
             { id: "contracts", label: "Legal Contract Tech", icon: FileText },
             { id: "reports", label: "PM Financial Reports", icon: BarChart2 },
+            { id: "global", label: lang === "es" ? "Fondo Rotativo" : "Global Settings", icon: Sparkles },
             { id: "settings", label: lang === "es" ? "Configuración" : "Settings", icon: Shield },
           ].map(tab => {
             const Icon = tab.icon;
@@ -419,6 +436,16 @@ export default function AdminDashboard({
                 />
               )}
 
+              {activeTab === "pm" && (
+                <PMCRUD
+                  pmProperties={pmProperties}
+                  onAddProperty={onAddPMProperty}
+                  onUpdateProperty={onUpdatePMProperty}
+                  onDeleteProperty={onDeletePMProperty}
+                  lang={lang}
+                />
+              )}
+
               {activeTab === "crm" && (
                 <PipelineCRM
                   leads={leads}
@@ -448,6 +475,14 @@ export default function AdminDashboard({
               {activeTab === "reports" && (
                 <FinancialReports
                   properties={properties}
+                  lang={lang}
+                />
+              )}
+
+              {activeTab === "global" && (
+                <GlobalSettings
+                  siteSettings={siteSettings}
+                  onUpdateSiteSettings={onUpdateSiteSettings}
                   lang={lang}
                 />
               )}

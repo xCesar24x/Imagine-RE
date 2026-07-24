@@ -3,8 +3,8 @@
 // Imagine Luxury Real Estate & Property Management SPA
 import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS } from "@/constants/properties";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS, PMProperty, DEMO_PM_PROPERTIES, GlobalSiteSettings, DEFAULT_SITE_SETTINGS } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
 import AirbnbCalculator from "@/components/AirbnbCalculator";
@@ -42,12 +42,14 @@ interface AEAnimatedTextProps {
   text: string;
   className?: string;
   delay?: number;
+  effect?: "spring" | "blur" | "fadeUp";
 }
 
 function AEAnimatedText({ 
   text, 
   className = "", 
-  delay = 0
+  delay = 0,
+  effect = "spring"
 }: AEAnimatedTextProps) {
   const words = text.split(" ");
   
@@ -61,23 +63,37 @@ function AEAnimatedText({
     }
   };
 
-  const letterVariants = {
-    hidden: { 
-      y: "110%",
-      rotateX: 60,
-      opacity: 0
-    },
-    visible: { 
-      y: 0,
-      rotateX: 0,
-      opacity: 1,
-      transition: { 
-        type: "spring" as const,
-        damping: 18,
-        stiffness: 90,
-      }
+  const getVariants = () => {
+    switch (effect) {
+      case "blur":
+        return {
+          hidden: { filter: "blur(10px)", opacity: 0, y: 10 },
+          visible: { 
+            filter: "blur(0px)", opacity: 1, y: 0,
+            transition: { duration: 0.5, ease: "easeOut" }
+          }
+        };
+      case "fadeUp":
+        return {
+          hidden: { opacity: 0, y: 20 },
+          visible: { 
+            opacity: 1, y: 0,
+            transition: { duration: 0.4, ease: "easeOut" }
+          }
+        };
+      case "spring":
+      default:
+        return {
+          hidden: { y: "110%", rotateX: 60, opacity: 0 },
+          visible: { 
+            y: 0, rotateX: 0, opacity: 1,
+            transition: { type: "spring" as const, damping: 18, stiffness: 90 }
+          }
+        };
     }
   };
+
+  const letterVariants = getVariants();
 
   return (
     <motion.span
@@ -105,6 +121,47 @@ function AEAnimatedText({
         </span>
       ))}
     </motion.span>
+  );
+}
+
+function TiltCard({ children, className = "" }: { children: React.ReactNode, className?: string }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d", perspective: "1500px" }}
+      className={className}
+    >
+      <div style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }} className="w-full h-full">
+        {children}
+      </div>
+    </motion.div>
   );
 }
 
@@ -218,6 +275,58 @@ export default function Home() {
     setRegions(updatedRegions);
     localStorage.setItem("imagine_regions", JSON.stringify(updatedRegions));
   };
+
+  // Dynamic PM Properties state
+  const [pmProperties, setPmProperties] = useState<PMProperty[]>(DEMO_PM_PROPERTIES);
+
+  useEffect(() => {
+    const storedPm = localStorage.getItem("imagine_pm_properties");
+    if (storedPm) {
+      setPmProperties(JSON.parse(storedPm));
+    }
+  }, []);
+
+  const handleAddPMProperty = (newProp: PMProperty) => {
+    const updated = [newProp, ...pmProperties];
+    setPmProperties(updated);
+    localStorage.setItem("imagine_pm_properties", JSON.stringify(updated));
+  };
+
+  const handleUpdatePMProperty = (updatedProp: PMProperty) => {
+    const updated = pmProperties.map(p => p.id === updatedProp.id ? updatedProp : p);
+    setPmProperties(updated);
+    localStorage.setItem("imagine_pm_properties", JSON.stringify(updated));
+  };
+
+  const handleDeletePMProperty = (id: string) => {
+    const updated = pmProperties.filter(p => p.id !== id);
+    setPmProperties(updated);
+    localStorage.setItem("imagine_pm_properties", JSON.stringify(updated));
+  };
+
+  // Dynamic Site Settings state
+  const [siteSettings, setSiteSettings] = useState<GlobalSiteSettings>(DEFAULT_SITE_SETTINGS);
+
+  useEffect(() => {
+    const storedSettings = localStorage.getItem("imagine_site_settings");
+    if (storedSettings) {
+      setSiteSettings(JSON.parse(storedSettings));
+    }
+  }, []);
+
+  const handleUpdateSiteSettings = (updated: GlobalSiteSettings) => {
+    setSiteSettings(updated);
+    localStorage.setItem("imagine_site_settings", JSON.stringify(updated));
+  };
+
+  // Rotating Background logic
+  const [bgIndex, setBgIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex(prev => (prev + 1) % siteSettings.rotatingBackgrounds.length);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [siteSettings.rotatingBackgrounds]);
 
   // Routing State
   const [activeTab, setActiveTab] = useState<"catalog" | "management" | "tours">("catalog");
@@ -453,6 +562,7 @@ export default function Home() {
   const [locationFilter, setLocationFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [lifestyleFilter, setLifestyleFilter] = useState("all");
+  const [transactionTypeFilter, setTransactionTypeFilter] = useState("all");
   
   const [selectedAmenityGroups, setSelectedAmenityGroups] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -594,6 +704,9 @@ export default function Home() {
       // Lifestyle Filter
       if (lifestyleFilter !== "all" && p.lifestyle !== lifestyleFilter) return false;
 
+      // Transaction Type Filter
+      if (transactionTypeFilter !== "all" && p.transactionType !== transactionTypeFilter) return false;
+
       // Amenity Groups Filter
       if (selectedAmenityGroups.length > 0) {
         const matchesAllGroups = selectedAmenityGroups.every(groupKey => {
@@ -605,7 +718,7 @@ export default function Home() {
 
       return true;
     });
-  }, [priceFilter, sizeFilter, provinceFilter, locationFilter, typeFilter, lifestyleFilter, selectedAmenityGroups, AMENITY_GROUPS, properties]);
+  }, [priceFilter, sizeFilter, provinceFilter, locationFilter, typeFilter, lifestyleFilter, transactionTypeFilter, selectedAmenityGroups, AMENITY_GROUPS, properties]);
 
   const toggleAmenityGroup = (groupKey: string) => {
     setSelectedAmenityGroups(prev =>
@@ -724,29 +837,43 @@ export default function Home() {
       {/* Main Views Routing */}
       {activeTab === "catalog" && (
         <>
-          {/* Hero Section with Looping Drone Video Background */}
+          {/* Hero Section with Rotating Background */}
           <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden py-24 mt-[88px]">
-            <div className="absolute inset-0">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover opacity-60"
-                poster={getAssetPath("/images/hero-cover.jpg")}
-              >
-                <source src="https://assets.mixkit.co/videos/preview/mixkit-mysterious-misty-forest-from-above-4993-large.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#020f0a] via-[#02140f]/50 to-transparent" />
-              <div className="absolute left-1/2 top-20 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#d4af37]/5 blur-3xl" />
+            <div className="absolute inset-0 z-0">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={bgIndex}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 0.65, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 2.5, ease: "easeInOut" }}
+                  className="absolute inset-0"
+                >
+                  <Image 
+                    src={siteSettings.rotatingBackgrounds.length > 0 ? siteSettings.rotatingBackgrounds[bgIndex] : getAssetPath("/images/hero-cover.jpg")}
+                    alt="Background" 
+                    fill 
+                    className="object-cover" 
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
+              {/* Dark dramatic overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#020f0a] via-[#02140f]/60 to-[#020f0a]/30 mix-blend-multiply" />
+              {/* Additional radial glow for focus */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#020f0a]/40 to-[#020f0a] pointer-events-none" />
+              <div className="absolute left-1/2 top-20 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#d4af37]/5 blur-[120px] pointer-events-none" />
             </div>
 
             <motion.div
               initial={{ opacity: 0, y: 42 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="relative z-10 grid gap-8 px-6 py-10 md:px-12 md:py-14 max-w-5xl mx-4 rounded-[2.5rem] border border-white/10 bg-black/45 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl"
+              className="relative z-10 w-full max-w-5xl mx-4"
             >
+              <TiltCard className="w-full">
+                <div className="grid gap-8 px-6 py-10 md:px-12 md:py-14 w-full rounded-[2.5rem] border border-white/5 bg-black/20 shadow-[0_40px_120px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-3xl overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
               <div className="mx-auto w-fit rounded-full border border-white/10 bg-white/5 p-1 shadow-inner shadow-black/30">
                 <div className="relative h-28 w-28 overflow-hidden rounded-full border border-sunset/40">
                   <Image
@@ -770,9 +897,9 @@ export default function Home() {
                 </p>
 
                 <h1 className="mt-8 text-4xl md:text-6xl xl:text-7xl font-serif uppercase tracking-[-0.03em] leading-tight text-pearl flex flex-wrap justify-center">
-                  <AEAnimatedText text={t.hero.title1} delay={0.15} />
+                  <AEAnimatedText text={t.hero.title1} delay={0.15} effect="blur" />
                   <span className="inline-block w-full h-0 md:hidden" />
-                  <AEAnimatedText text={t.hero.title2} delay={0.5} className="text-sunset" />
+                  <AEAnimatedText text={t.hero.title2} delay={0.5} effect="fadeUp" className="text-sunset" />
                 </h1>
                 <p className="mx-auto mt-6 max-w-3xl text-sm md:text-base leading-relaxed text-gray-300/90">
                   {t.hero.description}
@@ -797,11 +924,24 @@ export default function Home() {
                   <div className="mt-3 text-3xl font-serif text-pearl">Bespoke</div>
                   <div className="mt-2 text-xs text-gray-300 leading-relaxed">{t.hero.stats.signatureDesc}</div>
                 </div>
+                </div>              <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] items-center relative z-10 mt-8">
+                <button 
+                  onClick={() => { document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" }); }}
+                  className="bg-sunset text-[#02100b] hover:bg-white px-8 py-4 rounded-full text-[10px] md:text-xs font-sans uppercase tracking-[0.2em] font-bold transition-all cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                >
+                  {t.hero.ctaPrimary}
+                </button>
+                <button 
+                  onClick={() => { setActiveTab("management"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="px-8 py-4 rounded-full text-[10px] md:text-xs font-sans uppercase tracking-[0.2em] font-bold text-pearl border border-white/20 hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  {t.hero.ctaSecondary}
+                </button>
               </div>
-
-
-            </motion.div>
-          </section>
+            </div>
+            </TiltCard>
+          </motion.div>
+        </section>
 
           {/* Services Section */}
           <section id="services" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
@@ -870,6 +1010,7 @@ export default function Home() {
                       setLocationFilter("all");
                       setTypeFilter("all");
                       setLifestyleFilter("all");
+                      setTransactionTypeFilter("all");
                     }}
                     className={`relative p-6 rounded-3xl border text-left transition-all duration-300 cursor-pointer overflow-hidden group ${
                       isActive ? seg.activeColor : seg.hoverColor
@@ -1031,6 +1172,24 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* Tipo de Transacción */}
+                <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
+                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{lang === "es" ? "Transacción" : "Transaction"}</div>
+                  <label className="block text-[9px] font-sans text-gray-400 uppercase tracking-widest mb-1.5">{lang === "es" ? "Operación" : "Operation"}</label>
+                  <div className="relative">
+                    <select 
+                      value={transactionTypeFilter}
+                      onChange={(e) => setTransactionTypeFilter(e.target.value)}
+                      className={`w-full border text-pearl text-xs font-sans px-3 py-2.5 rounded-xl appearance-none focus:outline-none cursor-pointer pr-8 animate-none border-white/10 ${catalogTheme.selectBg}`}
+                    >
+                      <option value="all">{lang === "es" ? "Todos" : "All"}</option>
+                      <option value="Venta">{lang === "es" ? "Venta" : "Sale"}</option>
+                      <option value="Alquiler">{lang === "es" ? "Alquiler" : "Rent"}</option>
+                    </select>
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${catalogTheme.textAccent}`} size={13} />
+                  </div>
+                </div>
+
                 {/* Currency Mode */}
                 <div className={`rounded-3xl border p-5 shadow-sm bg-white/5 ${catalogTheme.borderAccent}`}>
                   <div className={`text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold ${catalogTheme.textAccent}`}>{t.catalog.filters.currencyLabel}</div>
@@ -1152,15 +1311,134 @@ export default function Home() {
       )}
 
       {activeTab === "management" && (
-        <section className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto mt-[88px] min-h-[70vh]">
-          <div className="mb-16 flex flex-col items-center text-center gap-4">
-            <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.propertyManagement.subtitle}</div>
-            <h2 className="text-3xl md:text-5xl font-serif">{t.propertyManagement.title}</h2>
-            <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
-              {t.propertyManagement.description}
-            </p>
+        <section className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto mt-[88px] min-h-[70vh] space-y-24">
+          
+          {/* Header & Calculator */}
+          <div>
+            <div className="mb-16 flex flex-col items-center text-center gap-4">
+              <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.propertyManagement.subtitle}</div>
+              <h2 className="text-3xl md:text-5xl font-serif">{t.propertyManagement.title}</h2>
+              <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
+                {t.propertyManagement.description}
+              </p>
+            </div>
+            <AirbnbCalculator lang={lang} />
           </div>
-          <AirbnbCalculator lang={lang} />
+
+          {/* PM Properties Listing (Airbnb, Website, WhatsApp) */}
+          {pmProperties.length > 0 && (
+            <div className="border-t border-white/5 pt-20">
+              <div className="mb-12 flex flex-col items-center text-center gap-4">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-sunset font-semibold">
+                  {lang === "es" ? "Nuestra Cartera Actual" : "Our Current Portfolio"}
+                </div>
+                <h3 className="text-2xl md:text-4xl font-serif">
+                  {lang === "es" ? "Propiedades Bajo Nuestra Administración" : "Properties Under Our Management"}
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                {pmProperties.map((prop, idx) => {
+                  const isBig = idx % 4 === 0 || idx % 4 === 3;
+                  return (
+                  <div key={prop.id} className={`rounded-[2.5rem] border border-white/5 bg-black/20 overflow-hidden group hover:border-[#d4af37]/40 transition-all duration-700 shadow-2xl backdrop-blur-xl ${isBig ? "md:col-span-8" : "md:col-span-4"}`}>
+                    <div className={`relative overflow-hidden ${isBig ? "h-80 md:h-96" : "h-64 md:h-72"}`}>
+                      <Image
+                        src={prop.image || getAssetPath("/images/hero-cover.jpg")}
+                        alt={prop.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#010a08] via-[#010a08]/40 to-transparent opacity-90" />
+                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-sunset/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                      <div className="absolute bottom-6 left-6 right-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                        <h4 className={`font-serif font-bold truncate tracking-wide ${isBig ? "text-2xl md:text-3xl" : "text-lg md:text-xl"}`}>
+                          {lang === "es" && prop.nameEs ? prop.nameEs : prop.name}
+                        </h4>
+                        <div className="flex items-center gap-2 text-[10px] md:text-xs text-pearl/80 font-sans tracking-[0.2em] uppercase mt-2">
+                          <MapPin size={12} className="text-sunset" /> {prop.location}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 md:p-8 bg-gradient-to-b from-[#010a08] to-transparent">
+                      <div className="flex flex-wrap gap-2 mb-8">
+                        {(prop as any).features?.map((f: string) => (
+                          <span key={f} className="text-[9px] uppercase tracking-[0.25em] text-sunset/90 bg-sunset/5 px-3 py-1.5 rounded-md border border-sunset/20 font-medium">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <a
+                          href={prop.airbnbUrl || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex flex-col items-center justify-center gap-3 py-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 transition-all cursor-pointer text-gray-500"
+                        >
+                          <HomeIcon size={20} />
+                          <span className="text-[9px] uppercase tracking-[0.2em] font-semibold">Airbnb</span>
+                        </a>
+                        <a
+                          href={prop.whatsappUrl || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex flex-col items-center justify-center gap-3 py-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all cursor-pointer text-gray-500"
+                        >
+                          <MessageCircle size={20} />
+                          <span className="text-[9px] uppercase tracking-[0.2em] font-semibold">WhatsApp</span>
+                        </a>
+                        <a
+                          href={prop.websiteUrl || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex flex-col items-center justify-center gap-3 py-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-400 transition-all cursor-pointer text-gray-500"
+                        >
+                          <Globe size={20} />
+                          <span className="text-[9px] uppercase tracking-[0.2em] font-semibold">Web</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Discovery Tour Promo Banner */}
+          <div className="rounded-[2.5rem] border border-[#d4af37]/30 bg-gradient-to-br from-[#01140f] to-[#02241b] p-8 md:p-12 relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center gap-10 mt-12">
+            <div className="absolute right-0 top-0 w-96 h-96 bg-[#d4af37]/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="flex-1 relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 text-[9px] uppercase tracking-widest text-sunset font-bold mb-4">
+                <Compass size={12} />
+                {lang === "es" ? "Recomendado" : "Recommended"}
+              </div>
+              <h3 className="text-3xl md:text-4xl font-serif text-pearl leading-tight mb-4">
+                {lang === "es" ? "Descubre tu próxima inversión en persona" : "Discover your next investment in person"}
+              </h3>
+              <p className="text-sm text-gray-300 leading-relaxed max-w-xl mb-8">
+                {lang === "es" 
+                  ? "Experimenta el estilo de vida que ofrecemos. Organizamos tu traslado, hospedaje y un recorrido personalizado por las propiedades que más te interesen (sean de nuestro listado o no). Nuestro Discovery Tour asegura que tomes la mejor decisión de inversión."
+                  : "Experience the lifestyle we offer. We organize your transportation, lodging, and a personalized tour of the properties you're most interested in (whether they are on our list or not). Our Discovery Tour ensures you make the best investment decision."}
+              </p>
+              <button
+                onClick={() => {
+                  setActiveTab("tours");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="bg-[#d4af37] text-[#02100b] hover:bg-white px-8 py-3.5 rounded-full text-xs font-sans uppercase tracking-[0.2em] font-bold transition-colors cursor-pointer inline-flex items-center gap-2"
+              >
+                {lang === "es" ? "Agendar Discovery Tour" : "Schedule Discovery Tour"} <ArrowRight size={14} />
+              </button>
+            </div>
+            <div className="hidden lg:block w-[350px] shrink-0 relative z-10">
+               <div className="relative h-[250px] rounded-3xl border border-white/20 overflow-hidden shadow-lg rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Image src={getAssetPath("/images/hero-cover.jpg")} alt="Tour" fill className="object-cover" />
+               </div>
+            </div>
+          </div>
         </section>
       )}
 
@@ -1627,7 +1905,15 @@ export default function Home() {
                 </div>
               )}
 
-              {modalTab === "360" && <Three360Viewer panoramaUrl={selectedProperty.panorama} />}
+              {modalTab === "360" && (
+                selectedProperty.panorama && selectedProperty.panorama !== "" ? (
+                  <Three360Viewer panoramaUrl={selectedProperty.panorama} />
+                ) : selectedProperty.virtualTourUrl ? (
+                  <iframe src={selectedProperty.virtualTourUrl} className="w-full h-full border-0" allowFullScreen />
+                ) : (
+                  <Three360Viewer panoramaUrl={selectedProperty.panorama || "/images/jungle.png"} />
+                )
+              )}
               
               {modalTab === "map" && (
                 <div className="w-full h-full bg-[#02120e] flex flex-col justify-center p-6 md:p-10 relative overflow-y-auto">
@@ -1764,16 +2050,25 @@ export default function Home() {
                 <div className="w-full h-full bg-black flex flex-col items-center justify-center relative">
                   {/* Mock Premium Embedded Drone Video Player */}
                   <div className="absolute inset-0">
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover opacity-60"
-                      poster={getAssetPath(selectedProperty.image)}
-                    >
-                      <source src="https://assets.mixkit.co/videos/preview/mixkit-forest-stream-running-under-the-trees-4987-large.mp4" type="video/mp4" />
-                    </video>
+                    {selectedProperty.videoUrl ? (
+                      <iframe 
+                        src={selectedProperty.videoUrl.includes("watch?v=") ? selectedProperty.videoUrl.replace("watch?v=", "embed/") : selectedProperty.videoUrl}
+                        className="w-full h-full object-cover"
+                        allow="autoplay; encrypted-media; fullscreen"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover opacity-60"
+                        poster={getAssetPath(selectedProperty.image)}
+                      >
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-forest-stream-running-under-the-trees-4987-large.mp4" type="video/mp4" />
+                      </video>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
                   </div>
                   
@@ -2067,6 +2362,12 @@ export default function Home() {
           onUpdatePropertyTypes={handleUpdatePropertyTypes}
           regions={regions}
           onUpdateRegions={handleUpdateRegions}
+          pmProperties={pmProperties}
+          onAddPMProperty={handleAddPMProperty}
+          onUpdatePMProperty={handleUpdatePMProperty}
+          onDeletePMProperty={handleDeletePMProperty}
+          siteSettings={siteSettings}
+          onUpdateSiteSettings={handleUpdateSiteSettings}
           lang={lang}
           onClose={() => setIsAdminOpen(false)}
         />

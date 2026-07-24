@@ -71,6 +71,7 @@ export default function InventoryCRUD({
     amenities: [] as string[],
     province: "San José" as Property["province"],
     lifestyle: "Naturaleza" as Property["lifestyle"],
+    transactionType: "Venta" as "Venta" | "Alquiler",
     status: "Disponible" as Property["status"],
     approxLocation: "",
     elevationM: 100,
@@ -84,7 +85,9 @@ export default function InventoryCRUD({
     image: "/images/jungle.png",
     fincaRegistryNum: "",
     catasterMapNum: "",
-    gallery: [] as string[]
+    gallery: [] as string[],
+    videoUrl: "",
+    virtualTourUrl: ""
   });
 
   const activeProvinceRegions = useMemo(() => {
@@ -234,6 +237,7 @@ export default function InventoryCRUD({
       amenities: crudForm.amenities,
       gallery: crudForm.gallery || [],
       currency: crudForm.currency,
+      transactionType: crudForm.transactionType,
       commissionType: crudForm.commissionType,
       commissionValue: Number(crudForm.commissionValue),
       commissionAmount: crudForm.commissionType === "percentage"
@@ -369,10 +373,23 @@ export default function InventoryCRUD({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-5">
             <div>
               <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
-                {lang === "es" ? "Precio de Venta" : "Sale Price"}
+                {lang === "es" ? "Tipo de Transacción" : "Transaction Type"}
+              </label>
+              <select 
+                value={crudForm.transactionType} 
+                onChange={e => setCrudForm({ ...crudForm, transactionType: e.target.value as "Venta" | "Alquiler" })}
+                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] appearance-none"
+              >
+                <option value="Venta">{lang === "es" ? "Venta" : "Sale"}</option>
+                <option value="Alquiler">{lang === "es" ? "Alquiler" : "Rental"}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                {lang === "es" ? "Precio" : "Price"}
               </label>
               <input 
                 type="number"
@@ -778,6 +795,47 @@ export default function InventoryCRUD({
                 className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37] font-mono" 
               />
             </div>
+          </div>
+
+          {/* Media Links (Drone / 360) */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                Drone Video URL
+              </label>
+              <input 
+                value={crudForm.videoUrl || ""} 
+                onChange={e => setCrudForm({ ...crudForm, videoUrl: e.target.value })} 
+                placeholder="e.g. https://youtube.com/watch?..."
+                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+              />
+            </div>
+            <div>
+              <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
+                360° VR Tour URL (Matterport / Kuula)
+              </label>
+              <input 
+                value={crudForm.virtualTourUrl || ""} 
+                onChange={e => setCrudForm({ ...crudForm, virtualTourUrl: e.target.value })} 
+                placeholder="e.g. https://my.matterport.com/show/?m=..."
+                className="w-full bg-[#01140f] border border-white/10 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[9px] uppercase tracking-wider text-[#d4af37] mb-1.5 font-bold">
+              DJI 360 Panorama Image URL (Raw DJI Equirectangular Photo)
+            </label>
+            <input 
+              value={crudForm.panorama || ""} 
+              onChange={e => setCrudForm({ ...crudForm, panorama: e.target.value })} 
+              placeholder="e.g. /images/dji-pano.jpg (or drag & drop in the main gallery and paste URL here)"
+              className="w-full bg-[#01140f] border border-[#d4af37]/30 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+            />
+            <p className="text-[8px] text-gray-400 mt-1 uppercase tracking-widest font-mono">
+              Si llenas esto, el sistema usará nuestro visor nativo 3D interactivo en lugar del VR Tour externo.
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-4">

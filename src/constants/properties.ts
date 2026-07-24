@@ -39,6 +39,9 @@ export interface Property {
   commissionAmount?: number;
   lotSizeM2?: number;
   constructionSizeM2?: number;
+  transactionType?: "Venta" | "Alquiler";
+  videoUrl?: string;
+  virtualTourUrl?: string;
 }
 
 export interface PropertyType {
@@ -184,3 +187,48 @@ export const PROPERTIES: Property[] = SEEDED_PROPERTIES.map((p, idx) => ({
   ...p,
   refCode: `REF-${String(idx + 1).padStart(2, "0")}`
 }));
+export interface GlobalSiteSettings {
+  rotatingBackgrounds: string[];
+}
+
+export const DEFAULT_SITE_SETTINGS: GlobalSiteSettings = {
+  rotatingBackgrounds: [
+    "/images/premium1.png",
+    "/images/premium2.png",
+    "/images/premium3.png"
+  ]
+};
+
+export interface PMProperty {
+  id: string;
+  name: string;
+  location: string;
+  descriptionEs: string;
+  descriptionEn: string;
+  image: string;
+  gallery: string[];
+  airbnbUrl?: string;
+  privateWebUrl?: string;
+  whatsappContact?: string;
+  nightlyRate?: number;
+  currency?: "USD" | "CRC";
+}
+
+export const DEMO_PM_PROPERTIES: PMProperty[] = [
+  {
+    id: "pm-demo-1",
+    name: "Villa Paraíso Sunset",
+    location: "Santa Teresa, Puntarenas",
+    descriptionEs: "Increíble villa frente al mar con piscina infinita y todas las comodidades de lujo. Perfecta para retiros de yoga o vacaciones familiares.",
+    descriptionEn: "Incredible beachfront villa with infinity pool and all luxury amenities. Perfect for yoga retreats or family vacations.",
+    image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1600&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1600&q=80"
+    ],
+    airbnbUrl: "https://airbnb.com/",
+    whatsappContact: "+50688888888",
+    nightlyRate: 350,
+    currency: "USD"
+  }
+];
