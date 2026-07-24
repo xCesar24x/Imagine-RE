@@ -969,6 +969,27 @@ export default function Home() {
           {/* The Property Engine (Catalog) */}
           <section id="collection" className={`py-24 px-6 md:px-12 transition-colors duration-500 scroll-mt-24 ${catalogTheme.bg}`}>
             
+            {/* Category Selector Directive Header */}
+            <div id="categories-header" className="max-w-[1600px] mx-auto mb-8 scroll-mt-28">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/10">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sunset/15 border border-sunset/35 text-sunset text-[10px] font-sans uppercase tracking-[0.25em] font-semibold mb-3">
+                    <Sparkles size={12} className="animate-pulse" />
+                    {lang === "es" ? "Paso 1: Selecciona una Categoría" : "Step 1: Select a Category"}
+                  </div>
+                  <h2 className="text-2xl md:text-4xl font-serif text-pearl font-bold">
+                    {lang === "es" ? "Explora Nuestras Colecciones de Propiedades" : "Explore Our Property Collections"}
+                  </h2>
+                </div>
+                <p className="text-xs md:text-sm text-gray-300/80 font-sans max-w-xl leading-relaxed">
+                  {lang === "es" 
+                    ? "Haz clic en cualquiera de los 3 segmentos a continuación para filtrar y desplegar las propiedades disponibles en el catálogo."
+                    : "Click on any of the 3 segments below to filter and display the available properties in our catalog."
+                  }
+                </p>
+              </div>
+            </div>
+
             {/* Segment Selector Tabs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-[1600px] mx-auto">
               {[
@@ -977,24 +998,24 @@ export default function Home() {
                   label: lang === "es" ? "Colección Signature" : "Signature Collection", 
                   desc: lang === "es" ? "Propiedades selectas con ubicaciones y acabados premium" : "Handpicked premium properties in prime locations",
                   icon: Sparkles,
-                  activeColor: "border-sunset text-sunset bg-[#e5c777]/5 shadow-[0_0_25px_rgba(229,199,119,0.12)] scale-[1.02]",
-                  hoverColor: "border-white/10 hover:border-sunset/50 hover:bg-white/5 hover:text-sunset text-pearl/80 hover:scale-[1.01]"
+                  activeColor: "border-sunset text-sunset bg-[#e5c777]/10 shadow-[0_0_30px_rgba(229,199,119,0.18)] scale-[1.02] ring-1 ring-sunset/40",
+                  hoverColor: "border-white/15 hover:border-sunset/60 hover:bg-white/5 hover:text-sunset text-pearl/80 hover:scale-[1.01]"
                 },
                 { 
                   id: "Standard", 
                   label: lang === "es" ? "Residencial & Lotes" : "Residential & Land", 
                   desc: lang === "es" ? "Casas familiares, quintas de descanso y lotes listos para construir" : "Family homes, rest estates and lots ready to build",
                   icon: HomeIcon,
-                  activeColor: "border-cyan-400 text-cyan-400 bg-cyan-400/5 shadow-[0_0_25px_rgba(34,211,238,0.12)] scale-[1.02]",
-                  hoverColor: "border-white/10 hover:border-cyan-400/50 hover:bg-white/5 hover:text-cyan-400 text-pearl/80 hover:scale-[1.01]"
+                  activeColor: "border-cyan-400 text-cyan-400 bg-cyan-400/10 shadow-[0_0_30px_rgba(34,211,238,0.18)] scale-[1.02] ring-1 ring-cyan-400/40",
+                  hoverColor: "border-white/15 hover:border-cyan-400/60 hover:bg-white/5 hover:text-cyan-400 text-pearl/80 hover:scale-[1.01]"
                 },
                 { 
                   id: "Commercial", 
                   label: lang === "es" ? "Comercial & Inversiones" : "Commercial & Investments", 
                   desc: lang === "es" ? "Locales, bodegas y proyectos comerciales con alto potencial" : "Commercial buildings, warehouses and ROI projects",
                   icon: Building2,
-                  activeColor: "border-blue-400 text-blue-400 bg-blue-400/5 shadow-[0_0_25px_rgba(96,165,250,0.12)] scale-[1.02]",
-                  hoverColor: "border-white/10 hover:border-blue-400/50 hover:bg-white/5 hover:text-blue-400 text-pearl/80 hover:scale-[1.01]"
+                  activeColor: "border-blue-400 text-blue-400 bg-blue-400/10 shadow-[0_0_30px_rgba(96,165,250,0.18)] scale-[1.02] ring-1 ring-blue-400/40",
+                  hoverColor: "border-white/15 hover:border-blue-400/60 hover:bg-white/5 hover:text-blue-400 text-pearl/80 hover:scale-[1.01]"
                 }
               ].map(seg => {
                 const Icon = seg.icon;
@@ -1019,15 +1040,31 @@ export default function Home() {
                     {/* Background gradient layout */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
-                    <div className="flex items-start gap-4 relative z-10">
-                      <div className={`p-3 rounded-2xl transition duration-300 shrink-0 ${
-                        isActive ? "bg-white/10" : "bg-white/5 group-hover:bg-white/10"
-                      }`}>
-                        <Icon size={20} className="transition duration-300" />
+                    <div className="flex items-start justify-between gap-4 relative z-10">
+                      <div className="flex items-start gap-4">
+                        <div className={`p-3 rounded-2xl transition duration-300 shrink-0 ${
+                          isActive ? "bg-white/15 shadow-inner" : "bg-white/5 group-hover:bg-white/10"
+                        }`}>
+                          <Icon size={22} className="transition duration-300" />
+                        </div>
+                        <div>
+                          <div className="font-serif text-base md:text-lg tracking-wide font-bold">{seg.label}</div>
+                          <div className="text-[11px] opacity-80 font-sans tracking-wide mt-1.5 leading-relaxed">{seg.desc}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-serif text-base tracking-wide font-semibold">{seg.label}</div>
-                        <div className="text-[11px] opacity-75 font-sans tracking-wide mt-1.5 leading-relaxed">{seg.desc}</div>
+
+                      {/* Active / Selection Badge */}
+                      <div className="shrink-0 pt-0.5">
+                        {isActive ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-current text-[9px] font-mono uppercase tracking-wider font-bold shadow-md">
+                            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                            {lang === "es" ? "Seleccionado" : "Selected"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/15 text-[9px] font-mono text-pearl/70 group-hover:text-pearl group-hover:border-white/40 transition">
+                            {lang === "es" ? "Haz clic »" : "Click »"}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -1053,11 +1090,23 @@ export default function Home() {
                   }
                 </h3>
               </div>
-              <p className="font-sans text-gray-400 max-w-md text-xs md:text-sm leading-relaxed">
-                {lang === "es"
-                  ? "Explore nuestro inventario curado y filtrado específicamente para responder a su perfil de inversión y estilo de vida."
-                  : "Explore our curated inventory tailored to match your specific investment profile and lifestyle requirements."}
-              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <p className="font-sans text-gray-400 max-w-md text-xs md:text-sm leading-relaxed">
+                  {lang === "es"
+                    ? "Explore nuestro inventario curado y filtrado específicamente para responder a su perfil de inversión y estilo de vida."
+                    : "Explore our curated inventory tailored to match your specific investment profile and lifestyle requirements."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    document.getElementById("categories-header")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-pearl text-xs font-mono uppercase tracking-wider transition duration-200 cursor-pointer shrink-0 shadow-sm"
+                >
+                  <ArrowRight size={13} className="-rotate-90 text-sunset" />
+                  {lang === "es" ? "Cambiar Categoría Arriba" : "Change Category Above"}
+                </button>
+              </div>
             </motion.div>
 
             {/* Advanced Filters */}
@@ -1301,8 +1350,50 @@ export default function Home() {
               </AnimatePresence>
               
               {filteredProperties.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-400 font-sans text-xs md:text-sm">
-                  {t.catalog.empty}
+                <div className="col-span-full py-16 px-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl text-center space-y-6 max-w-2xl mx-auto my-8 shadow-2xl">
+                  <div className="w-16 h-16 rounded-full bg-sunset/15 border border-sunset/35 text-sunset flex items-center justify-center mx-auto shadow-inner">
+                    <Compass size={28} className="animate-spin-slow" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-lg md:text-2xl font-serif text-pearl font-bold">
+                      {lang === "es" ? "No se encontraron propiedades en esta búsqueda" : "No properties found for this search"}
+                    </h4>
+                    <p className="text-xs md:text-sm font-sans text-gray-300/90 leading-relaxed max-w-lg mx-auto">
+                      {lang === "es"
+                        ? "Por favor selecciona una de las 3 categorías principales arriba (Colección Signature, Residencial o Comercial) o limpia tus filtros actuales para desplegar el catálogo completo."
+                        : "Please select one of the 3 main categories above (Signature Collection, Residential, or Commercial) or clear your active filters to display the complete catalog."
+                      }
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        document.getElementById("categories-header")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="bg-sunset text-jungle hover:bg-white text-xs font-bold font-mono uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-sunset/20 cursor-pointer flex items-center gap-2"
+                    >
+                      <ArrowRight size={14} className="-rotate-90" />
+                      {lang === "es" ? "Seleccionar Categoría Arriba" : "Select Category Above"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriceFilter("all");
+                        setSizeFilter("all");
+                        setProvinceFilter("all");
+                        setLocationFilter("all");
+                        setTypeFilter("all");
+                        setLifestyleFilter("all");
+                        setTransactionTypeFilter("all");
+                        setSelectedAmenityGroups([]);
+                      }}
+                      className="bg-white/10 hover:bg-white/20 border border-white/20 text-pearl text-xs font-mono uppercase tracking-widest px-5 py-3.5 rounded-xl transition duration-200 cursor-pointer flex items-center gap-2"
+                    >
+                      <RefreshCw size={14} />
+                      {lang === "es" ? "Limpiar Filtros" : "Reset Filters"}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
