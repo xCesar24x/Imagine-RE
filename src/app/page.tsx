@@ -63,7 +63,7 @@ function AEAnimatedText({
     }
   };
 
-  const getVariants = () => {
+  const getVariants = (): any => {
     switch (effect) {
       case "blur":
         return {
