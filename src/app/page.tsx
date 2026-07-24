@@ -1353,7 +1353,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-sunset/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                       <div className="absolute bottom-6 left-6 right-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                         <h4 className={`font-serif font-bold truncate tracking-wide ${isBig ? "text-2xl md:text-3xl" : "text-lg md:text-xl"}`}>
-                          {lang === "es" && prop.nameEs ? prop.nameEs : prop.name}
+                          {prop.name}
                         </h4>
                         <div className="flex items-center gap-2 text-[10px] md:text-xs text-pearl/80 font-sans tracking-[0.2em] uppercase mt-2">
                           <MapPin size={12} className="text-sunset" /> {prop.location}
