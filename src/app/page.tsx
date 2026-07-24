@@ -1381,7 +1381,7 @@ export default function Home() {
                           <span className="text-[9px] uppercase tracking-[0.2em] font-semibold">Airbnb</span>
                         </a>
                         <a
-                          href={prop.whatsappUrl || "#"}
+                          href={prop.whatsappContact ? `https://wa.me/${prop.whatsappContact.replace(/\D/g, '')}` : "#"}
                           target="_blank"
                           rel="noreferrer"
                           className="flex flex-col items-center justify-center gap-3 py-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400 transition-all cursor-pointer text-gray-500"
@@ -1390,7 +1390,7 @@ export default function Home() {
                           <span className="text-[9px] uppercase tracking-[0.2em] font-semibold">WhatsApp</span>
                         </a>
                         <a
-                          href={prop.websiteUrl || "#"}
+                          href={prop.privateWebUrl || "#"}
                           target="_blank"
                           rel="noreferrer"
                           className="flex flex-col items-center justify-center gap-3 py-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-400 transition-all cursor-pointer text-gray-500"

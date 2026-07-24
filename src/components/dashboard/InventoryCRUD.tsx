@@ -87,7 +87,8 @@ export default function InventoryCRUD({
     catasterMapNum: "",
     gallery: [] as string[],
     videoUrl: "",
-    virtualTourUrl: ""
+    virtualTourUrl: "",
+    panorama: ""
   });
 
   const activeProvinceRegions = useMemo(() => {
@@ -259,10 +260,11 @@ export default function InventoryCRUD({
     setCrudForm({
       name: "", location: "", price: 0, currency: "USD", commissionType: "percentage", commissionValue: 5, lotSizeM2: 0, constructionSizeM2: 0, suites: 0, vibeTags: "",
       description: "", descriptionEs: "", nameEs: "", type: ["Casa"], segment: ["Luxury"], amenities: [], province: "San José", lifestyle: "Naturaleza",
-      status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
+      transactionType: "Venta", status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
       airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
       hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
-      fincaRegistryNum: "", catasterMapNum: "", gallery: []
+      fincaRegistryNum: "", catasterMapNum: "", gallery: [],
+      videoUrl: "", virtualTourUrl: "", panorama: ""
     });
   };
 
@@ -300,7 +302,11 @@ export default function InventoryCRUD({
       image: p.image,
       fincaRegistryNum: p.fincaRegistryNum || "",
       catasterMapNum: p.catasterMapNum || "",
-      gallery: p.gallery || []
+      gallery: p.gallery || [],
+      transactionType: p.transactionType || "Venta",
+      videoUrl: p.videoUrl || "",
+      virtualTourUrl: p.virtualTourUrl || "",
+      panorama: p.panorama || ""
     });
   };
 
@@ -1295,10 +1301,11 @@ export default function InventoryCRUD({
                   setCrudForm({
                     name: "", location: "", price: 0, currency: "USD", commissionType: "percentage", commissionValue: 5, lotSizeM2: 0, constructionSizeM2: 0, suites: 0, vibeTags: "",
                     description: "", descriptionEs: "", nameEs: "", type: ["Casa"], segment: ["Luxury"], amenities: [], province: "San José", lifestyle: "Naturaleza",
-                    status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
+                    transactionType: "Venta", status: "Disponible", approxLocation: "", elevationM: 100, airportDistKm: 50,
                     airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
                     hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
-                    fincaRegistryNum: "", catasterMapNum: "", gallery: []
+                    fincaRegistryNum: "", catasterMapNum: "", gallery: [],
+                    videoUrl: "", virtualTourUrl: "", panorama: ""
                   });
                 }}
                 className="flex-1 border border-white/10 hover:border-rose-400 text-pearl text-xs py-3 rounded-xl uppercase tracking-widest font-semibold cursor-pointer text-center"
