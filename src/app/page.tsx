@@ -1002,15 +1002,27 @@ export default function Home() {
 
           {/* Services Section */}
           <section id="services" className="py-24 px-6 md:px-12 max-w-[1600px] mx-auto scroll-mt-24">
-            <div className="mb-16 flex flex-col items-center text-center gap-4">
+            <motion.div 
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="mb-16 flex flex-col items-center text-center gap-4"
+            >
               <div className="text-xs uppercase tracking-[0.36em] text-sunset font-semibold">{t.services.subtitle}</div>
               <h2 className="text-3xl md:text-5xl font-serif">{t.services.title}</h2>
               <p className="max-w-3xl text-sm md:text-base text-gray-300/90 leading-relaxed">
                 {t.services.description}
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <motion.div 
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              className="grid gap-6 md:grid-cols-3"
+            >
               {SERVICE_CARDS.map(({ title, description, icon: Icon }) => (
                 <div key={title} className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl hover:border-sunset/20 transition-all duration-300">
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-sunset/10 text-sunset shadow-sm shadow-sunset/10 mb-6">
@@ -1020,14 +1032,21 @@ export default function Home() {
                   <p className="text-xs md:text-sm leading-relaxed text-gray-300/90">{description}</p>
                 </div>
               ))}
-            </div>
+            </motion.div>
           </section>
 
           {/* The Property Engine (Catalog) */}
           <section id="collection" className={`py-24 px-6 md:px-12 transition-colors duration-500 scroll-mt-24 ${catalogTheme.bg}`}>
             
             {/* Category Selector Directive Header */}
-            <div id="categories-header" className="max-w-[1600px] mx-auto mb-8 scroll-mt-28">
+            <motion.div 
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              id="categories-header" 
+              className="max-w-[1600px] mx-auto mb-8 scroll-mt-28"
+            >
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-white/10">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sunset/15 border border-sunset/35 text-sunset text-[10px] font-sans uppercase tracking-[0.25em] font-semibold mb-3">
@@ -1045,10 +1064,16 @@ export default function Home() {
                   }
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Segment Selector Tabs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-[1600px] mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-[1600px] mx-auto"
+            >
               {[
                 { 
                   id: "Luxury", 
@@ -1127,13 +1152,13 @@ export default function Home() {
                   </button>
                 );
               })}
-            </div>
+            </motion.div>
 
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 max-w-[1600px] mx-auto"
             >
               <div>
@@ -1412,7 +1437,13 @@ export default function Home() {
             </motion.div>
 
             {/* Property Grid layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div 
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
               <AnimatePresence>
                 {filteredProperties.map((property) => (
                   <motion.div
@@ -1483,7 +1514,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           </section>
         </>
       )}
