@@ -347,16 +347,86 @@ export default function InventoryCRUD({
     });
   };
 
+  const handleExportCatalogJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(properties, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `imagine_properties_backup_${new Date().toISOString().slice(0,10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleImportCatalogJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target?.result as string);
+        if (Array.isArray(imported)) {
+          imported.forEach((p: Property) => onAddProperty(p));
+          alert(lang === "es" ? "¡Catálogo importado exitosamente en este dispositivo!" : "Catalog imported successfully on this device!");
+        }
+      } catch (err) {
+        alert(lang === "es" ? "Error al importar el archivo JSON." : "Error importing JSON file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleCopyTSCode = () => {
+    navigator.clipboard.writeText(JSON.stringify(properties, null, 2));
+    alert(lang === "es" ? "¡Código JSON del catálogo copiado al portapapeles! Me lo puedes pegar por el chat para dejarlo fijado en la nube." : "Catalog JSON code copied to clipboard! You can paste it in chat to fix it permanently on the cloud.");
+  };
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      {/* Form */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md h-fit">
-        <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
-          <Plus size={18} className="text-[#d4af37]" />
-          {editingPropertyId ? (lang === "es" ? "Editar Propiedad" : "Edit Property") : (lang === "es" ? "Agregar Nueva Propiedad" : "Add New Property")}
-        </h3>
-        <form onSubmit={handleCrudSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+      {/* Form & Sync Bar */}
+      <div className="space-y-6">
+        {/* Cloud & Device Sync Toolbar */}
+        <div className="bg-white/5 border border-[#d4af37]/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-lg backdrop-blur-xl">
+          <div>
+            <h4 className="text-sm font-semibold text-pearl flex items-center gap-2">
+              <RefreshCw size={16} className="text-[#d4af37]" />
+              {lang === "es" ? "Sincronización Multidispositivo & Nube" : "Multi-device & Cloud Sync"}
+            </h4>
+            <p className="text-[11px] text-gray-400">
+              {lang === "es" ? "Exporta tu catálogo para sincronizarlo entre tu computadora y tu celular." : "Export your catalog to sync it between your desktop and mobile phone."}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyTSCode}
+              className="px-3 py-1.5 bg-[#d4af37]/20 border border-[#d4af37]/50 text-[#d4af37] text-xs font-semibold rounded-xl hover:bg-[#d4af37] hover:text-[#02140f] transition flex items-center gap-1.5"
+            >
+              <Download size={14} />
+              {lang === "es" ? "Copiar JSON para Nube" : "Copy JSON for Cloud"}
+            </button>
+            <button
+              type="button"
+              onClick={handleExportCatalogJSON}
+              className="px-3 py-1.5 bg-white/10 border border-white/20 text-pearl text-xs font-semibold rounded-xl hover:bg-white/20 transition flex items-center gap-1.5"
+            >
+              <Download size={14} />
+              {lang === "es" ? "Descargar .JSON" : "Download .JSON"}
+            </button>
+            <label className="px-3 py-1.5 bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold rounded-xl hover:bg-emerald-800/50 transition cursor-pointer flex items-center gap-1.5">
+              <Upload size={14} />
+              {lang === "es" ? "Cargar JSON" : "Load JSON"}
+              <input type="file" accept=".json" onChange={handleImportCatalogJSON} className="hidden" />
+            </label>
+          </div>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-md h-fit">
+          <h3 className="font-serif text-lg text-pearl mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
+            <Plus size={18} className="text-[#d4af37]" />
+            {editingPropertyId ? (lang === "es" ? "Editar Propiedad" : "Edit Property") : (lang === "es" ? "Agregar Nueva Propiedad" : "Add New Property")}
+          </h3>
+          <form onSubmit={handleCrudSubmit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-[9px] uppercase tracking-wider text-gray-400 mb-1.5">
                 {lang === "es" ? "Código de Referencia" : "Reference Code"}
@@ -1457,6 +1527,7 @@ export default function InventoryCRUD({
           </div>
         </form>
       </div>
+    </div>
 
       {/* Catalog listing */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col h-[750px] overflow-hidden">

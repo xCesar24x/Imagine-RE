@@ -702,13 +702,14 @@ export default function Home() {
         if (p.segment !== activeSegment) return false;
       }
 
-      // Price Filter
-      if (priceFilter === "under-200k" && p.price >= 200000) return false;
-      if (priceFilter === "200k-500k" && (p.price < 200000 || p.price > 500000)) return false;
-      if (priceFilter === "500k-700k" && (p.price < 500000 || p.price > 700000)) return false;
-      if (priceFilter === "700k-1m" && (p.price < 700000 || p.price > 1000000)) return false;
-      if (priceFilter === "1m-2m" && (p.price < 1000000 || p.price > 2000000)) return false;
-      if (priceFilter === "over-2m" && p.price <= 2000000) return false;
+      // Price Filter (normalizing CRC to USD equivalent if needed)
+      const priceInUSD = p.currency === "CRC" ? p.price / 500 : p.price;
+      if (priceFilter === "under-200k" && priceInUSD >= 200000) return false;
+      if (priceFilter === "200k-500k" && (priceInUSD < 200000 || priceInUSD > 500000)) return false;
+      if (priceFilter === "500k-700k" && (priceInUSD < 500000 || priceInUSD > 700000)) return false;
+      if (priceFilter === "700k-1m" && (priceInUSD < 700000 || priceInUSD > 1000000)) return false;
+      if (priceFilter === "1m-2m" && (priceInUSD < 1000000 || priceInUSD > 2000000)) return false;
+      if (priceFilter === "over-2m" && priceInUSD <= 2000000) return false;
 
       // Size Filter
       if (sizeFilter === "under-5k" && p.sqft >= 5000) return false;
