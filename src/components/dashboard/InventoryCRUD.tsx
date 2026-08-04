@@ -1520,9 +1520,11 @@ export default function InventoryCRUD({
             )}
             <button
               type="submit"
-              className="flex-1 bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center"
+              className="flex-1 bg-[#d4af37] text-[#02140f] hover:bg-white text-xs py-3 rounded-xl uppercase tracking-widest font-bold cursor-pointer text-center transition shadow-lg hover:shadow-[#d4af37]/20"
             >
-              {editingPropertyId ? "Update Property" : "Create Property"}
+              {editingPropertyId 
+                ? (lang === "es" ? "💾 Guardar & Publicar Cambios" : "Save & Publish Changes") 
+                : (lang === "es" ? "✨ Crear & Publicar Propiedad" : "Create & Publish Property")}
             </button>
           </div>
         </form>
