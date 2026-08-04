@@ -858,13 +858,16 @@ export default function Home() {
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-45 px-6 md:px-12 py-5 flex items-center justify-between bg-black/45 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
-        <div className="flex items-center gap-4 cursor-pointer" onClick={() => { setActiveTab("catalog"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-          <div className="relative w-12 h-12 overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-sm">
+        <div className="flex items-center gap-3 md:gap-4 cursor-pointer" onClick={() => { setActiveTab("catalog"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+          <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-sm shrink-0">
             <Image src={getAssetPath("/images/imagine-logo.jpg")} alt="Imagine logo" fill className="object-contain" />
           </div>
-          <div>
-            <div className="font-serif text-2xl font-semibold tracking-[0.18em] uppercase">Imagine</div>
-            <div className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-gray-300/80">Real Estate & Property Management</div>
+          <div className="min-w-0">
+            <div className="font-serif text-lg md:text-2xl font-semibold tracking-[0.18em] uppercase">Imagine</div>
+            <div className="text-[7px] sm:text-[10px] md:text-xs uppercase tracking-[0.15em] sm:tracking-[0.4em] text-gray-300/80 truncate">
+              <span className="sm:hidden">RE & PM</span>
+              <span className="hidden sm:inline">Real Estate & Property Management</span>
+            </div>
           </div>
         </div>
 

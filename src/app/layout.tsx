@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Montserrat, Abril_Fatface } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,13 @@ const abrilFatface = Abril_Fatface({
   subsets: ["latin"],
   weight: "400",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: "Bryan Viquez | Imagine Property Management & Real Estate",
