@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { PROPERTIES, Property } from "@/constants/properties";
 
+export const dynamic = "force-dynamic";
+
 // Serverless fallback store
 let globalPropertiesStore: Property[] = [...PROPERTIES];
 

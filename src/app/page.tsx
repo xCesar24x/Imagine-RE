@@ -211,37 +211,59 @@ export default function Home() {
   const [properties, setProperties] = useState<Property[]>(PROPERTIES);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
+  const syncCloudProperties = (updated: Property[]) => {
+    try {
+      fetch("/api/properties", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated)
+      }).catch(() => {});
+    } catch (e) {}
+  };
+
   useEffect(() => {
-    const storedProps = localStorage.getItem("imagine_properties");
-    if (storedProps) {
-      try {
-        const parsed = JSON.parse(storedProps);
-        if (Array.isArray(parsed) && parsed.length >= 3 && !parsed.some((p: any) => p.id === "villa-morpho")) {
-          setProperties(parsed);
-          return;
+    fetch("/api/properties")
+      .then(res => res.json())
+      .then(cloudProps => {
+        if (Array.isArray(cloudProps) && cloudProps.length > 0) {
+          setProperties(cloudProps);
+          localStorage.setItem("imagine_properties", JSON.stringify(cloudProps));
         }
-      } catch (e) {}
-    }
-    setProperties(PROPERTIES);
-    localStorage.setItem("imagine_properties", JSON.stringify(PROPERTIES));
+      })
+      .catch(() => {
+        const storedProps = localStorage.getItem("imagine_properties");
+        if (storedProps) {
+          try {
+            const parsed = JSON.parse(storedProps);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setProperties(parsed);
+              return;
+            }
+          } catch (e) {}
+        }
+        setProperties(PROPERTIES);
+      });
   }, []);
 
   const handleAddProperty = (newProp: Property) => {
     const updated = [newProp, ...properties];
     setProperties(updated);
     localStorage.setItem("imagine_properties", JSON.stringify(updated));
+    syncCloudProperties(updated);
   };
 
   const handleUpdateProperty = (updatedProp: Property) => {
     const updated = properties.map(p => p.id === updatedProp.id ? updatedProp : p);
     setProperties(updated);
     localStorage.setItem("imagine_properties", JSON.stringify(updated));
+    syncCloudProperties(updated);
   };
 
   const handleDeleteProperty = (id: string) => {
     const updated = properties.filter(p => p.id !== id);
     setProperties(updated);
     localStorage.setItem("imagine_properties", JSON.stringify(updated));
+    syncCloudProperties(updated);
   };
 
   // Dynamic Property Types state
