@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ArrowLeft, ArrowRight, AlertTriangle, Users, Mail, Phone, MessageCircle, FileText, Download, ShieldCheck, Heart } from "lucide-react";
+import { CheckCircle2, ChevronRight, Clock, MapPin, Search, Trash2, Edit2, Shield, Calendar, Phone, X, ArrowLeft, ArrowRight, AlertTriangle, Users, Mail, MessageCircle, FileText, Download, ShieldCheck, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Property, Lead } from "@/constants/properties";
 
@@ -131,6 +131,7 @@ export default function PipelineCRM({
 
   const isLeadInactive = (isoString: string) => {
     const lastDate = new Date(isoString);
+    // eslint-disable-next-line react-hooks/purity
     const diffTime = Math.abs(Date.now() - lastDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 5;
@@ -516,7 +517,7 @@ export default function PipelineCRM({
                         ? `Hola ${selectedLead.name}, le contacta Bryan Viquez de Imagine RE & PM. Vi que solicitó información sobre: ${props}. Con mucho gusto le comparto todos los detalles. ¿Tiene un momento para conversar?`
                         : `Hello ${selectedLead.name}, this is Bryan Viquez from Imagine RE & PM. I see you requested information about: ${props}. I'd be happy to share all the details. Do you have a moment to chat?`;
                     }
-                    window.open(`https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
+                    window.open(`https://wa.me/${selectedLead.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
                   }}
                   className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans font-bold uppercase tracking-widest text-[9px] transition cursor-pointer border ${
                     selectedLead.requestedService === "guided_tour"

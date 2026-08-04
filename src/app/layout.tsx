@@ -36,6 +36,12 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${montserrat.variable} ${abrilFatface.variable} h-full antialiased`}
     >
+      <head>
+        {/* Ruta Digital Shield: Basic CSP & Security Meta Tags */}
+        <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https:;" />
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+        <meta httpEquiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+      </head>
       <body className="min-h-full flex flex-col bg-jungle text-pearl">{children}</body>
     </html>
   );

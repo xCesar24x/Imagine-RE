@@ -3,7 +3,7 @@
 // Imagine Luxury Real Estate & Property Management SPA
 import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useMotionTemplate } from "framer-motion";
 import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS, PMProperty, DEMO_PM_PROPERTIES, GlobalSiteSettings, DEFAULT_SITE_SETTINGS } from "@/constants/properties";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
@@ -125,40 +125,36 @@ function AEAnimatedText({
 }
 
 function TiltCard({ children, className = "" }: { children: React.ReactNode, className?: string }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
   };
 
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
+  const background = useMotionTemplate`
+    radial-gradient(
+      800px circle at ${mouseX}px ${mouseY}px,
+      rgba(212, 175, 55, 0.22),
+      transparent 80%
+    )
+  `;
 
   return (
     <motion.div
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d", perspective: "1500px" }}
-      className={className}
+      className={`relative overflow-hidden group rounded-[2.5rem] ${className}`}
+      whileHover={{ scale: 1.005 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
     >
-      <div style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }} className="w-full h-full">
+      {/* Liquid Ripple Overlay */}
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-500 group-hover:opacity-100 z-10 mix-blend-screen"
+        style={{ background }}
+      />
+      <div className="w-full h-full relative z-20">
         {children}
       </div>
     </motion.div>
@@ -208,7 +204,7 @@ export default function Home() {
     fetchRates();
     const interval = setInterval(fetchRates, 30 * 60 * 1000);
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   // Dynamic Properties CRUD state
@@ -324,7 +320,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setBgIndex(prev => (prev + 1) % siteSettings.rotatingBackgrounds.length);
-    }, 20000);
+    }, 7000);
     return () => clearInterval(interval);
   }, [siteSettings.rotatingBackgrounds]);
 
@@ -346,10 +342,12 @@ export default function Home() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [modalTab, setModalTab] = useState<"gallery" | "360" | "map" | "video">("gallery");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activePanoramaIndex, setActivePanoramaIndex] = useState(0);
 
   useEffect(() => {
     if (selectedProperty) {
       setCurrentImageIndex(0);
+      setActivePanoramaIndex(0);
       setModalTab("gallery");
     }
   }, [selectedProperty]);
@@ -366,14 +364,14 @@ export default function Home() {
     switch (activeSegment) {
       case "Standard":
         return {
-          bg: "bg-[#031c16]",
+          bg: "bg-[#031c16]/40",
           textAccent: "text-cyan-400",
           borderAccent: "border-cyan-500/20",
           selectBg: "bg-[#04241d]"
         };
       case "Commercial":
         return {
-          bg: "bg-[#090f1e]",
+          bg: "bg-[#090f1e]/40",
           textAccent: "text-blue-400",
           borderAccent: "border-blue-500/20",
           selectBg: "bg-[#0c152b]"
@@ -381,7 +379,7 @@ export default function Home() {
       case "Luxury":
       default:
         return {
-          bg: "bg-[#020f0a]",
+          bg: "bg-[#020f0a]/40",
           textAccent: "text-sunset",
           borderAccent: "border-white/10",
           selectBg: "bg-[#041b15]"
@@ -401,6 +399,7 @@ export default function Home() {
     motivation: "",
     requestedService: "",
   });
+  const [gdprConsent, setGdprConsent] = useState(false);
   const [formError, setFormError] = useState("");
   const [leadScore, setLeadScore] = useState<"READY" | "POTENTIAL" | "CURIOUS" | null>(null);
 
@@ -431,6 +430,15 @@ export default function Home() {
           "/images/ocean.png",
           "/images/minimalist.png"
         ]
+      : [];
+  }, [selectedProperty]);
+
+  const panoramaImages = useMemo(() => {
+    if (selectedProperty?.panoramas && selectedProperty.panoramas.length > 0) {
+      return selectedProperty.panoramas;
+    }
+    return selectedProperty?.panorama 
+      ? [{ url: selectedProperty.panorama, title: "Principal" }] 
       : [];
   }, [selectedProperty]);
 
@@ -470,6 +478,16 @@ export default function Home() {
       setFormError(t.wishlist.validationMissingFields);
       return;
     }
+    if (!gdprConsent) {
+      setFormError(lang === "es" ? "Debe aceptar la política de privacidad y tratamiento de datos." : "You must accept the privacy and data processing policy.");
+      return;
+    }
+    
+    // Strict Sanitization to prevent XSS / injections
+    const sanitizedName = clientName.trim().replace(/[<>/"']/g, "");
+    const sanitizedEmail = clientEmail.trim().toLowerCase().replace(/[<>/"']/g, "");
+    const sanitizedPhone = clientPhone.trim().replace(/[<>/"']/g, "");
+
     setFormError("");
     const score = calculateLeadScore();
     setLeadScore(score);
@@ -477,9 +495,9 @@ export default function Home() {
     // Save lead to local storage for Admin Dashboard CRM
     const newLead = {
       id: `lead-${Date.now()}`,
-      name: clientName.trim(),
-      email: clientEmail.trim().toLowerCase(),
-      phone: clientPhone.trim(),
+      name: sanitizedName,
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
       budgetRange: qualification.budget,
       financing: qualification.financing,
       horizon: qualification.horizon,
@@ -487,8 +505,9 @@ export default function Home() {
       requestedService: qualification.requestedService,
       wishlistPropertyIds: [...wishlistedIds],
       status: "Lead Nuevo" as const,
-      notes: [`Lead qualified from website wishlist. Priority Score: ${score}`],
-      lastInteractionDate: new Date().toISOString()
+      notes: [`${lang === "es" ? "Contacto inicial vía Wishlist." : "Initial contact via Wishlist."} Score: ${score}`],
+      lastInteractionDate: new Date().toISOString(),
+      gdprConsent: gdprConsent
     };
 
     const storedLeads = localStorage.getItem("imagine_leads");
@@ -727,7 +746,45 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#020f0a] text-pearl selection:bg-sunset selection:text-jungle relative">
+    <main className="min-h-screen text-pearl selection:bg-sunset selection:text-jungle relative">
+      {/* Immersive Neuromarketing Background */}
+      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#020f0a]">
+        {/* Background Image Layer with Crossfade */}
+        {siteSettings.rotatingBackgrounds.length === 0 ? (
+          <div className="absolute inset-0 opacity-65">
+            <Image
+              src={getAssetPath("/images/hero-cover.jpg")}
+              alt="Immersive Background"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        ) : (
+          siteSettings.rotatingBackgrounds.map((bgSrc, index) => (
+            <motion.div
+              key={bgSrc + index}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: index === bgIndex ? 0.80 : 0 }}
+              transition={{ duration: 2.0, ease: "easeInOut" }}
+            >
+              <Image
+                src={bgSrc}
+                alt="Immersive Background"
+                fill
+                className="object-cover animate-[pulse_10s_infinite_alternate]"
+                priority={index === 0}
+              />
+            </motion.div>
+          ))
+        )}
+        {/* Glassmorphism Blur Overlay (above the image) */}
+        <div className="absolute inset-0 bg-[#020f0a]/45 backdrop-blur-[3px] z-10" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#d4af37]/10 rounded-full blur-[150px] translate-x-1/3 -translate-y-1/3" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-900/10 rounded-full blur-[120px] -translate-x-1/3 translate-y-1/3" />
+      </div>
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-45 px-6 md:px-12 py-5 flex items-center justify-between bg-black/45 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
         <div className="flex items-center gap-4 cursor-pointer" onClick={() => { setActiveTab("catalog"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
@@ -844,7 +901,7 @@ export default function Home() {
                 <motion.div
                   key={bgIndex}
                   initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 0.65, scale: 1 }}
+                  animate={{ opacity: 0.80, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 2.5, ease: "easeInOut" }}
                   className="absolute inset-0"
@@ -859,7 +916,7 @@ export default function Home() {
                 </motion.div>
               </AnimatePresence>
               {/* Dark dramatic overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#020f0a] via-[#02140f]/60 to-[#020f0a]/30 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#020f0a] via-[#02140f]/45 to-[#020f0a]/20 mix-blend-multiply" />
               {/* Additional radial glow for focus */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#020f0a]/40 to-[#020f0a] pointer-events-none" />
               <div className="absolute left-1/2 top-20 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#d4af37]/5 blur-[120px] pointer-events-none" />
@@ -977,7 +1034,7 @@ export default function Home() {
                     <Sparkles size={12} className="animate-pulse" />
                     {lang === "es" ? "Paso 1: Selecciona una Categoría" : "Step 1: Select a Category"}
                   </div>
-                  <h2 className="text-2xl md:text-4xl font-serif text-pearl font-bold">
+                  <h2 className="text-2xl md:text-4xl font-serif text-pearl font-bold drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                     {lang === "es" ? "Explora Nuestras Colecciones de Propiedades" : "Explore Our Property Collections"}
                   </h2>
                 </div>
@@ -1083,7 +1140,7 @@ export default function Home() {
                 <h2 className={`text-xs font-sans uppercase tracking-[0.3em] mb-3 font-semibold ${catalogTheme.textAccent}`}>
                   {lang === "es" ? "Portafolio Segmentado" : "Segmented Portfolio"}
                 </h2>
-                <h3 className="text-3xl md:text-5xl font-serif">
+                <h3 className="text-3xl md:text-5xl font-serif drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                   {lang === "es" 
                     ? (activeSegment === "Luxury" ? "Colección Signature" : activeSegment === "Standard" ? "Inmobiliaria Residencial" : "Bienes Raíces Comerciales")
                     : (activeSegment === "Luxury" ? "Signature Collection" : activeSegment === "Standard" ? "Residential Realty" : "Commercial Estates")
@@ -1323,6 +1380,36 @@ export default function Home() {
                 </AnimatePresence>
               </div>
             </div>
+
+            {/* VIP Discovery Tour Interstitial Banner (Neuromarketing Agent) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="mb-12 relative overflow-hidden rounded-3xl border border-sunset/30 bg-gradient-to-r from-[#01140f] to-[#022b1f] p-8 md:p-12 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 group cursor-pointer"
+              onClick={() => {
+                setActiveTab("tours");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-700 blur-sm"></div>
+              <div className="relative z-10 max-w-2xl">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-sunset font-bold mb-3 flex items-center gap-2">
+                  <Sparkles size={14} /> {lang === "es" ? "Reserva tu expedición" : "Reserve your expedition"}
+                </div>
+                <h3 className="text-2xl md:text-4xl font-serif text-white mb-4">
+                  {t.discoveryTours.title}
+                </h3>
+                <p className="text-sm md:text-base text-gray-300 font-sans leading-relaxed">
+                  {t.discoveryTours.description}
+                </p>
+              </div>
+              <div className="relative z-10 flex-shrink-0">
+                <button className="h-14 px-8 rounded-full bg-sunset text-jungle font-sans font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-3 shadow-[0_10px_30px_rgba(212,175,55,0.4)]">
+                  {t.discoveryTours.bookNow} <ArrowRight size={18} />
+                </button>
+              </div>
+            </motion.div>
 
             {/* Property Grid layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -1810,6 +1897,22 @@ export default function Home() {
                         </div>
                       )}
 
+                      {currentStep === 4 && (
+                        <div className="flex items-start gap-3 mt-4 p-4 rounded-xl border border-white/5 bg-[#01140f]">
+                          <input 
+                            type="checkbox"
+                            checked={gdprConsent}
+                            onChange={(e) => setGdprConsent(e.target.checked)}
+                            className="mt-1 flex-shrink-0 w-4 h-4 rounded bg-transparent border border-sunset accent-sunset"
+                          />
+                          <div className="text-[10px] text-gray-400 font-sans leading-relaxed">
+                            {lang === "es" 
+                              ? "Consiento el tratamiento de mis datos personales para ser contactado según la Política de Privacidad. Mis datos están protegidos y cifrados por Ruta Digital Shield." 
+                              : "I consent to the processing of my personal data to be contacted according to the Privacy Policy. My data is protected and encrypted by Ruta Digital Shield."}
+                          </div>
+                        </div>
+                      )}
+
                       {formError && <div className="text-xs text-rose-300 font-sans mt-2">{formError}</div>}
 
                       {/* Controls Buttons */}
@@ -1834,10 +1937,10 @@ export default function Home() {
                         ) : (
                           <button
                             type="submit"
-                            disabled={!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService}
-                            className="flex-1 py-3.5 rounded-2xl bg-sunset text-jungle hover:bg-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-sunset/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-800 disabled:text-gray-500"
+                            disabled={!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService || !gdprConsent}
+                            className="flex-1 py-3.5 rounded-2xl bg-sunset text-jungle hover:bg-white text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-sunset/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-800 disabled:text-gray-500 transition-colors"
                           >
-                            {(!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService) ? (
+                            {(!clientName || !clientEmail || !clientPhone || !qualification.budget || !qualification.financing || !qualification.horizon || !qualification.motivation || !qualification.requestedService || !gdprConsent) ? (
                               <>
                                 <Shield size={13} /> {lang === "es" ? "Bloqueado - Complete formulario" : "Locked - Complete form"}
                               </>
@@ -1983,26 +2086,60 @@ export default function Home() {
                     </>
                   )}
                   
-                  {/* Gallery Index Dots Indicator */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/50 px-4 py-2 rounded-full border border-white/10">
-                    {galleryImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentImageIndex(idx)}
-                        className={`h-1.5 w-1.5 rounded-full transition-all ${idx === currentImageIndex ? "bg-sunset w-3" : "bg-white/30"}`}
-                      />
-                    ))}
+                  {/* Gallery Index Thumbnails Indicator */}
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10 px-4">
+                    <div className="flex gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-2xl border border-white/10 overflow-x-auto max-w-[90%] scrollbar-thin">
+                      {galleryImages.map((imgUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`relative w-14 h-9 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                            idx === currentImageIndex ? "border-sunset scale-105" : "border-white/10 opacity-55 hover:opacity-100"
+                          }`}
+                        >
+                          <Image src={getAssetPath(imgUrl)} alt={`Thumb ${idx}`} fill className="object-cover" />
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
               {modalTab === "360" && (
-                selectedProperty.panorama && selectedProperty.panorama !== "" ? (
-                  <Three360Viewer panoramaUrl={selectedProperty.panorama} />
+                panoramaImages.length > 0 ? (
+                  <div className="w-full h-full relative">
+                    <Three360Viewer panoramaUrl={panoramaImages[activePanoramaIndex]?.url} />
+                    
+                    {/* Scene Selection list at the bottom */}
+                    {panoramaImages.length > 1 && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10 px-4">
+                        <div className="flex gap-2 bg-black/60 backdrop-blur-md px-3 py-2 rounded-2xl border border-white/10 overflow-x-auto max-w-[90%] scrollbar-thin">
+                          {panoramaImages.map((pano, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setActivePanoramaIndex(idx)}
+                              className={`relative w-14 h-9 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                                idx === activePanoramaIndex ? "border-sunset scale-105" : "border-white/10 opacity-55 hover:opacity-100"
+                              }`}
+                            >
+                              <Image src={getAssetPath(pano.url)} alt={pano.title} fill className="object-cover" />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-[7px] font-bold uppercase tracking-wider text-white px-1 text-center truncate">
+                                {pano.title}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : selectedProperty.virtualTourUrl ? (
                   <iframe src={selectedProperty.virtualTourUrl} className="w-full h-full border-0" allowFullScreen />
                 ) : (
-                  <Three360Viewer panoramaUrl={selectedProperty.panorama || "/images/jungle.png"} />
+                  <div className="w-full h-full flex items-center justify-center bg-[#02120e] text-[#d4af37] font-mono text-xs uppercase tracking-widest">
+                    No 3D Panorama Available
+                  </div>
                 )
               )}
               
@@ -2382,7 +2519,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <footer id="contact" className="relative mt-16 border-t border-white/10 bg-black/35 py-12 px-6 backdrop-blur-xl">
+      <footer id="contact" className="relative mt-16 bg-transparent py-12 px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-8 md:flex-row md:items-center md:justify-between border-b border-white/5 pb-8">
           <div>
             <div className="text-xs uppercase tracking-[0.36em] text-sunset mb-3 font-semibold">{t.footer.subtitle}</div>

@@ -23,6 +23,7 @@ export default function SocialHub({
 
   const getPostStatusColor = (isoString?: string) => {
     if (!isoString) return "bg-rose-600 animate-pulse";
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(isoString).getTime();
     const days = diff / (1000 * 60 * 60 * 24);
     if (days >= 14) return "bg-rose-600 animate-pulse";

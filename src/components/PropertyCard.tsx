@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
 import { Property } from "@/constants/properties";
 import { BedDouble, Expand, Heart, MapPin } from "lucide-react";
 import { getAssetPath } from "@/utils/paths";
@@ -98,13 +98,38 @@ export default function PropertyCard({
     }
   }, [property.segment]);
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
   return (
     <motion.div
-      className={`group relative cursor-pointer overflow-hidden rounded-sm text-pearl shadow-2xl border transition duration-300 ${segmentStyles.bg}`}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      onMouseMove={handleMouseMove}
+      className={`group relative cursor-pointer overflow-hidden rounded-2xl text-pearl shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_40px_rgba(212,175,55,0.15)] border border-white/5 hover:border-sunset/40 transition-shadow duration-500 bg-gradient-to-br from-[#02100b] to-[#01140f] backdrop-blur-sm ${segmentStyles.bg}`}
+      whileHover={{ scale: 1.015 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => onClick(property)}
     >
+      {/* Aqueous / Spotlight Hover Effect */}
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-500 group-hover:opacity-100 z-20 mix-blend-screen"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              600px circle at ${mouseX}px ${mouseY}px,
+              rgba(212, 175, 55, 0.40),
+              transparent 80%
+            )
+          `,
+        }}
+      />
+      
       <div className="aspect-[4/5] w-full overflow-hidden relative">
         <motion.img
           src={getAssetPath(property.image)}

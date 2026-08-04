@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, type FormEvent } from "react";
-import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Download, Check, RefreshCw, X } from "lucide-react";
+import { useState, useMemo, useRef, type FormEvent } from "react";
+import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Download, Check, RefreshCw, X, Upload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Property, PROVINCE_REGIONS, PropertyType, Region } from "@/constants/properties";
+import { Property, PROVINCE_REGIONS, PropertyType, Region, PropertyPanorama } from "@/constants/properties";
 
 interface Collaborator {
   id: string;
@@ -51,6 +51,40 @@ export default function InventoryCRUD({
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [isCustomAmenitiesExpanded, setIsCustomAmenitiesExpanded] = useState(false);
   const [customAmenityInput, setCustomAmenityInput] = useState("");
+  const panoramaInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePanoramaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const newPanoramas: PropertyPanorama[] = [];
+    let processed = 0;
+    
+    Array.from(files).forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          const defaultTitle = file.name.substring(0, file.name.lastIndexOf('.')) || `Scene ${index + 1}`;
+          newPanoramas.push({
+            url: ev.target.result as string,
+            title: defaultTitle
+          });
+        }
+        processed++;
+        if (processed === files.length) {
+          setCrudForm(prev => {
+            const updatedPanos = [...(prev.panoramas || []), ...newPanoramas];
+            return {
+              ...prev,
+              panorama: prev.panorama || updatedPanos[0]?.url || "",
+              panoramas: updatedPanos
+            };
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   const [crudForm, setCrudForm] = useState({
     name: "",
@@ -88,7 +122,8 @@ export default function InventoryCRUD({
     gallery: [] as string[],
     videoUrl: "",
     virtualTourUrl: "",
-    panorama: ""
+    panorama: "",
+    panoramas: [] as PropertyPanorama[]
   });
 
   const activeProvinceRegions = useMemo(() => {
@@ -216,7 +251,7 @@ export default function InventoryCRUD({
       vibeTags: formattedTags,
       description: crudForm.description,
       image: crudForm.image,
-      panorama: "/panoramas/default.jpg",
+      panorama: crudForm.panorama || "/panoramas/default.jpg",
       type: crudForm.type,
       segment: crudForm.segment,
       province: crudForm.province,
@@ -237,6 +272,7 @@ export default function InventoryCRUD({
       catasterMapNum: crudForm.catasterMapNum,
       amenities: crudForm.amenities,
       gallery: crudForm.gallery || [],
+      panoramas: crudForm.panoramas || [],
       currency: crudForm.currency,
       transactionType: crudForm.transactionType,
       commissionType: crudForm.commissionType,
@@ -264,7 +300,7 @@ export default function InventoryCRUD({
       airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
       hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
       fincaRegistryNum: "", catasterMapNum: "", gallery: [],
-      videoUrl: "", virtualTourUrl: "", panorama: ""
+      videoUrl: "", virtualTourUrl: "", panorama: "", panoramas: []
     });
   };
 
@@ -306,7 +342,8 @@ export default function InventoryCRUD({
       transactionType: p.transactionType || "Venta",
       videoUrl: p.videoUrl || "",
       virtualTourUrl: p.virtualTourUrl || "",
-      panorama: p.panorama || ""
+      panorama: p.panorama || "",
+      panoramas: p.panoramas || []
     });
   };
 
@@ -831,14 +868,112 @@ export default function InventoryCRUD({
 
           <div>
             <label className="block text-[9px] uppercase tracking-wider text-[#d4af37] mb-1.5 font-bold">
-              DJI 360 Panorama Image URL (Raw DJI Equirectangular Photo)
+              DJI 360 Panorama Image (Raw DJI Equirectangular Photo)
             </label>
-            <input 
-              value={crudForm.panorama || ""} 
-              onChange={e => setCrudForm({ ...crudForm, panorama: e.target.value })} 
-              placeholder="e.g. /images/dji-pano.jpg (or drag & drop in the main gallery and paste URL here)"
-              className="w-full bg-[#01140f] border border-[#d4af37]/30 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
-            />
+            <div className="flex gap-3">
+              <input 
+                value={crudForm.panorama || ""} 
+                onChange={e => setCrudForm({ ...crudForm, panorama: e.target.value })} 
+                placeholder="e.g. /images/dji-pano.jpg (or upload file)"
+                className="flex-1 bg-[#01140f] border border-[#d4af37]/30 text-pearl text-xs px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" 
+              />
+              <input 
+                type="file" 
+                multiple
+                accept="image/*" 
+                ref={panoramaInputRef} 
+                onChange={handlePanoramaFileChange} 
+                className="hidden" 
+              />
+              <button 
+                type="button"
+                onClick={() => panoramaInputRef.current?.click()}
+                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-pearl text-xs font-mono uppercase tracking-widest rounded-xl transition cursor-pointer flex items-center gap-2 shrink-0"
+              >
+                <Upload size={14} />
+                {lang === "es" ? "Subir Archivos" : "Upload Files"}
+              </button>
+            </div>
+            
+            {/* DJI 360 Panoramas Manager */}
+            {crudForm.panoramas && crudForm.panoramas.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <label className="block text-[9px] uppercase tracking-wider text-[#d4af37] font-semibold">
+                  {lang === "es" ? "Panoramas 3D Cargados" : "Uploaded 3D Panoramas"} ({crudForm.panoramas.length})
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {crudForm.panoramas.map((pano, idx) => {
+                    const isMain = crudForm.panorama === pano.url;
+                    return (
+                      <div key={idx} className="flex flex-col gap-1.5 p-2 bg-black/30 border border-white/5 rounded-xl">
+                        <div 
+                          className={`relative aspect-video rounded-lg overflow-hidden border ${isMain ? "border-[#d4af37] ring-1 ring-[#d4af37]" : "border-white/10"} bg-black/40 group`}
+                        >
+                          <img 
+                            src={pano.url} 
+                            alt={`Panorama ${idx}`} 
+                            className="object-cover w-full h-full" 
+                          />
+                          
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition duration-150">
+                            {!isMain && (
+                              <button
+                                type="button"
+                                onClick={() => setCrudForm(prev => ({ ...prev, panorama: pano.url }))}
+                                className="bg-[#d4af37] text-black text-[8px] font-bold px-1.5 py-0.5 rounded shadow hover:bg-white transition cursor-pointer"
+                              >
+                                {lang === "es" ? "Principal" : "Main"}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCrudForm(prev => {
+                                  const newPanos = (prev.panoramas || []).filter((_, i) => i !== idx);
+                                  let newMain = prev.panorama;
+                                  if (prev.panorama === pano.url) {
+                                    newMain = newPanos.length > 0 ? newPanos[0]?.url : "";
+                                  }
+                                  return {
+                                    ...prev,
+                                    panorama: newMain,
+                                    panoramas: newPanos
+                                  };
+                                });
+                              }}
+                              className="bg-red-600 text-white p-1 rounded hover:bg-red-700 transition cursor-pointer"
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+
+                          {isMain && (
+                            <div className="absolute top-1 left-1 bg-[#d4af37] text-black text-[7px] uppercase font-bold px-1 rounded">
+                              {lang === "es" ? "Principal" : "Main"}
+                            </div>
+                          )}
+                        </div>
+                        {/* Title input to edit scene name */}
+                        <input
+                          type="text"
+                          value={pano.title || ""}
+                          onChange={e => {
+                            const newTitle = e.target.value;
+                            setCrudForm(prev => {
+                              const updated = [...(prev.panoramas || [])];
+                              updated[idx] = { ...updated[idx], title: newTitle };
+                              return { ...prev, panoramas: updated };
+                            });
+                          }}
+                          placeholder={lang === "es" ? "Nombre de la zona" : "Zone/room name"}
+                          className="w-full bg-[#01140f] border border-white/10 text-pearl text-[9px] px-2 py-1 rounded outline-none focus:border-[#d4af37] font-sans"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <p className="text-[8px] text-gray-400 mt-1 uppercase tracking-widest font-mono">
               Si llenas esto, el sistema usará nuestro visor nativo 3D interactivo en lugar del VR Tour externo.
             </p>
@@ -1305,7 +1440,7 @@ export default function InventoryCRUD({
                     airportTimeMin: 60, closestCity: "", cityDistKm: 5, medicalDistMin: 15,
                     hasFiberOptic: true, hasStarlink: false, image: "/images/jungle.png",
                     fincaRegistryNum: "", catasterMapNum: "", gallery: [],
-                    videoUrl: "", virtualTourUrl: "", panorama: ""
+                    videoUrl: "", virtualTourUrl: "", panorama: "", panoramas: []
                   });
                 }}
                 className="flex-1 border border-white/10 hover:border-rose-400 text-pearl text-xs py-3 rounded-xl uppercase tracking-widest font-semibold cursor-pointer text-center"

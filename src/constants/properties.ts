@@ -1,3 +1,9 @@
+export interface PropertyPanorama {
+  url: string;
+  title: string;
+  titleEs?: string;
+}
+
 export interface Property {
   id: string;
   name: string;
@@ -9,6 +15,7 @@ export interface Property {
   description: string;
   image: string;
   panorama: string;
+  panoramas?: PropertyPanorama[];
   type: string[] | string;
   segment: ("Luxury" | "Standard" | "Commercial")[] | "Luxury" | "Standard" | "Commercial";
   m2?: number;
