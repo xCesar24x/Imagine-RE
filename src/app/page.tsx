@@ -343,6 +343,14 @@ export default function Home() {
   const [modalTab, setModalTab] = useState<"gallery" | "360" | "map" | "video">("gallery");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activePanoramaIndex, setActivePanoramaIndex] = useState(0);
+  const [showPreloader, setShowPreloader] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPreloader(false);
+    }, 3200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (selectedProperty) {
@@ -747,6 +755,69 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-pearl selection:bg-sunset selection:text-jungle relative">
+      {/* Brand Preloader Screen */}
+      <AnimatePresence>
+        {showPreloader && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#02140f] overflow-hidden"
+          >
+            {/* Ambient gold glow behind the logo */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.15 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="absolute w-[400px] h-[400px] bg-[#d4af37] rounded-full blur-[100px] pointer-events-none"
+            />
+            
+            <div className="relative flex flex-col items-center max-w-sm px-6">
+              {/* Logo Container with a golden spike/shimmer effect */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                className="relative w-48 h-48 md:w-60 md:h-60 rounded-3xl overflow-hidden shadow-2xl border border-white/5 bg-[#02140f]"
+              >
+                <Image
+                  src={getAssetPath("/images/imagine-logo.jpg")}
+                  alt="Imagine RE & PM Logo"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                
+                {/* Golden "spike" shimmer flash */}
+                <motion.div
+                  initial={{ left: "-100%", opacity: 0 }}
+                  animate={{ left: "200%", opacity: [0, 0.8, 0] }}
+                  transition={{ delay: 1.4, duration: 1.2, ease: "easeInOut" }}
+                  className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent skew-x-12 pointer-events-none"
+                />
+              </motion.div>
+
+              {/* Spike pulse expanding ripple */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, border: "1px solid rgba(212,175,55,0.4)" }}
+                animate={{ scale: 1.3, opacity: [0, 0.5, 0], border: "1px solid rgba(212,175,55,0)" }}
+                transition={{ delay: 1.5, duration: 1.0, ease: "easeOut" }}
+                className="absolute inset-0 rounded-3xl pointer-events-none"
+              />
+              
+              {/* Preloader progress bar */}
+              <div className="mt-8 w-32 h-[1px] bg-white/10 relative overflow-hidden rounded-full">
+                <motion.div 
+                  initial={{ left: "-100%" }}
+                  animate={{ left: "100%" }}
+                  transition={{ duration: 2.2, ease: "easeInOut" }}
+                  className="absolute inset-0 bg-[#d4af37]"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Immersive Neuromarketing Background */}
       <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#020f0a]">
         {/* Background Image Layer with Crossfade */}
