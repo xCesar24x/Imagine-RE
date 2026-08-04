@@ -214,14 +214,16 @@ export default function Home() {
   useEffect(() => {
     const storedProps = localStorage.getItem("imagine_properties");
     if (storedProps) {
-      const parsed = JSON.parse(storedProps);
-      if (parsed.some((p: any) => p.id === "villa-morpho")) {
-        setProperties([]);
-        localStorage.setItem("imagine_properties", JSON.stringify([]));
-      } else {
-        setProperties(parsed);
-      }
+      try {
+        const parsed = JSON.parse(storedProps);
+        if (Array.isArray(parsed) && parsed.length >= 3 && !parsed.some((p: any) => p.id === "villa-morpho")) {
+          setProperties(parsed);
+          return;
+        }
+      } catch (e) {}
     }
+    setProperties(PROPERTIES);
+    localStorage.setItem("imagine_properties", JSON.stringify(PROPERTIES));
   }, []);
 
   const handleAddProperty = (newProp: Property) => {
