@@ -159,11 +159,11 @@ const SEEDED_PROPERTIES: Property[] = [
     vibeTags: ["Bosque Nuboso", "Clima Fresco", "Proyecto Privado", "Acceso Controlado", "Vista Panorámica", "Tranquilidad"],
     description: "Beautiful 155 m² (1,668 sqft) mountain cabin set on a 5,000 m² (1.24 acre) private forest lot in Ángeles Norte, San Ramón, Alajuela. Located within a gated private estate project near the famous Villa Blanca Cloud Forest Hotel. At 1,100m elevation with spring-like weather year-round.",
     descriptionEs: "Hermosa cabaña de montaña de 155 m² (1,668 sqft) construida sobre un impresionante terreno de 5,000 m² (1.24 acres) de bosque privado y zonas verdes en Ángeles Norte de San Ramón, Alajuela. Ubicada en un exclusivo proyecto de quintas privado con acceso controlado cerca del reconocido Hotel Villa Blanca Cloud Forest.",
-    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80",
-    panorama: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/premium1.png",
+    panorama: "/images/hero-cover.jpg",
     panoramas: [
-      { url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80", title: "Vista Principal", titleEs: "Vista Principal" },
-      { url: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1600&q=80", title: "Balcón de Montaña", titleEs: "Balcón de Montaña" }
+      { url: "/images/hero-cover.jpg", title: "Vista Principal", titleEs: "Vista Principal" },
+      { url: "/images/premium2.png", title: "Balcón de Montaña", titleEs: "Balcón de Montaña" }
     ],
     type: ["Cabaña", "Quinta de Descanso"],
     segment: ["Standard", "Luxury"],
@@ -179,9 +179,10 @@ const SEEDED_PROPERTIES: Property[] = [
     hasStarlink: true,
     amenities: ["Balcón Panorámico", "Cocina Funcional", "Bosque Privado", "Acceso Controlado"],
     gallery: [
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=80",
-      "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1600&q=80",
-      "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1600&q=80"
+      "/images/premium1.png",
+      "/images/premium2.png",
+      "/images/premium3.png",
+      "/images/hero-cover.jpg"
     ]
   }
 ];
