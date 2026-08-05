@@ -40,7 +40,10 @@ let activeStorage: any = null;
 export async function getActiveFirebaseConfig(): Promise<FirebaseConfig> {
   if (typeof window === "undefined") return DEFAULT_FIREBASE_CONFIG;
   const saved = await getPersistentItem<FirebaseConfig>("imagine_firebase_config", DEFAULT_FIREBASE_CONFIG);
-  return saved && saved.apiKey ? saved : DEFAULT_FIREBASE_CONFIG;
+  if (saved && saved.apiKey && saved.projectId) {
+    return saved;
+  }
+  return DEFAULT_FIREBASE_CONFIG;
 }
 
 export async function initFirebase() {
