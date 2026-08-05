@@ -216,13 +216,25 @@ export default function Home() {
   useEffect(() => {
     getPropertiesFromFirebase().then(fbProps => {
       if (fbProps && Array.isArray(fbProps) && fbProps.length > 0) {
-        setProperties(fbProps);
-        setPersistentItem("imagine_properties", fbProps);
-        return;
+        const hasUnsplash = fbProps.some(p => p.image && p.image.includes("unsplash.com"));
+        if (!hasUnsplash) {
+          setProperties(fbProps);
+          setPersistentItem("imagine_properties", fbProps);
+          return;
+        }
       }
       getPersistentItem<Property[]>("imagine_properties", PROPERTIES).then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setProperties(data);
+          const hasUnsplash = data.some(p => p.image && p.image.includes("unsplash.com"));
+          if (hasUnsplash) {
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("imagine_properties");
+            }
+            setProperties(PROPERTIES);
+            setPersistentItem("imagine_properties", PROPERTIES);
+          } else {
+            setProperties(data);
+          }
         } else {
           setProperties(PROPERTIES);
         }
