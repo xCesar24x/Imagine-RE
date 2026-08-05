@@ -72,3 +72,19 @@ export async function getPersistentItem<T>(key: string, fallback: T): Promise<T>
 
   return fallback;
 }
+
+export async function removePersistentItem(key: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {}
+
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.delete(key);
+  } catch (e) {
+    console.error("IndexedDB delete error:", e);
+  }
+}

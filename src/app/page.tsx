@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useMotionTemplate } from "framer-motion";
 import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS, PMProperty, DEMO_PM_PROPERTIES, GlobalSiteSettings, DEFAULT_SITE_SETTINGS } from "@/constants/properties";
-import { getPersistentItem, setPersistentItem } from "@/utils/storage";
+import { getPersistentItem, setPersistentItem, removePersistentItem } from "@/utils/storage";
 import { getPropertiesFromFirebase, savePropertyToFirebase, deletePropertyFromFirebase } from "@/utils/firebase";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
@@ -227,11 +227,10 @@ export default function Home() {
         if (Array.isArray(data) && data.length > 0) {
           const hasUnsplash = data.some(p => p.image && p.image.includes("unsplash.com"));
           if (hasUnsplash) {
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("imagine_properties");
-            }
-            setProperties(PROPERTIES);
-            setPersistentItem("imagine_properties", PROPERTIES);
+            removePersistentItem("imagine_properties").then(() => {
+              setProperties(PROPERTIES);
+              setPersistentItem("imagine_properties", PROPERTIES);
+            });
           } else {
             setProperties(data);
           }
