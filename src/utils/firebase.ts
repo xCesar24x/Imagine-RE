@@ -1,6 +1,6 @@
 "use client";
 
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, deleteApp } from "firebase/app";
 import { 
   getFirestore, 
   collection, 
@@ -53,7 +53,18 @@ export async function initFirebase() {
     return null;
   }
   try {
-    activeApp = getApps().length === 0 ? initializeApp(config) : getApp();
+    if (getApps().length > 0) {
+      const existingApp = getApp();
+      if (existingApp.options.apiKey === config.apiKey) {
+        activeApp = existingApp;
+        activeDb = getFirestore(activeApp);
+        activeStorage = getStorage(activeApp);
+        return { app: activeApp, db: activeDb, storage: activeStorage };
+      } else {
+        await deleteApp(existingApp);
+      }
+    }
+    activeApp = initializeApp(config);
     activeDb = getFirestore(activeApp);
     activeStorage = getStorage(activeApp);
     return { app: activeApp, db: activeDb, storage: activeStorage };
