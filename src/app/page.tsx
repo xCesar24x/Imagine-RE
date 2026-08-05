@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useMotionTemplate } from "framer-motion";
 import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS, PMProperty, DEMO_PM_PROPERTIES, GlobalSiteSettings, DEFAULT_SITE_SETTINGS } from "@/constants/properties";
+import { getPersistentItem, setPersistentItem } from "@/utils/storage";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
 import AirbnbCalculator from "@/components/AirbnbCalculator";
@@ -212,108 +213,100 @@ export default function Home() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   useEffect(() => {
-    const storedProps = localStorage.getItem("imagine_properties");
-    if (storedProps) {
-      try {
-        const parsed = JSON.parse(storedProps);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setProperties(parsed);
-          return;
-        }
-      } catch (e) {}
-    }
-    setProperties(PROPERTIES);
+    getPersistentItem<Property[]>("imagine_properties", PROPERTIES).then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setProperties(data);
+      } else {
+        setProperties(PROPERTIES);
+      }
+    });
   }, []);
 
   const handleAddProperty = (newProp: Property) => {
     const updated = [newProp, ...properties];
     setProperties(updated);
-    localStorage.setItem("imagine_properties", JSON.stringify(updated));
+    setPersistentItem("imagine_properties", updated);
   };
 
   const handleUpdateProperty = (updatedProp: Property) => {
     const updated = properties.map(p => p.id === updatedProp.id ? updatedProp : p);
     setProperties(updated);
-    localStorage.setItem("imagine_properties", JSON.stringify(updated));
+    setPersistentItem("imagine_properties", updated);
   };
 
   const handleDeleteProperty = (id: string) => {
     const updated = properties.filter(p => p.id !== id);
     setProperties(updated);
-    localStorage.setItem("imagine_properties", JSON.stringify(updated));
+    setPersistentItem("imagine_properties", updated);
   };
 
   // Dynamic Property Types state
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>(DEFAULT_PROPERTY_TYPES);
 
   useEffect(() => {
-    const storedTypes = localStorage.getItem("imagine_property_types");
-    if (storedTypes) {
-      setPropertyTypes(JSON.parse(storedTypes));
-    }
+    getPersistentItem<PropertyType[]>("imagine_property_types", DEFAULT_PROPERTY_TYPES).then(data => {
+      if (Array.isArray(data) && data.length > 0) setPropertyTypes(data);
+    });
   }, []);
 
   const handleUpdatePropertyTypes = (updatedTypes: PropertyType[]) => {
     setPropertyTypes(updatedTypes);
-    localStorage.setItem("imagine_property_types", JSON.stringify(updatedTypes));
+    setPersistentItem("imagine_property_types", updatedTypes);
   };
 
   // Dynamic Regions state
   const [regions, setRegions] = useState<Region[]>(DEFAULT_REGIONS);
 
   useEffect(() => {
-    const storedRegions = localStorage.getItem("imagine_regions");
-    if (storedRegions) {
-      setRegions(JSON.parse(storedRegions));
-    }
+    getPersistentItem<Region[]>("imagine_regions", DEFAULT_REGIONS).then(data => {
+      if (Array.isArray(data) && data.length > 0) setRegions(data);
+    });
   }, []);
 
   const handleUpdateRegions = (updatedRegions: Region[]) => {
     setRegions(updatedRegions);
-    localStorage.setItem("imagine_regions", JSON.stringify(updatedRegions));
+    setPersistentItem("imagine_regions", updatedRegions);
   };
 
   // Dynamic PM Properties state
   const [pmProperties, setPmProperties] = useState<PMProperty[]>(DEMO_PM_PROPERTIES);
 
   useEffect(() => {
-    const storedPm = localStorage.getItem("imagine_pm_properties");
-    if (storedPm) {
-      setPmProperties(JSON.parse(storedPm));
-    }
+    getPersistentItem<PMProperty[]>("imagine_pm_properties", DEMO_PM_PROPERTIES).then(data => {
+      if (Array.isArray(data) && data.length > 0) setPmProperties(data);
+    });
   }, []);
 
   const handleAddPMProperty = (newProp: PMProperty) => {
     const updated = [newProp, ...pmProperties];
     setPmProperties(updated);
-    localStorage.setItem("imagine_pm_properties", JSON.stringify(updated));
+    setPersistentItem("imagine_pm_properties", updated);
   };
 
   const handleUpdatePMProperty = (updatedProp: PMProperty) => {
     const updated = pmProperties.map(p => p.id === updatedProp.id ? updatedProp : p);
     setPmProperties(updated);
-    localStorage.setItem("imagine_pm_properties", JSON.stringify(updated));
+    setPersistentItem("imagine_pm_properties", updated);
   };
 
   const handleDeletePMProperty = (id: string) => {
     const updated = pmProperties.filter(p => p.id !== id);
     setPmProperties(updated);
-    localStorage.setItem("imagine_pm_properties", JSON.stringify(updated));
+    setPersistentItem("imagine_pm_properties", updated);
   };
 
   // Dynamic Site Settings state
   const [siteSettings, setSiteSettings] = useState<GlobalSiteSettings>(DEFAULT_SITE_SETTINGS);
 
   useEffect(() => {
-    const storedSettings = localStorage.getItem("imagine_site_settings");
-    if (storedSettings) {
-      setSiteSettings(JSON.parse(storedSettings));
-    }
+    getPersistentItem<GlobalSiteSettings>("imagine_site_settings", DEFAULT_SITE_SETTINGS).then(data => {
+      if (data) setSiteSettings(data);
+    });
   }, []);
 
   const handleUpdateSiteSettings = (updated: GlobalSiteSettings) => {
     setSiteSettings(updated);
-    localStorage.setItem("imagine_site_settings", JSON.stringify(updated));
+    setPersistentItem("imagine_site_settings", updated);
   };
 
   // Rotating Background logic
