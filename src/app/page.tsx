@@ -6,6 +6,7 @@ import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useMotionTemplate } from "framer-motion";
 import { PROPERTIES, Property, PROVINCE_REGIONS, PropertyType, DEFAULT_PROPERTY_TYPES, Region, DEFAULT_REGIONS, PMProperty, DEMO_PM_PROPERTIES, GlobalSiteSettings, DEFAULT_SITE_SETTINGS } from "@/constants/properties";
 import { getPersistentItem, setPersistentItem } from "@/utils/storage";
+import { getPropertiesFromFirebase, savePropertyToFirebase, deletePropertyFromFirebase } from "@/utils/firebase";
 import PropertyCard from "@/components/PropertyCard";
 import Three360Viewer from "@/components/Three360Viewer";
 import AirbnbCalculator from "@/components/AirbnbCalculator";
@@ -213,12 +214,19 @@ export default function Home() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   useEffect(() => {
-    getPersistentItem<Property[]>("imagine_properties", PROPERTIES).then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        setProperties(data);
-      } else {
-        setProperties(PROPERTIES);
+    getPropertiesFromFirebase().then(fbProps => {
+      if (fbProps && Array.isArray(fbProps) && fbProps.length > 0) {
+        setProperties(fbProps);
+        setPersistentItem("imagine_properties", fbProps);
+        return;
       }
+      getPersistentItem<Property[]>("imagine_properties", PROPERTIES).then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProperties(data);
+        } else {
+          setProperties(PROPERTIES);
+        }
+      });
     });
   }, []);
 
@@ -226,18 +234,21 @@ export default function Home() {
     const updated = [newProp, ...properties];
     setProperties(updated);
     setPersistentItem("imagine_properties", updated);
+    savePropertyToFirebase(newProp);
   };
 
   const handleUpdateProperty = (updatedProp: Property) => {
     const updated = properties.map(p => p.id === updatedProp.id ? updatedProp : p);
     setProperties(updated);
     setPersistentItem("imagine_properties", updated);
+    savePropertyToFirebase(updatedProp);
   };
 
   const handleDeleteProperty = (id: string) => {
     const updated = properties.filter(p => p.id !== id);
     setProperties(updated);
     setPersistentItem("imagine_properties", updated);
+    deletePropertyFromFirebase(id);
   };
 
   // Dynamic Property Types state

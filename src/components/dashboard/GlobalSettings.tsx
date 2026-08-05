@@ -130,6 +130,93 @@ export default function GlobalSettings({
           ))}
         </div>
       </div>
+
+      {/* Firebase SaaS Configuration */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md">
+        <div className="border-b border-white/10 pb-4 mb-6 flex items-center justify-between">
+          <div>
+            <h3 className="font-serif text-xl text-pearl flex items-center gap-2">
+              <span className="text-[#d4af37]">🔥</span>
+              {lang === "es" ? "Conexión Nube Firebase (Inmobiliaria SaaS)" : "Firebase Cloud Connection (SaaS Engine)"}
+            </h3>
+            <p className="text-gray-400 text-xs mt-1">
+              {lang === "es" 
+                ? "Conecta Firestore & Firebase Storage para guardar fotos e inventarios en vivo desde cualquier celular o país." 
+                : "Connect Firestore & Storage to sync live properties and photos from any device globally."}
+            </p>
+          </div>
+          <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] uppercase tracking-wider font-semibold">
+            {lang === "es" ? "Listo para Venta SaaS" : "SaaS Ready"}
+          </div>
+        </div>
+
+        <FirebaseConfigForm lang={lang} />
+      </div>
     </div>
+  );
+}
+
+function FirebaseConfigForm({ lang }: { lang: "en" | "es" }) {
+  const [apiKey, setApiKey] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [storageBucket, setStorageBucket] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSave = (e: FormEvent) => {
+    e.preventDefault();
+    const config = { apiKey, projectId, storageBucket, authDomain: `${projectId}.firebaseapp.com`, messagingSenderId: "", appId: "" };
+    localStorage.setItem("imagine_firebase_config", JSON.stringify(config));
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 3000);
+  };
+
+  return (
+    <form onSubmit={handleSave} className="space-y-4 text-xs">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label className="block uppercase text-[10px] text-gray-400 mb-1">Firebase API Key</label>
+          <input
+            type="password"
+            placeholder="AIzaSy..."
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            className="w-full bg-[#01140f] border border-white/10 text-pearl rounded-xl px-3 py-2 focus:border-[#d4af37] outline-none"
+          />
+        </div>
+        <div>
+          <label className="block uppercase text-[10px] text-gray-400 mb-1">Project ID</label>
+          <input
+            type="text"
+            placeholder="mi-inmobiliaria-cr"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="w-full bg-[#01140f] border border-white/10 text-pearl rounded-xl px-3 py-2 focus:border-[#d4af37] outline-none"
+          />
+        </div>
+        <div>
+          <label className="block uppercase text-[10px] text-gray-400 mb-1">Storage Bucket</label>
+          <input
+            type="text"
+            placeholder="mi-inmobiliaria.appspot.com"
+            value={storageBucket}
+            onChange={(e) => setStorageBucket(e.target.value)}
+            className="w-full bg-[#01140f] border border-white/10 text-pearl rounded-xl px-3 py-2 focus:border-[#d4af37] outline-none"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        {isSaved && (
+          <span className="text-emerald-400 text-xs self-center font-medium">
+            {lang === "es" ? "✓ Credenciales de Nube Guardadas" : "✓ Cloud Credentials Saved"}
+          </span>
+        )}
+        <button
+          type="submit"
+          className="bg-[#d4af37] text-[#02140f] font-bold px-5 py-2 rounded-xl hover:bg-white transition uppercase tracking-wider text-[11px]"
+        >
+          {lang === "es" ? "Guardar Conexión Nube" : "Save Cloud Connection"}
+        </button>
+      </div>
+    </form>
   );
 }
